@@ -199,6 +199,7 @@ class ProductProduct(models.Model):
 
 class ProductLine(models.Model):
     _name = "product.line"
+    _description = "product conversion product line"
 
     prod_id = fields.Many2one('product.product', string="Prod id")
     conversion_ratio = fields.Float(string='Conversion Ratio')
