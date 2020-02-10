@@ -1,0 +1,16 @@
+<odoo>
+  <data>
+    <!-- Display purchase_qty in kaban view of product template -->
+    <record model="ir.ui.view" id="product_template_tree_view_inherit">
+      <field name="name">product template view</field>
+      <field name="model">product.template</field>
+      <field name="inherit_id" ref="product.product_template_tree_view"/>
+      <field name="arch" type="xml">
+          <!-- Insert sale order object-->
+          <xpath expr="//tree/field[@name='uom_id']" position="before">
+              <field name="purchased_product_qty"/>
+          </xpath>
+      </field>
+    </record>
+  </data>
+</odoo>
