@@ -11,7 +11,7 @@
               <group>
                   <group>
                       <field name="vehicle_number"/>
-                      <field name='customer_order_ref'/>
+                      <field name='client_order_ref'/>
                   </group>
                   <group>
                       <field name="driver_name"/>
