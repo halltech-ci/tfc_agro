@@ -1,0 +1,25 @@
+<odoo>
+  <data>
+    <!-- Add vehicle_number and driver_name in sale order -->
+    <record model="ir.ui.view" id="sale_order_form_view_inherit">
+      <field name="name">sale order form view inherit</field>
+      <field name="model">sale.order</field>
+      <field name="inherit_id" ref="sale.view_order_form"/>
+      <field name="arch" type="xml">
+          <!-- Insert sale order object-->
+          <xpath expr="//sheet/group" position="after">
+              <group>
+                  <group>
+                      <field name="vehicle_number"/>
+                      <field name='client_order_ref'/>
+                  </group>
+                  <group>
+                      <field name="driver_name"/>
+                      <field name="driver_contacts"/>
+                  </group>
+              </group>
+          </xpath>
+      </field>
+    </record>
+  </data>
+</odoo>
