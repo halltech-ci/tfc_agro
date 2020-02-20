@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api
+from odoo import models, fields, api, _
 
 # class tfc_custom(models.Model):
 #     _name = 'tfc_custom.tfc_custom'
