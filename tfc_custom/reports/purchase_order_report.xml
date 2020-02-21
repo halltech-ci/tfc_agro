@@ -1,0 +1,19 @@
+<odoo>
+  <data>
+    <template id="inherit_report_purchasequotation_document" inherit_id="purchase.report_purchasequotation_document">    
+        <xpath expr="//div[hasclass('page')]/h2" position="replace">
+            <h4>DEMANDE DE COTATION/RFQ N°:<span t-field="o.name"/></h4>
+        </xpath>
+    </template>
+      
+    <template id="inherit_report_purchaseorder_document" inherit_id="purchase.report_purchaseorder_document">
+        <!-- Add custom sequence in purchase-->
+        <xpath expr="//div[hasclass('page')]/h2[1]" position="replace">
+            <h4 t-if="o.state != 'draft'">BON DE COMMANDE/PURCHASE ORDER N°:<span t-field="o.name"/></h4>
+        </xpath>
+        <xpath expr="//div[hasclass('page')]/h2[2]" position="replace">
+            <h4 t-if="o.state == 'draft'">DEMANDE DE COTATION/RFQ N°:<span t-field="o.name"/></h4>
+        </xpath>
+    </template>
+  </data>
+</odoo>
