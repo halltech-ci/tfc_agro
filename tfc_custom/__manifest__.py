@@ -23,7 +23,9 @@
     'depends': ['base',
                'product',
                'purchase',
-               'sale_management'],
+               'sale_management',
+               'sale_stock',
+               ],
 
     # always loaded
     'data': [
