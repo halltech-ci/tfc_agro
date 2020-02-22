@@ -115,10 +115,9 @@ class SaleOrderLine(models.Model):
             location = self.order_id.warehouse_id.lot_stock_id
             quants = self.env['stock.quant'].read_group([
                 ('product_id', '=', self.product_id.id),
-                ('location', 'child_of', location.id),
+                ('location_id', 'child_of', location.id),
                 ('quantity', '>', 0),
-                ('lot_id', '!=', False),
-                    
+                ('lot_id', '!=', False)
                 ], ['lot_id'], 'lot_id')
             available_lot_ids = [quant['lot_id'][0] for quant in quants]
         self.lot_id = False
