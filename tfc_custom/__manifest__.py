@@ -33,6 +33,9 @@
         #'views/product_template_views.xml',
         'views/sale_order_views.xml',
         'reports/sale_order_report.xml',
+        'reports/purchase_order_report.xml',
+        'data/sale_ir_sequence.xml',
+        'data/purchase_ir_sequence.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
