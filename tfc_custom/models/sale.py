@@ -124,6 +124,7 @@ class SaleOrderLine(models.Model):
             'domain':{'lot_id':[('id', 'in', available_lot_ids)]}
         }
     #When choose one lot we compare qty in lot and orderd qty
+    '''
     @api.onchange('lot_id')
     def _compare_product_qty_in_lot(self):
         if self.product_uom.id != self.lot_id.product_uom_id.id:
@@ -132,7 +133,7 @@ class SaleOrderLine(models.Model):
             raise UserError(_('Quantity in lot must be greater than ordered quantity'))
         return
              
-            
+    '''     
             
         
     
