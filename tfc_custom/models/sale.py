@@ -102,6 +102,7 @@ class SaleOrderLine(models.Model):
     lot_quantity=fields.Float(string="Quantity in Lot", related='lot_id.product_qty', default=1.00, 
                               required=True, digits=dp.get_precision('Product Unit of Measure')
     )
+    amount_letter=fields.Text(string='Montant en lettre')
         
     @api.onchange('product_id')
     def _onchange_product_id_set_lot_domain(self):
