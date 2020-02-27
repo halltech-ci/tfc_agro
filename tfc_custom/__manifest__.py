@@ -39,8 +39,8 @@
         'data/sale_ir_sequence.xml',
         'data/purchase_ir_sequence.xml',
         'views/stock_picking_views.xml',
-        'data/stock_picking_ir_sequence.xml',
-        #'reports/sale_order_template.xml',
+        #'data/stock_picking_ir_sequence.xml',
+        'reports/stock_picking_report.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
