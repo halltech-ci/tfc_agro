@@ -157,7 +157,9 @@
                     <tr>
                         <td class="text-left">
                             <strong>Approver Name:</strong>
-                            <span t-field='doc.driver_name'/>
+                            <t t-if="doc.state in ['to_approve', 'draft']">
+                                <span t-field='doc.approver'/>
+                            </t>
                         </td>
                         <td class="text-right">
                             <strong>Warehouse Manager:</strong>
