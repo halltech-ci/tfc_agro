@@ -6,6 +6,11 @@
       <field name="model">sale.order</field>
       <field name="inherit_id" ref="sale.view_order_form"/>
       <field name="arch" type="xml">
+          <!-- Added sale_approver-->
+          <xpath expr="//sheet/group/group" position="inside">
+              <field name="sale_approver"/>
+          </xpath>
+          <!-- self.env.user.has_group('base.group_sale_manager') -->
           <!-- Insert sale order object-->
           <xpath expr="//sheet/group" position="after">
               <group>

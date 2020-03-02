@@ -25,6 +25,7 @@ class SaleOrder(models.Model):
     driver_name=fields.Char(string="Driver Name")
     driver_contacts=fields.Char(string="Driver Contact")
     customer_order_ref=fields.Char(string="Customer Order Ref")
+    sale_approver=fields.Many2one('res.users', string="Approver")
     
     #Lot methods
     @api.model

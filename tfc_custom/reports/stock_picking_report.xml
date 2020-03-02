@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+    <template id="inherit_stock_picking_document" inherit_id="stock.report_delivery_document">
+        <xpath expr="//div[hasclass('page')]/p" position="before">
+            <div></div>
+            <div></div>
+            <table class="table table-sm">
+                <tbody>
+                    <tr>
+                        <td class='text-left' t-if='o.driver_company'>
+                            <strong>Driver Company:</strong>
+                            <p t-field="o.driver_company"/>
+                        </td>
+                        <td class='text-left' t-if="o.vehicle_number">
+                            <strong>Vehicle Number:</strong>
+                            <p t-field="o.vehicle_number"/>
+                        </td>
+                        <td class='text-left' t-if='o.driver_name'>
+                            <strong>Driver Name:</strong>
+                            <p t-field="o.driver_name"/>
+                        </td>
+                        <td class='text-left' t-if='o.driver_contacts'>
+                            <strong>Driver Phone Number:</strong>
+                            <p t-field="o.driver_contacts"/>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div></div>
+            <div></div>
+            <table>
+                <tbody>
+                    <tr>
+                        <td class='text-left' t-if='o.write_uid'>
+                            <strong>Edited By:</strong>
+                            <p t-field="o.write_uid.name"/>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </xpath>
+    </template>
+  </data>
+</odoo>

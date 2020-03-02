@@ -1,0 +1,33 @@
+<odoo>
+  <data>
+    <record model="ir.ui.view" id="stock_move_tree_view_inherit">
+      <field name="name">stock move form tree inherit</field>
+      <field name="model">stock.move.line</field>
+      <field name="inherit_id" ref="stock.view_stock_move_line_operation_tree"/>
+      <field name="arch" type="xml">
+          <xpath expr="//tree/field[@name='lot_id']" position="replace">
+              <field name="move_id" invisible='1'/>
+              <field name="lot_id" attrs="{'readonly': ['&amp;', ('package_level_id', '!=', False), ('parent.picking_type_entire_packs', '=', True), ('move_id.picking_code', '=', 'outgoing')]}" invisible="not context.get('show_lots_m2o')" domain="[('product_id', '=', parent.product_id)]" groups="stock.group_production_lot" context="{'default_product_id': parent.product_id, 'active_picking_id': picking_id}"/>
+          </xpath>
+      </field>
+    </record>
+      
+    <record model="ir.ui.view" id="stock_picking_view_inherit">
+      <field name="name">stock picking form inherit</field>
+      <field name="model">stock.picking</field>
+      <field name="inherit_id" ref="stock.view_picking_form"/>
+      <field name="arch" type="xml">
+          <xpath expr="//sheet/group" position="inside">
+              <group>
+                  <field name="driver_company"/>
+                  <field name="vehicle_number"/>
+              </group>
+              <group>
+                  <field name="driver_name"/>
+                  <field name="driver_contacts"/>
+              </group>
+          </xpath>
+      </field>
+    </record>
+  </data>
+</odoo>
