@@ -34,10 +34,11 @@
           </xpath>
           <!-- Insert amount conversion in letter-->
           <xpath expr="//sheet/notebook/page[@name='order_lines']/group[@name='sale_total']" position="after">
-              <group attrs="{'invisible': [('amount_total', '&lt;=', 0)]}">
-                  <label for="amount_to_text" style="margin-right: 8px;font-size:15px;"/>
-                  <field name="amount_to_text"/>
-              </group>
+              <div class="oe_subtotal_footer_separator oe_inline o_td_label" style="font-size:15px;">
+                  <group attrs="{'invisible': [('amount_total', '&lt;=', 0)]}">
+                      <field name="amount_to_text"/>
+                  </group>
+              </div>
           </xpath>
       </field>
     </record>

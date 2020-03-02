@@ -41,6 +41,8 @@
         'views/stock_picking_views.xml',
         #'data/stock_picking_ir_sequence.xml',
         'reports/stock_picking_report.xml',
+        'views/account_invoice_views.xml',
+        'views/purchase_order_views.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
