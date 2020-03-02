@@ -4,6 +4,9 @@ from odoo import models, fields, api, _
 from odoo.addons import decimal_precision as dp
 from odoo.exceptions import UserError
 
+from datetime import datetime
+
+
 # class tfc_custom(models.Model):
 #     _name = 'tfc_custom.tfc_custom'
 
@@ -26,8 +29,17 @@ class SaleOrder(models.Model):
     driver_contacts=fields.Char(string="Driver Contact")
     customer_order_ref=fields.Char(string="Customer Order Ref")
     sale_approver=fields.Many2one('res.users', string="Approver")
+    #Added conversion field Amount to Amount Letter
     
-    #Lot methods
+    #amount_to_text=fields.Text(string="Amount in letter", compute=convert)
+    
+    @api.multi
+    def _compute_amount_in_word(self):
+        for rec in self:
+            rec.amount_to_text = str(rec.currency_id.amount_to_text(rec.amount_total)) #+ ' only'
+
+    amount_to_text = fields.Char(string="Amount In Words:", compute='_compute_amount_in_word')    
+    
     @api.model
     def get_move_from_line(self, line):
         move = self.env['stock.move']
