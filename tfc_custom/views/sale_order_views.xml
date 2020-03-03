@@ -7,8 +7,13 @@
       <field name="inherit_id" ref="sale.view_order_form"/>
       <field name="arch" type="xml">
           <!-- Added sale_approver-->
-          <xpath expr="//sheet/group/group" position="inside">
-              <field name="sale_approver" attrs="{'invisible':[('state', '=', 'draft')]}"/>
+          <xpath expr="//sheet/group" position="inside">
+              <group>
+                  <field name="sale_approver" attrs="{'invisible':[('state', '=', 'draft')]}"/>
+              </group>
+              <group>
+                  <field name="debit_client" attrs="{'invisible':[('state', '=', 'draft')]}"/>
+              </group>
           </xpath>
           <!-- self.env.user.has_group('base.group_sale_manager') -->
           <!-- Insert sale order object-->
@@ -36,7 +41,7 @@
           <xpath expr="//sheet/notebook/page[@name='order_lines']/group[@name='sale_total']" position="after">
               <div class="oe_subtotal_footer_separator oe_inline o_td_label" style="font-size:15px;">
                   <group attrs="{'invisible': [('amount_total', '&lt;=', 0)]}">
-                      <field name="amount_to_text"/>
+                      <field name="amount_to_text" string="Customer Balance"/>
                   </group>
               </div>
           </xpath>

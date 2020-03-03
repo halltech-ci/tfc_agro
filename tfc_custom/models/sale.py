@@ -23,12 +23,12 @@ from datetime import datetime
 class SaleOrder(models.Model):
     _inherit='sale.order'
     
-    
     vehicle_number=fields.Char(string='Vehicle Number')
     driver_name=fields.Char(string="Driver Name")
     driver_contacts=fields.Char(string="Driver Contact")
     customer_order_ref=fields.Char(string="Customer Order Ref")
     sale_approver=fields.Many2one('res.users', string="Approver")
+    debit_client = fields.Monetary(string="Customer Balance", readonly=True, default=lambda self:self.partner_id.debit)
     #Added conversion field Amount to Amount Letter
     
     #amount_to_text=fields.Text(string="Amount in letter", compute=convert)
@@ -115,8 +115,13 @@ class SaleOrderLine(models.Model):
     lot_quantity=fields.Float(string="Quantity in Lot", related='lot_id.product_qty', default=1.00, 
                               required=True, digits=dp.get_precision('Product Unit of Measure')
     )
-    amount_letter=fields.Text(string='Montant en lettre')
-        
+    """
+    @api.constrains('lot_quantity')
+    def _compare_lot_qty(self):
+        for line in self:
+            if self.lot_quantity <= self.product_uom_qty:
+                raise ValidationError("There is not enough product in Lot: %s" % record.lot_quantity)
+    """ 
     @api.onchange('product_id')
     def _onchange_product_id_set_lot_domain(self):
         available_lot_ids=[] #On itialise la liste des lots disponible
@@ -138,16 +143,3 @@ class SaleOrderLine(models.Model):
             'domain':{'lot_id':[('id', 'in', available_lot_ids)]}
         }
     #When choose one lot we compare qty in lot and orderd qty
-    '''
-    @api.onchange('lot_id')
-    def _compare_product_qty_in_lot(self):
-        if self.product_uom.id != self.lot_id.product_uom_id.id:
-            raise UserError(_('Quantity in lot must be greater than ordered quantity'))
-        if self.product_uom_qty > self.lot_id.product_qty:
-            raise UserError(_('Quantity in lot must be greater than ordered quantity'))
-        return
-             
-    '''     
-            
-        
-    
