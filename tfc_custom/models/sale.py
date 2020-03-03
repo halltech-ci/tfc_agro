@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from odoo import models, fields, api, _
+from odoo.addons import decimal_precision as dp
 from odoo.exceptions import UserError
+
+from datetime import datetime
+
 
 # class tfc_custom(models.Model):
 #     _name = 'tfc_custom.tfc_custom'
@@ -24,8 +28,18 @@ class SaleOrder(models.Model):
     driver_name=fields.Char(string="Driver Name")
     driver_contacts=fields.Char(string="Driver Contact")
     customer_order_ref=fields.Char(string="Customer Order Ref")
+    sale_approver=fields.Many2one('res.users', string="Approver")
+    #Added conversion field Amount to Amount Letter
     
-    #Lot methods
+    #amount_to_text=fields.Text(string="Amount in letter", compute=convert)
+    
+    @api.multi
+    def _compute_amount_in_word(self):
+        for rec in self:
+            rec.amount_to_text = str(rec.currency_id.amount_to_text(rec.amount_total)) #+ ' only'
+
+    amount_to_text = fields.Char(string="Amount In Words:", compute='_compute_amount_in_word')    
+    
     @api.model
     def get_move_from_line(self, line):
         move = self.env['stock.move']
@@ -98,30 +112,42 @@ class SaleOrderLine(models.Model):
     _inherit='sale.order.line'
     
     lot_id=fields.Many2one('stock.production.lot', string='Lot', copy=False)
-    
-    @api.multi
-    @api.onchange('product_id')
-    def product_id_change(self):
-        super(SaleOrderLine, self).product_id_change()
-        self.lot_id = False#On itialise la valeur de lot_id a False
+    lot_quantity=fields.Float(string="Quantity in Lot", related='lot_id.product_qty', default=1.00, 
+                              required=True, digits=dp.get_precision('Product Unit of Measure')
+    )
+    amount_letter=fields.Text(string='Montant en lettre')
         
     @api.onchange('product_id')
     def _onchange_product_id_set_lot_domain(self):
-        available_lot_ids=[]#On itialise la liste des lots disponible
+        available_lot_ids=[] #On itialise la liste des lots disponible
             
         #Si le produit existe et il existe un entrepot pour le devis
         if self.product_id and self.order_id.warehouse_id:
             #Je recupere le nom du stock
             location = self.order_id.warehouse_id.lot_stock_id
+            #product_quantity = self.lot_quantity#product qty in sale order line
             quants = self.env['stock.quant'].read_group([
                 ('product_id', '=', self.product_id.id),
                 ('location_id', 'child_of', location.id),
                 ('quantity', '>', 0),
                 ('lot_id', '!=', False)
-                ], ['lot_id'], 'lot_id')
+                ], ['lot_id'], 'lot_id')           
             available_lot_ids = [quant['lot_id'][0] for quant in quants]
         self.lot_id = False
         return {
             'domain':{'lot_id':[('id', 'in', available_lot_ids)]}
         }
+    #When choose one lot we compare qty in lot and orderd qty
+    '''
+    @api.onchange('lot_id')
+    def _compare_product_qty_in_lot(self):
+        if self.product_uom.id != self.lot_id.product_uom_id.id:
+            raise UserError(_('Quantity in lot must be greater than ordered quantity'))
+        if self.product_uom_qty > self.lot_id.product_qty:
+            raise UserError(_('Quantity in lot must be greater than ordered quantity'))
+        return
+             
+    '''     
+            
+        
     

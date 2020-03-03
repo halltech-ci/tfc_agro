@@ -5,3 +5,5 @@
 from . import sale
 from . import purchase
 from . import stock
+from . import stock_picking
+from . import invoice_order
