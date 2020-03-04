@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="invoice_report_inherit" inherit_id="account.report_invoice_document">
+            <xpath expr="//div[hasclass('page')]/p" position="before">
+                <div style="font-size:16px; padding-bottom:30px;">
+                    <tr class="border-black">
+                        <td><strong>Amount In Word : </strong></td>
+                        <td><span t-field="o.num_word"/></td>
+                    </tr>
+                </div>
+            </xpath>
+        </template>
+    </data>
+</odoo>

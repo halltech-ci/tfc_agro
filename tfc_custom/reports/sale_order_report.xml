@@ -40,6 +40,17 @@
                 <span t-field="doc.name"/>
             </h5>
         </xpath>
+        <!-- Insert amount in word-->
+        <!--
+        <xpath expr="//div[@class='page']/p[@t-field='doc.note']" position="before">
+            <div style="font-size:16px; padding-bottom:15px;">
+                <tr class="border-black">
+                    <td><strong>Amount In Word : </strong></td>
+                    <td><span t-field="doc.amount_to_text"/></td>
+                </tr>
+            </div>
+        </xpath>
+        -->
         <!--Hide unit price, taxes, and amount -->
         <xpath expr="//div[hasclass('page')]/table[hasclass('table', 'table-sm', 'o_main_table')]" position="replace">
             <table class="table table-sm o_main_table table-bordered" style="border: 1px solid black">
