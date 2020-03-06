@@ -2,7 +2,7 @@
 
 from odoo import models, fields, api, _
 from odoo.addons import decimal_precision as dp
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 
 from datetime import datetime
 
@@ -28,7 +28,7 @@ class SaleOrder(models.Model):
     driver_contacts=fields.Char(string="Driver Contact")
     customer_order_ref=fields.Char(string="Customer Order Ref")
     sale_approver=fields.Many2one('res.users', string="Approver")
-    debit_client = fields.Monetary(string="Customer Balance", readonly=True, default=lambda self:self.partner_id.debit)
+    #debit_client = fields.Monetary(string="Customer Balance", readonly=True, default=lambda self:self.partner_id.debit)
     #Added conversion field Amount to Amount Letter
     
     #amount_to_text=fields.Text(string="Amount in letter", compute=convert)
@@ -115,12 +115,14 @@ class SaleOrderLine(models.Model):
     lot_quantity=fields.Float(string="Quantity in Lot", related='lot_id.product_qty', default=1.00, 
                               required=True, digits=dp.get_precision('Product Unit of Measure')
     )
+    
     """
     @api.constrains('lot_quantity')
     def _compare_lot_qty(self):
-        for line in self:
+        if self.lot_id:
             if self.lot_quantity <= self.product_uom_qty:
                 raise ValidationError("There is not enough product in Lot: %s" % record.lot_quantity)
+    """
     """ 
     @api.onchange('product_id')
     def _onchange_product_id_set_lot_domain(self):
@@ -143,3 +145,4 @@ class SaleOrderLine(models.Model):
             'domain':{'lot_id':[('id', 'in', available_lot_ids)]}
         }
     #When choose one lot we compare qty in lot and orderd qty
+    """

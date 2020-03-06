@@ -5,8 +5,20 @@
         <!-- Sequences for sale.order -->
         <record id="sale_order_ir_sequence" model="ir.sequence">
             <field name="name">Sales Order Sequence</field>
-            <field name="code">sale.order.sequence</field>
-            <field name="prefix">TFC/ADL/%(range_year)s/</field>
+            <field name="code">sale.order.aov</field>
+            <field name="prefix">TFC/AOV/%(range_year)s/</field>
+            <field eval="1" name="number_next"/>
+            <field eval="1" name="number_increment"/>
+            <field eval="True" name="use_date_range"/>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+            <field name='implementation'>standard</field>
+        </record>
+        
+        <record id="sale_order_ir_sequence" model="ir.sequence">
+            <field name="name">Sales Order Sequence</field>
+            <field name="code">sale.order.aov</field>
+            <field name="prefix">TFC/AOV/%(range_year)s/</field>
             <field eval="1" name="number_next"/>
             <field eval="1" name="number_increment"/>
             <field eval="True" name="use_date_range"/>
