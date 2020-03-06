@@ -116,11 +116,13 @@ class SaleOrderLine(models.Model):
                               required=True, digits=dp.get_precision('Product Unit of Measure')
     )
     
+    """
     @api.constrains('lot_quantity')
     def _compare_lot_qty(self):
         if self.lot_id:
             if self.lot_quantity <= self.product_uom_qty:
                 raise ValidationError("There is not enough product in Lot: %s" % record.lot_quantity)
+    """
     """ 
     @api.onchange('product_id')
     def _onchange_product_id_set_lot_domain(self):
