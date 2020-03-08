@@ -5,7 +5,7 @@
             <h4>DEMANDE DE COTATION/RFQ N°:<span t-field="o.name"/></h4>
         </xpath>
     </template>
-      
+            
     <template id="inherit_report_purchaseorder_document" inherit_id="purchase.report_purchaseorder_document">
         <!-- Add custom sequence in purchase-->
         <xpath expr="//div[hasclass('page')]/h2[1]" position="replace">
@@ -13,6 +13,15 @@
         </xpath>
         <xpath expr="//div[hasclass('page')]/h2[2]" position="replace">
             <h4 t-if="o.state == 'draft'">DEMANDE DE COTATION/RFQ N°:<span t-field="o.name"/></h4>
+        </xpath>
+        
+        <xpath expr="//div[hasclass('page')]/p[@t-field='o.notes']" position="before">
+            <div style="font-size:16px; padding-bottom:15px;">
+                <tr class="border-black">
+                    <td><strong>Amount In Word : </strong></td>
+                    <td><span t-field="o.num_word"/></td>
+                </tr>
+            </div>
         </xpath>
     </template>
   </data>

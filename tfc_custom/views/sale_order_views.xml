@@ -7,8 +7,15 @@
       <field name="inherit_id" ref="sale.view_order_form"/>
       <field name="arch" type="xml">
           <!-- Added sale_approver-->
-          <xpath expr="//sheet/group/group" position="inside">
-              <field name="sale_approver"/>
+          <xpath expr="//sheet/group" position="inside">
+              <group>
+                  <field name="sale_approver" attrs="{'invisible':[('state', '=', 'draft')]}"/>
+              </group>
+              <!--
+              <group>
+                  <field name="debit_client" attrs="{'invisible':[('state', '=', 'draft')]}"/>
+              </group>
+              -->
           </xpath>
           <!-- self.env.user.has_group('base.group_sale_manager') -->
           <!-- Insert sale order object-->
@@ -27,11 +34,19 @@
           <!-- Added lot_id in sale order line-->
           <xpath expr="//field[@name='order_line']/tree/field[@name='product_id']" position="after">
                 <field name="lot_id" domain="[('product_id','=', product_id)]" context="{'default_product_id': product_id}" groups="stock.group_production_lot"/>
-            </xpath>
-            <xpath expr="//field[@name='order_line']/form/group/group/field[@name='price_unit']" position="after">
-                <field name="lot_id" domain="[('product_id','=', product_id)]" context="{'default_product_id': product_id}" groups="stock.group_production_lot"/>
-                <field name="lot_quantity"/>
-            </xpath>
+          </xpath>
+          <xpath expr="//field[@name='order_line']/form/group/group/field[@name='price_unit']" position="after">
+             <field name="lot_id" domain="[('product_id','=', product_id)]" context="{'default_product_id': product_id}" groups="stock.group_production_lot"/>
+             <field name="lot_quantity"/>
+          </xpath>
+          <!-- Insert amount conversion in letter-->
+          <xpath expr="//sheet/notebook/page[@name='order_lines']/group[@name='sale_total']" position="after">
+              <div class="oe_subtotal_footer_separator oe_inline o_td_label" style="font-size:15px;">
+                  <group attrs="{'invisible': [('amount_total', '&lt;=', 0)]}">
+                      <field name="amount_to_text"/>
+                  </group>
+              </div>
+          </xpath>
       </field>
     </record>
   </data>

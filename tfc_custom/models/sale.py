@@ -2,7 +2,10 @@
 
 from odoo import models, fields, api, _
 from odoo.addons import decimal_precision as dp
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
+
+from datetime import datetime
+
 
 # class tfc_custom(models.Model):
 #     _name = 'tfc_custom.tfc_custom'
@@ -20,14 +23,23 @@ from odoo.exceptions import UserError
 class SaleOrder(models.Model):
     _inherit='sale.order'
     
-    
     vehicle_number=fields.Char(string='Vehicle Number')
     driver_name=fields.Char(string="Driver Name")
     driver_contacts=fields.Char(string="Driver Contact")
     customer_order_ref=fields.Char(string="Customer Order Ref")
     sale_approver=fields.Many2one('res.users', string="Approver")
+    #debit_client = fields.Monetary(string="Customer Balance", readonly=True, default=lambda self:self.partner_id.debit)
+    #Added conversion field Amount to Amount Letter
     
-    #Lot methods
+    #amount_to_text=fields.Text(string="Amount in letter", compute=convert)
+    
+    @api.multi
+    def _compute_amount_in_word(self):
+        for rec in self:
+            rec.amount_to_text = str(rec.currency_id.amount_to_text(rec.amount_total)) #+ ' only'
+
+    amount_to_text = fields.Char(string="Amount In Words:", compute='_compute_amount_in_word')    
+    
     @api.model
     def get_move_from_line(self, line):
         move = self.env['stock.move']
@@ -103,8 +115,15 @@ class SaleOrderLine(models.Model):
     lot_quantity=fields.Float(string="Quantity in Lot", related='lot_id.product_qty', default=1.00, 
                               required=True, digits=dp.get_precision('Product Unit of Measure')
     )
-    amount_letter=fields.Text(string='Montant en lettre')
-        
+    
+    """
+    @api.constrains('lot_quantity')
+    def _compare_lot_qty(self):
+        if self.lot_id:
+            if self.lot_quantity <= self.product_uom_qty:
+                raise ValidationError("There is not enough product in Lot: %s" % record.lot_quantity)
+    """
+    """ 
     @api.onchange('product_id')
     def _onchange_product_id_set_lot_domain(self):
         available_lot_ids=[] #On itialise la liste des lots disponible
@@ -126,16 +145,4 @@ class SaleOrderLine(models.Model):
             'domain':{'lot_id':[('id', 'in', available_lot_ids)]}
         }
     #When choose one lot we compare qty in lot and orderd qty
-    '''
-    @api.onchange('lot_id')
-    def _compare_product_qty_in_lot(self):
-        if self.product_uom.id != self.lot_id.product_uom_id.id:
-            raise UserError(_('Quantity in lot must be greater than ordered quantity'))
-        if self.product_uom_qty > self.lot_id.product_qty:
-            raise UserError(_('Quantity in lot must be greater than ordered quantity'))
-        return
-             
-    '''     
-            
-        
-    
+    """

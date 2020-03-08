@@ -2,12 +2,24 @@
 <odoo>
   <data>
     <template id="inherit_report_saleorder_document" inherit_id="sale.report_saleorder_document">
-        <xpath expr="//div[hasclass('page')]//div[hasclass('row', 'mt32', 'mb32')]" position="replace">            
+        <!-- Change partner_id font-->
+        <xpath expr="//t[@t-set='address']" position="replace">
             <div></div>
+        </xpath>
+        
+        <xpath expr="//div[hasclass('page')]//div[hasclass('row', 'mt32', 'mb32')]" position="replace">            
+            <div class="row col-auto" style="font-size:30px;">
+                <strong>Client : </strong>
+                <span t-field=" doc.partner_id" t-options='{"widget": "contact", "fields": ["name"], "no_marker": True}'/>
+                    <p t-if="doc.partner_id.vat"><t t-esc="doc.company_id.country_id.vat_label or 'Tax ID'"/>: 
+                        <span t-field="doc.partner_id.vat"/>
+                    </p>
+            </div>
+            <br></br>
             <table class="table table-sm">
                 <tbody>
                     <tr>
-                        <td t-if="doc.date_order and doc.state in ['draft','sent']" class='text-left'>
+                        <td t-if="doc.date_order and doc.state in ['draft','sent']" class='text-right'>
                             <strong>Quotation Date:</strong>
                             <span t-field="doc.date_order"/>
                         </td>
@@ -15,30 +27,33 @@
                             <strong>Date Ordered:</strong>
                             <span t-field="doc.confirmation_date"/>
                         </td>
-                        <td t-if="doc.client_order_ref" class='text-left'>
+                        <td t-if="doc.client_order_ref" class='text-right'>
                             <strong>Your Reference:</strong>
                             <span t-field="doc.client_order_ref"/>
                         </td>
-                        <td t-if="doc.validity_date and doc.state in ['draft', 'sent']" class="text-left">     
-                            <strong>Expiration Date:</strong>
-                            <span class="m-0" t-field="doc.validity_date"/>
+                        <td t-if="doc.origin" class='text-left'>
+                            <strong>BOV:</strong>
+                            <span t-field="doc.origin"/>
                         </td>
                     </tr>
                 </tbody>
             </table>
+            <br></br>
         </xpath>
         <!-- -->
         <xpath expr="//div[hasclass('page')]/h2" position="replace">
-            <h5 class="text-center">
+            <br></br>
+            <div class="text-center">
                 <t t-if="not (env.context.get('proforma', False) or is_pro_forma)">
-                    <span t-if="doc.state not in ['draft','sent']">AUTHORISATION OF DELIVERY : </span>
-                    <span t-if="doc.state in ['draft','sent']">DEVIS : </span>
+                    <span t-if="doc.state not in ['draft','sent']">AUTORISATION DE LIVRAISON:TFC/ADL</span>
+                    <span t-if="doc.state in ['draft','sent']">BON DE VENTE:TFC/BOV</span>
                 </t>
                 <t t-if="env.context.get('proforma', False) or is_pro_forma">
                     <span>Pro-Forma Invoice # </span>
                 </t>
                 <span t-field="doc.name"/>
-            </h5>
+            </div>
+            <br></br>
         </xpath>
         <!--Hide unit price, taxes, and amount -->
         <xpath expr="//div[hasclass('page')]/table[hasclass('table', 'table-sm', 'o_main_table')]" position="replace">
@@ -49,6 +64,7 @@
                         <t t-set="colspan" t-value="5"/>
                         <th class="text-left">Description</th>
                         <th class="text-right">Quantity</th>
+                        <th class="text-right">Unit</th>
                         <th class="text-right">Warehouse</th>
                         <th class="text-right">Lot</th>
                         <th t-if="doc.state in ['draft','sent']" class="text-right">Unit Price</th>
@@ -78,6 +94,8 @@
                                 <td><span t-field="line.name"/></td>
                                 <td class="text-right">
                                     <span t-field="line.product_uom_qty"/>
+                                </td>
+                                <td class='text-right'>
                                     <span t-field="line.product_uom" groups="uom.group_uom"/>
                                 </td>
                                 <td class="text-right">
@@ -130,8 +148,14 @@
         </xpath>
         <!-- Add custom field in sale order-->
         <xpath expr="//div[hasclass('page')]/div[hasclass('clearfix')]" position="after">
-            <div></div>
-            <div></div>
+            <!-- Insert amount in word-->
+            <div style="font-size:16px; padding-bottom:15px;" t-if="doc.state in ['draft','sent']">
+                <tr class="border-black">
+                    <td><strong>Amount In Word : </strong></td>
+                    <td><span t-field="doc.amount_to_text"/></td>
+                </tr>
+            </div>
+            <br></br>
             <table class="table table-sm">
                 <tbody>
                     <tr>
@@ -152,17 +176,19 @@
             </table>
             <div></div>
             <div></div>
-            <table class="table">
+            <table class="table table-sm">
                 <tbody>
                     <tr>
+                        <!--
                         <td class="text-left">
                             <strong>Approver Name:</strong>
                             <t t-if="doc.state in ['to_approve', 'draft']">
                                 <span t-field='doc.approver'/>
                             </t>
                         </td>
-                        <td class="text-right">
-                            <strong>Warehouse Manager:</strong>
+                        -->
+                        <td class="text-left">
+                            <strong>Edited By:</strong>
                             <span t-field='doc.user_id'/>
                         </td>
                     </tr>
