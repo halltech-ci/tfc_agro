@@ -2,7 +2,7 @@
 
 from odoo import models, fields, api, _
 from odoo.addons import decimal_precision as dp
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 
 from datetime import datetime
 
@@ -23,15 +23,20 @@ from datetime import datetime
 class SaleOrder(models.Model):
     _inherit='sale.order'
     
-    
     vehicle_number=fields.Char(string='Vehicle Number')
     driver_name=fields.Char(string="Driver Name")
     driver_contacts=fields.Char(string="Driver Contact")
     customer_order_ref=fields.Char(string="Customer Order Ref")
     sale_approver=fields.Many2one('res.users', string="Approver")
-    #Added conversion field Amount to Amount Letter
     
-    #amount_to_text=fields.Text(string="Amount in letter", compute=convert)
+    '''
+    @api.depends('partner_invoice_id.credit.credit', 'partner_invoice_id.credit_limit')
+    def compute_over_credit(self):
+        for record in self:
+            record[('over_credit')] = record.partner_invoice_id.credit > record.partner_invoice_id.credit_limit
+    
+    over_credit = fields.Boolean(string="Over Credit", compute=compute_over_credit)
+    '''     
     
     @api.multi
     def _compute_amount_in_word(self):
@@ -39,6 +44,21 @@ class SaleOrder(models.Model):
             rec.amount_to_text = str(rec.currency_id.amount_to_text(rec.amount_total)) #+ ' only'
 
     amount_to_text = fields.Char(string="Amount In Words:", compute='_compute_amount_in_word')    
+    
+    #Product qty in Lot must be greather than product qty in sale order
+    '''
+    @api.model
+    def check_product_qty_in_lot(self):
+        #get line_ids in sale order
+        if self.order_line:         
+            order_lines_list = self.order_line
+            for line_id in order_lines_list:
+                product_occurence = self.env['sale.order.line'].search_count([('id', '=', line_id)])
+                if product_occurence > 1:
+                    
+                
+            
+    '''    
     
     @api.model
     def get_move_from_line(self, line):
@@ -115,8 +135,15 @@ class SaleOrderLine(models.Model):
     lot_quantity=fields.Float(string="Quantity in Lot", related='lot_id.product_qty', default=1.00, 
                               required=True, digits=dp.get_precision('Product Unit of Measure')
     )
-    amount_letter=fields.Text(string='Montant en lettre')
-        
+    
+    @api.one
+    @api.constrains('lot_id', 'product_uom_qty')
+    def _compare_lot_qty(self):
+        #for line
+        if self.lot_id:
+            if self.lot_id.product_qty < self.product_uom_qty:
+                raise ValidationError("There is not enough product %s in Lot %s" % (self.product_id.name, self.lot_id.name))
+
     @api.onchange('product_id')
     def _onchange_product_id_set_lot_domain(self):
         available_lot_ids=[] #On itialise la liste des lots disponible
@@ -125,7 +152,7 @@ class SaleOrderLine(models.Model):
         if self.product_id and self.order_id.warehouse_id:
             #Je recupere le nom du stock
             location = self.order_id.warehouse_id.lot_stock_id
-            #product_quantity = self.lot_quantity#product qty in sale order line
+            product_quantity = self.lot_quantity#product qty in sale order line
             quants = self.env['stock.quant'].read_group([
                 ('product_id', '=', self.product_id.id),
                 ('location_id', 'child_of', location.id),
@@ -138,16 +165,3 @@ class SaleOrderLine(models.Model):
             'domain':{'lot_id':[('id', 'in', available_lot_ids)]}
         }
     #When choose one lot we compare qty in lot and orderd qty
-    '''
-    @api.onchange('lot_id')
-    def _compare_product_qty_in_lot(self):
-        if self.product_uom.id != self.lot_id.product_uom_id.id:
-            raise UserError(_('Quantity in lot must be greater than ordered quantity'))
-        if self.product_uom_qty > self.lot_id.product_qty:
-            raise UserError(_('Quantity in lot must be greater than ordered quantity'))
-        return
-             
-    '''     
-            
-        
-    

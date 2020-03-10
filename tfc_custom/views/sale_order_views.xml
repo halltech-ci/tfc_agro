@@ -7,8 +7,15 @@
       <field name="inherit_id" ref="sale.view_order_form"/>
       <field name="arch" type="xml">
           <!-- Added sale_approver-->
-          <xpath expr="//sheet/group/group" position="inside">
-              <field name="sale_approver" attrs="{'invisible':[('state', '=', 'draft')]}"/>
+          <xpath expr="//sheet/group" position="inside">
+              <group>
+                  <field name="sale_approver" attrs="{'invisible':[('state', '=', 'draft')]}"/>
+              </group>
+              <!--
+              <group>
+                  <field name="debit_client" attrs="{'invisible':[('state', '=', 'draft')]}"/>
+              </group>
+              -->
           </xpath>
           <!-- self.env.user.has_group('base.group_sale_manager') -->
           <!-- Insert sale order object-->
