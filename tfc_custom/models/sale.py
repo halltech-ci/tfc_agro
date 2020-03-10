@@ -141,7 +141,7 @@ class SaleOrderLine(models.Model):
     def _compare_lot_qty(self):
         #for line
         if self.lot_id:
-            if self.lot_id.product_quantity < self.product_uom_qty:
+            if self.lot_id.product_qty < self.product_uom_qty:
                 raise ValidationError("There is not enough product %s in Lot %s" % (self.product_id.name, self.lot_id.name))
 
     @api.onchange('product_id')
