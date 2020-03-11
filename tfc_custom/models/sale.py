@@ -29,14 +29,14 @@ class SaleOrder(models.Model):
     customer_order_ref=fields.Char(string="Customer Order Ref")
     sale_approver=fields.Many2one('res.users', string="Approver")
     
-    '''
-    @api.depends('partner_invoice_id.credit.credit', 'partner_invoice_id.credit_limit')
+    
+    @api.depends('partner_invoice_id.credit', 'partner_invoice_id.credit_limit')
     def compute_over_credit(self):
         for record in self:
             record[('over_credit')] = record.partner_invoice_id.credit > record.partner_invoice_id.credit_limit
     
-    over_credit = fields.Boolean(string="Over Credit", compute=compute_over_credit)
-    '''     
+    over_credit = fields.Boolean(string="Over Credit", store=True, readonly=True, compute=compute_over_credit)
+      
     
     @api.multi
     def _compute_amount_in_word(self):
