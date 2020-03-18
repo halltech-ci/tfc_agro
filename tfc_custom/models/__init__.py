@@ -8,3 +8,4 @@ from . import stock
 from . import stock_picking
 from . import invoice_order
 from . import account
+#from . import create_custom_report

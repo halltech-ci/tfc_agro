@@ -25,6 +25,7 @@
                'purchase',
                'sale_management',
                'sale_stock',
+                'account',
                ],
 
     # always loaded
@@ -45,6 +46,8 @@
         'views/account_invoice_views.xml',
         'views/purchase_order_views.xml',
         'views/res_partner_views.xml',
+        'wizards/create_custom_report.xml',
+        'reports/custom_report.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
