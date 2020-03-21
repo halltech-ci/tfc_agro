@@ -20,20 +20,18 @@ class CreateCustomReport(models.TransientModel):
     _name="create.custom.report"
     _description="Wizard form to create custom report"
     
-    date_from = fields.Datetime(string="From Date")
-    date_to = fields.Datetime(string="To Date")
+    date_from = fields.Date(string="From Date")
+    date_to = fields.Date(string="To Date")
     
     @api.multi
-    def print_report(self):
+    def get_report(self):
         #I get data enter in form
         data = {
             'model': self._name,
             'ids' : self.ids,
-            'form' :{
-                'from_date': self.date_from,
-                'to_date' : self.date_to
-            }
+            #data['form'] = self.read(['date_from', 'date_to', 'journal_ids', 'target_move', 'company_id'])[0]
+            'form' :self.read(['date_from', 'date_to'])[0]
             #'form' : self.read()[0]
         }
-        #custom_report is the report template name
-        return self.env.ref('tfc_custom.custom_report').with_context(landscape=True).report_action(self, data=data)
+        #action_custom_report is the report template name
+        return self.env.ref('tfc_custom.action_custom_report').with_context(landscape=True).report_action(self, data=data)

@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
   <data>
-    <template id="custom_report">
-        
-    </template>
-      
-      
-    
     <record model="report.paperformat" id="paperformat_custom_report">
         <field name="name">paperformat.custom.report</field>
         <field name="default" eval="True"/>
@@ -23,16 +17,17 @@
         <field name="dpi">90</field>
     </record>
     
-    <report id="custom_report"
+    <report id="action_custom_report"
             model="create.custom.report"
             string="Custom Reports"
             report_type="qweb-pdf"
-            name="tfc_custom.custom_report_view"
+            name="tfc_custom.custom_report_template"
+            file="tfc_custom.custom_report_template"
             paperformat="paperformat_custom_report"
-            menu="False"/>
+            menu="False"
+    />
       
-    
-    <template id="custom_report_view">
+    <template id="custom_report_template">
         <t t-call="web.html_container">
             <div class="header" style="border-bottom: 2px solid black">
                 <h3 class="text-center">Custom Reports</h3>
@@ -46,22 +41,36 @@
             <div class="article">
                 <table class="table table-condensed table-bordered" style="width: 100%">
                     <thead>
-                        <th class="text-center" style="width: 50%">Product</th>
-                        <th class="text-center" style="width: 25%">Unit</th>
-                        <th class="text-center" style="width: 25%">Initial Stock</th>
+                        <th class="text-left">Product</th>
+                        <th class="text-left">Unit</th>
+                        <th class="text-left">Initial Stock</th>
+                        <th class="text-left">Received</th>
+                        <th class="text-left">Sale</th>
+                        <th class="text-left">Actual Stock</th>
                     </thead>
                     <tbody>
                         <t t-foreach="docs" t-as="doc">
                             <tr>
-                                <td>
+                                <td class="text-left">
                                     <span t-esc="doc['product']"/>
                                 </td>
-                                <td class="text-center">
+                                <td class="text-left">
                                     <span t-esc="doc['product_uom']"/>
                                 </td>
-                                <td class="text-center">
+                                <td class="text-left">
+                                    <span t-esc="doc['initial_qty']"/>
+                                </td>
+                                <td class="text-left">
+                                    <span t-esc="doc['recept_qty']"/>
+                                </td>
+                                <td class="text-left">
+                                    <span t-esc="doc['sale_qty']"/>
+                                </td>
+                                <td class="text-left">
                                     <span t-esc="doc['product_qty']"/>
                                 </td>
+                                
+                                
                             </tr>
                         </t>
                     </tbody>

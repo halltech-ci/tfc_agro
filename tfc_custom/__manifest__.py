@@ -25,7 +25,7 @@
                'purchase',
                'sale_management',
                'sale_stock',
-                'account',
+                'account_accountant',
                ],
 
     # always loaded
