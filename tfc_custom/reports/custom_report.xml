@@ -41,12 +41,14 @@
             <div class="article">
                 <table class="table table-condensed table-bordered" style="width: 100%">
                     <thead>
-                        <th class="text-left">Product</th>
-                        <th class="text-left">Unit</th>
-                        <th class="text-left">Initial Stock</th>
-                        <th class="text-left">Received</th>
-                        <th class="text-left">Sale</th>
-                        <th class="text-left">Actual Stock</th>
+                        <th class="text-left">PRODUCT</th>
+                        <th class="text-left">UNIT</th>
+                        <th class="text-left">INITIAL STOCK</th>
+                        <th class="text-left">RECEPT</th>
+                        <th class="text-left">SALE</th>
+                        <th class="text-left">REBAGGAGE</th>
+                        <th class="text-left">ACTUAL STOCK</th>
+                        <th class="text-left">TRANSFERT</th>
                     </thead>
                     <tbody>
                         <t t-foreach="docs" t-as="doc">
@@ -67,10 +69,14 @@
                                     <span t-esc="doc['sale_qty']"/>
                                 </td>
                                 <td class="text-left">
+                                    <span t-esc="doc['rebaggage']"/>
+                                </td>
+                                <td class="text-left">
                                     <span t-esc="doc['product_qty']"/>
                                 </td>
-                                
-                                
+                                <td class="text-left">
+                                    <span t-esc="doc['internal_transfert']"/>
+                                </td>
                             </tr>
                         </t>
                     </tbody>
