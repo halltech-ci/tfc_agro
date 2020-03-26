@@ -22,29 +22,77 @@ class CustomReport(models.AbstractModel):
     _name="report.tfc_custom.custom_report_template"#Respect naming format report.module_name.report_template_name
     _description="Custom report for TFC AGRO"
     
-    def _get_received_qty(self, product_id, date):
-        moves = self.env['stock.move'].search([('picking_code', '=', 'incoming'), ('product_id.id', '=', product_id), ('product_type', '=', 'product')])#Get all incoming picking
-        total_recept = 0.0
-        total_transfert = 0.0
-        for move in moves:
-            if move.write_date.date() == date:
-                if move.picking_code == 'incoming':
-                    total_recept = total_recept + move.quantity_done
-                if move.picking_code == 'internal':
-                    total_transfert += total_transfert 
-                total_recept = total_recept
-                total_transfert = total_transfert
-        return (total_recept, total_transfert)
+    def _get_sale_report(self, date):
+        '''This method gets sale order by customer and by product'''
+        #First we get all sale order for the giving date
+        sales = self.env['sale.order'].search([('type_name', '=', 'Sales Order'), ('date', '=', date)])
+        sale_report = []
+        for sale in sales:
+            #get customer name
+            customer_name = sale.partner_id[1]
+            sale_adl = sale.name
+            sale_term = sale.payment_term_id
+            #Get order line information
+            order_lines = self.env['sale.order.line'].search([('order_id.id', '=', sale.id)])
+            for order_line in order_lines:
+                report_line = {
+                    'product_id':order_line.product_id,
+                    'sale_qty' : order_line.product_uom_qty,
+                    'unit_price' : order_line.price_unit,
+                    'product_uom' : order_line.product_uom.id,
+                    'product_lot' : order_line.lot_id,
+                    'price_total' : order_line.price_total,
+                    'customer_name' : sale.partner_id[1],
+                    'sale_adl' : sale.name,
+                    'sale_term' : sale.payment_term_id,
+                }
+                sale_report = sale_report.append(report_line)
+        return sale_report
     
-    #Get rebaggage quantity per product
-    def _get_rebaggage_qty(self, product_id, date):
-        conversions = self.env['product.conversion'].search([('src_product_id.id', '=', product_id), ('state', '=', 'done')])
-        rebaggage = 0.0
-        for conversion in conversions:
-            if conversion.date == date:
-                rebaggage += conversion.qty_to_convert
-            rebaggage = rebaggage
-            return rebaggage
+    def _get_stock_position_by_date(self, date):
+        products = self.env['product.product'].search([('type', '=', 'product'), ('purchased_product_qty', '>=', 0)])
+        product_ids = []
+        for product in products:
+            product_ids.append(product.id)
+        product_list = product_ids
+        saled_qty = 0
+        reserved_qty = 0
+        received_qty = 0
+        internal_move_qty = 0
+        rebaggage_qty = 0
+        stock_position = []
+        for id in product_list:
+            moves = self.env['stock.move'].search([('product_id.id', '=', id), ('date', '=', date)])
+            product_name = self.env['stock.move'].search([('product_id.id', '=', id)], limit=1).name
+            actual_stock_qty = self.env['product.product'].search([('id', '=', id)]).qty_at_date
+            for move in moves:
+                product_uom = move.product_uom
+                if move.sale_id and move.picking_code == 'outgoing' and move.state=='done':
+                    saled_qty += move.quantity_done
+                    #Compute reserved qty
+                if move.sale_id and move.picking_code == 'outgoing' and move.state=='assigned':
+                    reserved_qty += move.reserved_availability
+                #compute received quantity
+                if move.purchase_line_id and move.picking_code == 'incoming':
+                    received_qty += move.quantity_done
+                #compute internal transfert quantity
+                if move.picking_code == 'internal' and move.state=='done':
+                    internal_move_qty += move.quantity_done
+                #compute rebaggage quantity
+                if move.picking_code == False and move.state=='done':
+                    rebaggage_qty += move.quantity_done
+                stock_position = stock_position.append({
+                    'product_name':product_name,
+                    'product_uom':product_uom,
+                    'saled_qty': saled_qty,
+                    'reserved_qty' : reserved_qty,
+                    'received_qty' : received_qty,
+                    'internal_move_qty' : internal_move_qty,
+                    'rebaggage_qty' : rebaggage_qty,
+                    'actual_stock_qty' : actual_stock_qty,
+                
+                })
+        return stock_position
     
     @api.model
     def _get_report_values(self, docids, data=None):
@@ -54,26 +102,11 @@ class CustomReport(models.AbstractModel):
         date_to_obj = datetime.strptime(date_to, DATE_FORMAT).date()
         #date = date_utils.to_date(date_to)
         
+        stock_position = self._get_stock_position_by_date(date_to)
+        sale_report = self._get_sale_report(date_to)
         docs = []
-        quants = self.env['product.product'].search([('type', '=', 'product')])
-        #accountmove_line = self.env['account.move.line'].search([()])
-        for quant in quants :
-            docs.append({
-                'product': quant.code,
-                'product_uom': quant.uom_name,
-                'product_qty': quant.qty_at_date,
-                #'product_lot': quant.lot_id,
-                'sale_qty': quant.sales_count,
-                'purchase_qty' : quant.purchased_product_qty,#Total qty purchased for this product
-                'delivery_order': quant.outgoing_qty, #qty waiting for delivery
-                'recept_order': quant.incoming_qty, #qty purchase and waiting for reception
-                'virtual_available': quant.virtual_available, #forcasted (prevision) qty
-                'initial_qty': quant.qty_at_date + quant.sales_count - self._get_received_qty(quant.id, date_to_obj)[0],
-                'recept_qty': self._get_received_qty(quant.id, date_to_obj)[0], #Qty of product recept in that day
-                'internal_transfert': self._get_received_qty(quant.id, date_to_obj)[1],
-                'rebaggage':  self._get_rebaggage_qty(quant.id, date_to_obj),
-                #if 
-            })
+        docs.append(stock_position)
+        docs.append(sale_report)
     
         return {
             'doc_ids': data['ids'],
