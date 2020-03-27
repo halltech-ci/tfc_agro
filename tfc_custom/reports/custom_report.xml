@@ -52,32 +52,32 @@
                     </thead>
                     <tbody>
                         <t t-foreach="docs[0]" t-as="doc">
-                                <tr>
-                                    <td class="text-left">
-                                        <span t-esc="doc['product_name']"/>
-                                    </td>
-                                    <td class="text-left">
-                                        <span t-esc="doc['product_uom']"/>
-                                    </td>
-                                    <td class="text-left">
-                                        <span t-esc="doc['actual_stock_qty']"/>
-                                    </td>
-                                    <td class="text-left">
-                                        <span t-esc="doc['received_qty']"/>
-                                    </td>
-                                    <td class="text-left">
-                                        <span t-esc="doc['saled_qty']"/>
-                                    </td>
-                                    <td class="text-left">
-                                        <span t-esc="doc['rebaggage_qty']"/>
-                                    </td>
-                                    <td class="text-left">
-                                        <span t-esc="doc['actual_stock_qty']"/>
-                                    </td>
-                                    <td class="text-left">
-                                        <span t-esc="doc['internal_transfert']"/>
-                                    </td>
-                                </tr>
+                            <tr>
+                                <td class="text-left">
+                                    <span t-esc="doc['product_name']"/>
+                                </td>
+                                <td class="text-left">
+                                    <span t-esc="doc['product_uom']"/>
+                                </td>
+                                <td class="text-left">
+                                    <span t-esc="doc['actual_stock_qty']"/>
+                                </td>
+                                <td class="text-left">
+                                    <span t-esc="doc['received_qty']"/>
+                                </td>
+                                <td class="text-left">
+                                    <span t-esc="doc['saled_qty']"/>
+                                </td>
+                                <td class="text-left">
+                                    <span t-esc="doc['rebaggage_qty']"/>
+                                </td>
+                                <td class="text-left">
+                                    <span t-esc="doc['actual_stock_qty']"/>
+                                </td>
+                                <td class="text-left">
+                                    <span t-esc="doc['internal_move_qty']"/>
+                                </td>
+                            </tr>
                         </t>
                     </tbody>
                 </table>

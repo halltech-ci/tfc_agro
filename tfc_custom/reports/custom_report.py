@@ -29,7 +29,7 @@ class CustomReport(models.AbstractModel):
         sale_report = []
         for sale in sales:
             #get customer name
-            customer_name = sale.partner_id[1]
+            customer_name = sale.partner_id.name
             sale_adl = sale.name
             sale_term = sale.payment_term_id
             #Get order line information
@@ -39,14 +39,14 @@ class CustomReport(models.AbstractModel):
                     'product_id':order_line.product_id,
                     'sale_qty' : order_line.product_uom_qty,
                     'unit_price' : order_line.price_unit,
-                    'product_uom' : order_line.product_uom.id,
+                    'product_uom' : order_line.product_uom.name,
                     'product_lot' : order_line.lot_id,
                     'price_total' : order_line.price_total,
-                    'customer_name' : sale.partner_id[1],
-                    'sale_adl' : sale.name,
+                    'customer_name' : customer_name,
+                    'sale_adl' : sale_adl,
                     'sale_term' : sale.payment_term_id,
                 }
-                sale_report = sale_report.append(report_line)
+                sale_report.append(report_line)
         return sale_report
     
     def _get_stock_position_by_date(self, date):
@@ -63,8 +63,9 @@ class CustomReport(models.AbstractModel):
         stock_position = []
         for id in product_list:
             moves = self.env['stock.move'].search([('product_id.id', '=', id), ('date', '=', date)])
-            product_name = self.env['stock.move'].search([('product_id.id', '=', id)], limit=1).name
-            actual_stock_qty = self.env['product.product'].search([('id', '=', id)]).qty_at_date
+            product_name = self.env['product.product'].search([('id', '=', id), ('type', '=', 'product'), ('purchased_product_qty', '>=', 0)]).name
+            actual_stock_qty = self.env['product.product'].search([('id', '=', id), ('type', '=', 'product'), ('purchased_product_qty', '>=', 0)]).qty_at_date
+            product_uom = ''
             for move in moves:
                 product_uom = move.product_uom
                 if move.sale_id and move.picking_code == 'outgoing' and move.state=='done':
@@ -81,17 +82,16 @@ class CustomReport(models.AbstractModel):
                 #compute rebaggage quantity
                 if move.picking_code == False and move.state=='done':
                     rebaggage_qty += move.quantity_done
-                stock_position = stock_position.append({
-                    'product_name':product_name,
-                    'product_uom':product_uom,
-                    'saled_qty': saled_qty,
-                    'reserved_qty' : reserved_qty,
-                    'received_qty' : received_qty,
-                    'internal_move_qty' : internal_move_qty,
-                    'rebaggage_qty' : rebaggage_qty,
-                    'actual_stock_qty' : actual_stock_qty,
-                
-                })
+            stock_position.append({
+                'product_name':product_name,
+                'product_uom':product_uom,
+                'saled_qty': saled_qty,
+                'reserved_qty' : reserved_qty,
+                'received_qty' : received_qty,
+                'internal_move_qty' : internal_move_qty,
+                'rebaggage_qty' : rebaggage_qty,
+                'actual_stock_qty' : actual_stock_qty,
+            })
         return stock_position
     
     @api.model
