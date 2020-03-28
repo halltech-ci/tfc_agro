@@ -31,20 +31,27 @@ class CustomReport(models.AbstractModel):
             #get customer name
             customer_name = sale.partner_id.name
             sale_adl = sale.name
-            sale_term = sale.payment_term_id
+            if sale.payment_term_id:
+                sale_term = sale.payment_term_id
+            else:
+                sale_term = ''
             #Get order line information
             order_lines = self.env['sale.order.line'].search([('order_id.id', '=', sale.id)])
             for order_line in order_lines:
+                if order_line.lot_id:
+                    product_lot = order_line.lot_id.name
+                else:
+                    product_lot = ''
                 report_line = {
-                    'product_id':order_line.product_id,
+                    'product_id':order_line.product_id.name,
                     'sale_qty' : order_line.product_uom_qty,
                     'unit_price' : order_line.price_unit,
                     'product_uom' : order_line.product_uom.name,
-                    'product_lot' : order_line.lot_id,
+                    'product_lot' : product_lot,
                     'price_total' : order_line.price_total,
                     'customer_name' : customer_name,
                     'sale_adl' : sale_adl,
-                    'sale_term' : sale.payment_term_id,
+                    'sale_term' : sale_term,
                 }
                 sale_report.append(report_line)
         return sale_report
