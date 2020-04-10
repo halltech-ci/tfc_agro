@@ -1,6 +1,7 @@
 <odoo>
   <data>
       <!-- Define custom report wizard form view-->
+      
       <record model="ir.ui.view" id="custom_report_wizard">
         <field name="name">Custom Report Wizard</field>
         <field name="model">create.custom.report</field>
@@ -18,16 +19,53 @@
             </form>
         </field>
     </record>
+    
+    <!--
+    <record id="custom_report_wizard" model="ir.ui.view">
+        <field name="name">Custom Report Wizard</field>
+        <field name="model">create.custom.report</field>
+        <field name="arch" type="xml">
+            <form string="Choose your date">
+                <group>
+                    <group>
+                        <field name="compute_at_date" widget="radio"/>
+                        <field name="date" attrs="{'invisible': [('compute_at_date', '=', 0)]}"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="open_table" string="Retrieve the Inventory Quantities" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+    -->
+      
+      
+      
     <!-- Define action to show custom report form view-->  
+    
     <record id="action_custom_report_wizard" model="ir.actions.act_window">
         <field name="name">Custom Reports</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">create.custom.report</field>
-        <!--<field name="view_type">form</field>-->
+        
         <field name="view_mode">form</field>
         <field name="view_id" ref="custom_report_wizard"/>
         <field name="target">new</field>
     </record>
+    
+    <!--
+    <record id="action_custom_report_wizard" model="ir.actions.act_window">
+        <field name="name">Custom Reports</field>
+        <field name="res_model">create.custom.report</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="custom_report_wizard"/>
+        <field name="target">new</field>
+        <field name="context">{'default_compute_at_date': 0}</field>
+    </record>
+    -->
     <!-- Display custom report form in menu-->
     <menuitem id="tfc_custom_report" name="Custom Report" parent="account.menu_finance_reports" groups="account.group_account_manager" sequence="1"
               action="action_custom_report_wizard"/>

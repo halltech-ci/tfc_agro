@@ -62,42 +62,50 @@ class CustomReport(models.AbstractModel):
         for product in products:
             product_ids.append(product.id)
         product_list = product_ids
-        saled_qty = 0
-        reserved_qty = 0
-        received_qty = 0
-        internal_move_qty = 0
-        rebaggage_qty = 0
+        
         stock_position = []
         for id in product_list:
-            moves = self.env['stock.move'].search([('product_id.id', '=', id), ('date', '=', date)])
+            saled_qty = 0
+            sale_reserved_qty = 0
+            purchase_reserved_qty = 0
+            received_qty = 0
+            internal_move_qty = 0
+            rebaggage_qty = 0
             product_name = self.env['product.product'].search([('id', '=', id), ('type', '=', 'product'), ('purchased_product_qty', '>=', 0)]).name
-            actual_stock_qty = self.env['product.product'].search([('id', '=', id), ('type', '=', 'product'), ('purchased_product_qty', '>=', 0)]).qty_at_date
-            product_uom = ''
-            for move in moves:
-                product_uom = move.product_uom
-                if move.sale_id and move.picking_code == 'outgoing' and move.state=='done':
-                    saled_qty += move.quantity_done
+            product_uom = self.env['product.product'].search([('id', '=', id), ('type', '=', 'product'), ('purchased_product_qty', '>=', 0)]).uom_name
+            actual_stock_qty = self.env['product.product'].search([('id', '=', id), ('type', '=', 'product'), ('purchased_product_qty', '>=', 0)]).qty_available
+            moves = self.env['stock.move'].search([('product_id.id', '=', id), ('move_date', '=', date)])
+            conversions = self.env['product.conversion'].search([('src_product_id', '=', id), ('state', '=', 'done')])
+            if conversions.exists():
+                for conversion in conversions:
+                    rebaggage_qty = conversion.qty_to_convert
+            if moves.exists():
+                for move in moves:
+                    if move.sale_line_id and move.picking_code == 'outgoing' and move.state=='done':
+                        saled_qty += move.quantity_done
                     #Compute reserved qty
-                if move.sale_id and move.picking_code == 'outgoing' and move.state=='assigned':
-                    reserved_qty += move.reserved_availability
-                #compute received quantity
-                if move.purchase_line_id and move.picking_code == 'incoming':
-                    received_qty += move.quantity_done
-                #compute internal transfert quantity
-                if move.picking_code == 'internal' and move.state=='done':
-                    internal_move_qty += move.quantity_done
-                #compute rebaggage quantity
-                if move.picking_code == False and move.state=='done':
-                    rebaggage_qty += move.quantity_done
+                    if move.sale_line_id and move.picking_code == 'outgoing' and move.state=='assigned':
+                        sale_reserved_qty += move.reserved_availability
+                    #compute received quantity
+                    if move.purchase_line_id != False and move.picking_code == 'incoming' and move.state=='done':
+                        received_qty += move.quantity_done
+                    #Compute purchase reserved
+                    if move.purchase_line_id and move.picking_code == 'incoming' and move.state=='assigned':
+                        purchase_reserved_qty += move.quantity_done
+                    #compute internal transfert quantity
+                    if move.picking_code == 'internal' and move.state=='done':
+                        internal_move_qty += move.quantity_done
+            initial_stock_qty = saled_qty + actual_stock_qty - received_qty + rebaggage_qty
             stock_position.append({
                 'product_name':product_name,
                 'product_uom':product_uom,
                 'saled_qty': saled_qty,
-                'reserved_qty' : reserved_qty,
+                'sale_reserved_qty' : sale_reserved_qty,
                 'received_qty' : received_qty,
                 'internal_move_qty' : internal_move_qty,
                 'rebaggage_qty' : rebaggage_qty,
                 'actual_stock_qty' : actual_stock_qty,
+                'initial_stock_qty' : initial_stock_qty,
             })
         return stock_position
     
@@ -108,9 +116,8 @@ class CustomReport(models.AbstractModel):
         date_to = data['form']['date_to']
         date_to_obj = datetime.strptime(date_to, DATE_FORMAT).date()
         #date = date_utils.to_date(date_to)
-        
-        stock_position = self._get_stock_position_by_date(date_to)
-        sale_report = self._get_sale_report(date_to)
+        stock_position = self._get_stock_position_by_date(date_to_obj)
+        sale_report = self._get_sale_report(date_to_obj)
         docs = []
         docs.append(stock_position)
         docs.append(sale_report)

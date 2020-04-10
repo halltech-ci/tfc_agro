@@ -30,12 +30,9 @@
     <template id="custom_report_template">
         <t t-call="web.html_container">
             <div class="header" style="border-bottom: 2px solid black">
-                <h3 class="text-center">Custom Reports</h3>
                 <h4 class="text-center">
-                    <strong>From</strong>:
+                    <strong>Dayly Reports</strong>:
                     <t t-esc="date_start"/>
-                    <strong>To</strong>:
-                    <t t-esc="date_end"/>
                 </h4>
             </div>
             <div class="article">
@@ -60,7 +57,7 @@
                                     <span t-esc="doc['product_uom']"/>
                                 </td>
                                 <td class="text-left">
-                                    <span t-esc="doc['actual_stock_qty']"/>
+                                    <span t-esc="doc['initial_stock_qty']"/>
                                 </td>
                                 <td class="text-left">
                                     <span t-esc="doc['received_qty']"/>
