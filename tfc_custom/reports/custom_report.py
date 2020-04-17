@@ -4,7 +4,7 @@ from odoo import models, fields, api
 from datetime import datetime
 from odoo.tools import DEFAULT_SERVER_DATE_FORMAT as DATE_FORMAT, DEFAULT_SERVER_DATETIME_FORMAT
 from odoo.tools import date_utils
-
+import re
 
 # class tfc_custom(models.Model):
 #     _name = 'tfc_custom.tfc_custom'
@@ -71,23 +71,33 @@ class CustomReport(models.AbstractModel):
             received_qty = 0
             internal_move_qty = 0
             rebaggage_qty = 0
+            rebaggage_out = 0
+            rebaggage_in = 0
             product_name = self.env['product.product'].search([('id', '=', id), ('type', '=', 'product'), ('purchased_product_qty', '>=', 0)]).name
             product_uom = self.env['product.product'].search([('id', '=', id), ('type', '=', 'product'), ('purchased_product_qty', '>=', 0)]).uom_name
             actual_stock_qty = self.env['product.product'].search([('id', '=', id), ('type', '=', 'product'), ('purchased_product_qty', '>=', 0)]).qty_available
             moves = self.env['stock.move'].search([('product_id.id', '=', id), ('move_date', '=', date)])
+            '''
             conversions = self.env['product.conversion'].search([('src_product_id', '=', id), ('state', '=', 'done')])
             if conversions.exists():
                 for conversion in conversions:
                     rebaggage_qty = conversion.qty_to_convert
+            '''
             if moves.exists():
                 for move in moves:
+                    pattern_sl = '^PC/.+SL'
+                    pattern_dl = '^PC/.+DL'
+                    if re.match(pattern_sl, move.name):
+                        rebaggage_out += move.quantity_done
+                    if re.match(pattern_dl, move.name):
+                        rebaggage_in += move.quantity_done
                     if move.sale_line_id and move.picking_code == 'outgoing' and move.state=='done':
                         saled_qty += move.quantity_done
                     #Compute reserved qty
                     if move.sale_line_id and move.picking_code == 'outgoing' and move.state=='assigned':
                         sale_reserved_qty += move.reserved_availability
                     #compute received quantity
-                    if move.purchase_line_id != False and move.picking_code == 'incoming' and move.state=='done':
+                    if move.purchase_line_id and move.picking_code == 'incoming' and move.state=='done':
                         received_qty += move.quantity_done
                     #Compute purchase reserved
                     if move.purchase_line_id and move.picking_code == 'incoming' and move.state=='assigned':
@@ -95,7 +105,9 @@ class CustomReport(models.AbstractModel):
                     #compute internal transfert quantity
                     if move.picking_code == 'internal' and move.state=='done':
                         internal_move_qty += move.quantity_done
-            initial_stock_qty = saled_qty + actual_stock_qty - received_qty + rebaggage_qty
+            rebaggage_qty = rebaggage_out #+ rebaggage_in
+            initial_stock_qty = actual_stock_qty - received_qty + saled_qty + rebaggage_qty
+            #actuel = initial + recu - vendu - converti ==> initial = actuel + vendu + converti - recu
             stock_position.append({
                 'product_name':product_name,
                 'product_uom':product_uom,
