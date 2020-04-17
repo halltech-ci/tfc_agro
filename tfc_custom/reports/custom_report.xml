@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+    <record model="report.paperformat" id="paperformat_custom_report">
+        <field name="name">paperformat.custom.report</field>
+        <field name="default" eval="True"/>
+        <field name="format">A4</field>
+        <field name="page_width">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">30</field>
+        <field name="margin_right">5</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">5</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">20</field>
+        <field name="dpi">90</field>
+    </record>
+    
+    <report id="action_custom_report"
+            model="create.custom.report"
+            string="Custom Reports"
+            report_type="qweb-pdf"
+            name="tfc_custom.custom_report_template"
+            file="tfc_custom.custom_report_template"
+            paperformat="paperformat_custom_report"
+            menu="False"
+    />
+      
+    <template id="custom_report_template">
+        <t t-call="web.html_container">
+            <div class="header" style="border-bottom: 2px solid black">
+                <h4 class="text-center">
+                    <strong>Dayly Reports</strong>:
+                    <t t-esc="date_start"/>
+                </h4>
+            </div>
+            <div class="article">
+                <table class="table table-condensed table-bordered" style="width: 100%">
+                    <thead>
+                        <th class="text-left">PRODUCT</th>
+                        <th class="text-left">UNIT</th>
+                        <th class="text-left">INITIAL STOCK</th>
+                        <th class="text-left">RECEPT</th>
+                        <th class="text-left">SALE</th>
+                        <th class="text-left">REBAGGAGE</th>
+                        <th class="text-left">ACTUAL STOCK</th>
+                        <th class="text-left">TRANSFERT</th>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="docs[0]" t-as="doc">
+                            <tr>
+                                <td class="text-left">
+                                    <span t-esc="doc['product_name']"/>
+                                </td>
+                                <td class="text-left">
+                                    <span t-esc="doc['product_uom']"/>
+                                </td>
+                                <td class="text-left">
+                                    <span t-esc="doc['initial_stock_qty']"/>
+                                </td>
+                                <td class="text-left">
+                                    <span t-esc="doc['received_qty']"/>
+                                </td>
+                                <td class="text-left">
+                                    <span t-esc="doc['saled_qty']"/>
+                                </td>
+                                <td class="text-left">
+                                    <span t-esc="doc['rebaggage_qty']"/>
+                                </td>
+                                <td class="text-left">
+                                    <span t-esc="doc['actual_stock_qty']"/>
+                                </td>
+                                <td class="text-left">
+                                    <span t-esc="doc['internal_move_qty']"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="article">
+                <table class="table table-condensed table-bordered" style="width: 100%">
+                    <thead>
+                        <th class="text-left">BUYER</th>
+                        <th class="text-left">PRODUCT</th>
+                        <th class="text-left">VESSEL</th>
+                        <th class="text-left">TERM</th>
+                        <th class="text-left">QTY SOLDE</th>
+                        <th class="text-left">PRICE</th>
+                        <th class="text-left">AMOUNT</th>
+                        <th class="text-left">ADL N°</th>
+                        <th class="text-left">BOV N°</th>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="docs[1]" t-as="doc">
+                            <tr>
+                                <td class="text-left">
+                                    <span t-esc="doc['customer_name']"/>
+                                </td>
+                                <td class="text-left">
+                                    <span t-esc="doc['product_id']"/>
+                                    <span t-esc="doc['product_uom']"/>
+                                </td>
+                                <td class="text-left">
+                                    <span t-esc="doc['product_lot']"/>
+                                </td>
+                                <td class="text-left">
+                                    <span t-esc="doc['sale_term']"/>
+                                </td>
+                                <td class="text-left">
+                                    <span t-esc="doc['sale_qty']"/>
+                                </td>
+                                <td class="text-left">
+                                    <span t-esc="doc['unit_price']"/>
+                                </td>
+                                <td class="text-left">
+                                    <span t-esc="doc['price_total']"/>
+                                </td>
+                                <td class="text-left">
+                                    <span t-esc="doc['sale_adl']"/>
+                                </td>
+                                <td class="text-left">
+                                    <span t-esc="doc['sale_adl']"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="footer">
+                <div class="row text-center" style="border-top: 1px solid black;">
+                    <div class="col col-3 offset-9 text-right">
+                        <ul class="list-inline mt-2">
+                            <li class="list-inline-item">Page:</li>
+                            <li class="list-inline-item">
+                                <span class="page"/>
+                            </li>
+                            <li class="list-inline-item">/</li>
+                            <li class="list-inline-item">
+                                <span class="topage"/>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </t>
+      </template>
+  </data>
+</odoo>
