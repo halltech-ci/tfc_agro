@@ -25,10 +25,10 @@ class SaleOrder(models.Model):
     
     @api.multi
     def _get_sale_date(self):
-        date = self.date_order.date()
+        date = fields.Datetime.now.date()
         for sale in self:
             if sale.confirmation_date:
-                date = sale.confirmation_date
+                date = sale.confirmation_date.date()
         return date
     
     vehicle_number=fields.Char(string='Vehicle Number')
