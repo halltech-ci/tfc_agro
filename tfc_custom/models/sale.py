@@ -23,11 +23,12 @@ from datetime import datetime
 class SaleOrder(models.Model):
     _inherit='sale.order'
     
-    @api.model
+    @api.multi
     def _get_sale_date(self):
         date = self.date_order.date()
-        if self.confirmation_date:
-            date = self.confirmation_date
+        for sale in self:
+            if sale.confirmation_date:
+                date = sale.confirmation_date
         return date
     
     vehicle_number=fields.Char(string='Vehicle Number')
