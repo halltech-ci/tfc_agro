@@ -25,7 +25,8 @@ class CustomReport(models.AbstractModel):
     def _get_sale_report(self, date):
         '''This method gets sale order by customer and by product'''
         #First we get all sale order for the giving date
-        sales = self.env['sale.order'].search([('state', '=', 'sale'), ('date', '=', date)])
+        #sales = self.env['sale.order'].search([('state', '=', 'sale'), ('date', '=', date)])
+        sales = self.env['sale.order'].search([('state', '=', 'sale')]).filtered(lambda line: fields.Date.to_date(line.confirmation_date) == date)
         sale_report = []
         for sale in sales:
             #get customer name
@@ -36,7 +37,7 @@ class CustomReport(models.AbstractModel):
             else:
                 sale_term = ''
             #Get order line information
-            order_lines = self.env['sale.order.line'].search([('order_id.id', '=', sale.id)])
+            order_lines = sale.order_line
             for order_line in order_lines:
                 if order_line.lot_id:
                     product_lot = order_line.lot_id.name
@@ -57,12 +58,7 @@ class CustomReport(models.AbstractModel):
         return sale_report
     
     def _get_stock_position_by_date(self, date):
-        products = self.env['product.product'].search([('type', '=', 'product'), ('purchased_product_qty', '>=', 0)])
-        product_ids = []
-        for product in products:
-            product_ids.append(product.id)
-        product_list = product_ids
-        
+        product_list = self.env['product.product'].search([('type', '=', 'product'), ('purchased_product_qty', '>=', 0)]).mapped('id')
         stock_position = []
         for id in product_list:
             saled_qty = 0
@@ -76,13 +72,7 @@ class CustomReport(models.AbstractModel):
             product_name = self.env['product.product'].search([('id', '=', id), ('type', '=', 'product'), ('purchased_product_qty', '>=', 0)]).name
             product_uom = self.env['product.product'].search([('id', '=', id), ('type', '=', 'product'), ('purchased_product_qty', '>=', 0)]).uom_name
             actual_stock_qty = self.env['product.product'].search([('id', '=', id), ('type', '=', 'product'), ('purchased_product_qty', '>=', 0)]).qty_available
-            moves = self.env['stock.move'].search([('product_id.id', '=', id), ('move_date', '=', date)])
-            '''
-            conversions = self.env['product.conversion'].search([('src_product_id', '=', id), ('state', '=', 'done')])
-            if conversions.exists():
-                for conversion in conversions:
-                    rebaggage_qty = conversion.qty_to_convert
-            '''
+            moves = self.env['stock.move'].search([('product_id.id', '=', id)]).filtered(lambda line: fields.Date.to_date(line.date) == date)
             if moves.exists():
                 for move in moves:
                     pattern_sl = '^PC/.+SL'
