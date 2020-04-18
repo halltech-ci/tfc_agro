@@ -29,7 +29,7 @@ class SaleOrder(models.Model):
     customer_order_ref=fields.Char(string="Customer Order Ref")
     sale_approver=fields.Many2one('res.users', string="Approver")
     
-    date = fields.Date(required=True, readonly=True, index=True, default=fields.Date.today())
+    date = fields.Date(required=True, readonly=True, index=True, default= lambda self:self.confirmation_sate.date())
     
     @api.depends('partner_invoice_id.credit', 'partner_invoice_id.credit_limit')
     def compute_over_credit(self):

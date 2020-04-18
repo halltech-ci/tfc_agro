@@ -25,7 +25,7 @@ class CustomReport(models.AbstractModel):
     def _get_sale_report(self, date):
         '''This method gets sale order by customer and by product'''
         #First we get all sale order for the giving date
-        sales = self.env['sale.order'].search([('type_name', '=', 'Sales Order'), ('date', '=', date)])
+        sales = self.env['sale.order'].search([('state', '=', 'sale'), ('date', '=', date)])
         sale_report = []
         for sale in sales:
             #get customer name
@@ -120,6 +120,16 @@ class CustomReport(models.AbstractModel):
                 'initial_stock_qty' : initial_stock_qty,
             })
         return stock_position
+    
+    #All purchase qty for product in date range
+    def _get_purchase_qty_history(self, date):
+        products = self.env['product.product'].search([('type', '=', 'product'), ('purchased_product_qty', '>=', 0)])
+        product_ids = []
+        for product in products:
+            product_ids.append(product.id)
+        product_list = product_ids
+        purchases = self.env['sale.order']
+    
     
     @api.model
     def _get_report_values(self, docids, data=None):
