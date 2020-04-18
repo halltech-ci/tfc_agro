@@ -25,11 +25,9 @@ class SaleOrder(models.Model):
     
     @api.model
     def _get_sale_date(self):
-        for sale in self:
-            if self.confirmation_date:
-                date = self.confirmation_date
-            else:
-                date = self.date_order
+        date = self.date_order.date()
+        if self.confirmation_date:
+            date = self.confirmation_date
         return date
     
     vehicle_number=fields.Char(string='Vehicle Number')
