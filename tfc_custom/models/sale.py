@@ -23,21 +23,13 @@ from datetime import datetime
 class SaleOrder(models.Model):
     _inherit='sale.order'
     
-    @api.multi
-    def _get_sale_date(self):
-        date = fields.Datetime.now.date()
-        for sale in self:
-            if sale.confirmation_date:
-                date = sale.confirmation_date.date()
-        return date
-    
     vehicle_number=fields.Char(string='Vehicle Number')
     driver_name=fields.Char(string="Driver Name")
     driver_contacts=fields.Char(string="Driver Contact")
     customer_order_ref=fields.Char(string="Customer Order Ref")
     sale_approver=fields.Many2one('res.users', string="Approver")
     
-    date = fields.Date(required=True, readonly=True, index=True, default= _get_sale_date)
+    date = fields.Date(required=True, readonly=True, index=True, default=lambda self:fields.Date.to_date(self.confirmation_date))
     
     @api.depends('partner_invoice_id.credit', 'partner_invoice_id.credit_limit')
     def compute_over_credit(self):
