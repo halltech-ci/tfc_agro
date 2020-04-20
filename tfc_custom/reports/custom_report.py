@@ -170,15 +170,15 @@ class CustomReport(models.AbstractModel):
                             purchase_qty_360 += line.product_qty
                         elif date > range_3:
                             purchase_qty_360_sup += line.product_qty
-            purchase_position.append({
-                'product_name': product_name,
-                'product_uom': product_uom,
-                'purchase_qty_75': purchase_qty_75,
-                'purchase_qty_180': purchase_qty_180,
-                'purchase_qty_360' : purchase_qty_360,
-                'purchase_qty_360_plus' : purchase_qty_360_plus
-                }
-                )
+                purchase_position.append({
+                    'product_name': product_name,
+                    'product_uom': product_uom,
+                    'purchase_qty_75': purchase_qty_75,
+                    'purchase_qty_180': purchase_qty_180,
+                    'purchase_qty_360' : purchase_qty_360,
+                    'purchase_qty_360_plus' : purchase_qty_360_plus
+                    }
+                    )
         return purchase_position    
     
     @api.model
