@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from odoo import models, fields, api
-from datetime import datetime
+from datetime import datetime, timedelta
 from odoo.tools import DEFAULT_SERVER_DATE_FORMAT as DATE_FORMAT, DEFAULT_SERVER_DATETIME_FORMAT
 from odoo.tools import date_utils
 import re
@@ -33,7 +33,7 @@ class CustomReport(models.AbstractModel):
             customer_name = sale.partner_id.name
             sale_adl = sale.name
             if sale.payment_term_id:
-                sale_term = sale.payment_term_id
+                sale_term = sale.payment_term_id.name
             else:
                 sale_term = ''
             #Get order line information
@@ -111,15 +111,75 @@ class CustomReport(models.AbstractModel):
             })
         return stock_position
     
-    #All purchase qty for product in date range
-    def _get_purchase_qty_history(self, date):
-        products = self.env['product.product'].search([('type', '=', 'product'), ('purchased_product_qty', '>=', 0)])
-        product_ids = []
-        for product in products:
-            product_ids.append(product.id)
-        product_list = product_ids
-        purchases = self.env['sale.order']
+    def _get_date_range(self, start, end):
+        '''
+        Determine  la liste des dates entre 2 dates (debut, fin)
+        '''
+        if start > end :
+            pass
+        else:
+            while start <= end:
+                yield start
+                start = start + timedelta(days=1)
+        return start
     
+    #All purchase qty for product in date range
+    def _get_purchase_qty_history(self):
+        product = self.env['product.product'].search([('type', '=', 'product'), ('purchased_product_qty', '>=', 0)])
+        product_ids = product.mapped('id')#Get only list of product id
+        today = fields.Date.today()
+        start_of_period = fields.Date.start_of(today, 'year')
+        date_range = self._get_date_range(start_of_period, today)
+        range_list = [[0, 75], [75, 180], [181,360]]
+        diff_date = (today - start_of_period).days#nomber of day since the beginning of the year.
+        
+        range_1 = start_of_period + timedelta(days=75)
+        range_2 = start_of_period + timedelta(days=180)
+        range_3 = start_of_period + timedelta(days=360)
+        #get purchase order line by date
+        """
+        d = start_of_period
+        if diff_date < 75:
+            pass
+        elif diff_date < 180:
+            pass
+        elif diff_date < 360:
+            pass
+        elif diff_date > 360:
+            pass
+        """
+        purchase_qty = 0    
+        purchase_position = []
+        for product in product_ids:
+            purchase_qty_75 = 0
+            purchase_qty_180 = 0
+            purchase_qty_360 = 0
+            purchase_qty_360_plus = 0
+            product_id = self.env['product.product'].search([('type', '=', 'product'), ('purchased_product_qty', '>=', 0), ('id', '=', product)])
+            product_name = product_id.name
+            product_uom = product_id.uom_name
+            for date in date_range: #for every date in range i get purchase order line
+                lines = self.env['purchase.order.line'].search([('state', '=', 'draft'), ('product_id.id', '=', product)]).filtered(lambda l: fields.Date.to_date(l.date_order) == date)
+                if lines.exists(): #if
+                    for line in lines:
+                        if date <= range_1:
+                            purchase_qty_75 += line.product_qty
+                        elif date <= range_2:
+                            purchase_qty_180 += line.product_qty
+                        elif date <= range_3:
+                            purchase_qty_360 += line.product_qty
+                        elif date > range_3:
+                            purchase_qty_360_sup += line.product_qty
+            purchase_position.append({
+                'product_name': product_name,
+                'product_uom': product_uom,
+                'purchase_qty_75': purchase_qty_75,
+                'purchase_qty_180': purchase_qty_180,
+                'purchase_qty_360' : purchase_qty_360,
+                'purchase_qty_360_plus' : purchase_qty_360_plus
+                }
+                )
+        return purchase_position    
     
     @api.model
     def _get_report_values(self, docids, data=None):
@@ -130,9 +190,11 @@ class CustomReport(models.AbstractModel):
         #date = date_utils.to_date(date_to)
         stock_position = self._get_stock_position_by_date(date_to_obj)
         sale_report = self._get_sale_report(date_to_obj)
+        purchase_report = self._get_purchase_qty_history()
         docs = []
         docs.append(stock_position)
         docs.append(sale_report)
+        docs.append(purchase_report)
     
         return {
             'doc_ids': data['ids'],

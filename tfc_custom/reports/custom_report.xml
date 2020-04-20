@@ -130,6 +130,44 @@
                 </table>
             </div>
             
+            <div class="article">
+                <table class="table table-condensed table-bordered" style="width: 100%">
+                    <thead>
+                        <th class="text-left">PRODUCT</th>
+                        <th class="text-left">UNIT</th>
+                        <th class="text-left">0-75 DAYS</th>
+                        <th class="text-left">75-180 DAYS</th>
+                        <th class="text-left">181-360 DAYS</th>
+                        <th class="text-left">360 +</th>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="docs[2]" t-as="doc">
+                            <tr>
+                                <td class="text-left">
+                                    <span t-esc="doc['product_name']"/>
+                                </td>
+                                <td class="text-left">
+                                    <span t-esc="doc['product_uom']"/>
+                                </td>
+                                <td class="text-left">
+                                    <span t-esc="doc['purchase_qty_75']"/>
+                                </td>
+                                <td class="text-left">
+                                    <span t-esc="doc['purchase_qty_180']"/>
+                                </td>
+                                <td class="text-left">
+                                    <span t-esc="doc['purchase_qty_360']"/>
+                                </td>
+                                <td class="text-left">
+                                    <span t-esc="doc['purchase_qty_360_plus']"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+
+            
             <div class="footer">
                 <div class="row text-center" style="border-top: 1px solid black;">
                     <div class="col col-3 offset-9 text-right">
