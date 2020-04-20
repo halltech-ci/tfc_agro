@@ -159,7 +159,7 @@ class CustomReport(models.AbstractModel):
             product_name = product_id.name
             product_uom = product_id.uom_name
             for date in date_range: #for every date in range i get purchase order line
-                lines = self.env['purchase.order.line'].search([('state', '=', 'draft'), ('product_id.id', '=', product)]).filtered(lambda l: fields.Date.to_date(l.date_order) == date)
+                lines = self.env['purchase.order.line'].search([('state', '=', 'purchase'), ('product_id.id', '=', product)]).filtered(lambda l: fields.Date.to_date(l.date_order) == date)
                 if lines.exists(): #if
                     for line in lines:
                         if date <= range_1:
