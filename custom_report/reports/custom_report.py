@@ -179,19 +179,22 @@ class CustomReport(models.AbstractModel):
         date_to = data['form']['date_to']
         date_to_obj = datetime.strptime(date_to, DATE_FORMAT).date()
         #date = date_utils.to_date(date_to)
-        stock_position = self._get_stock_position_by_date()
-        sale_report = self._get_sale_report()
-        purchase_report = self._get_purchase_qty_history()
+        stock = self._get_stock_position_by_date()
+        sale = self._get_sale_report()
+        purchase = self._get_purchase_qty_history()
         docs = []
-        docs.append(stock_position)
-        docs.append(sale_report)
-        docs.append(purchase_report)
+        #docs.append(stock_position)
+        #docs.append(sale_report)
+        #docs.append(purchase_report)
     
         return {
             'doc_ids': data['ids'],
             'doc_model': data['model'],#self._name,#'create.custom.report', #model of the record
             'date_start':date_from,
             'date_end':date_to,
-            'docs': docs,#
+            'docs': docs,
+            'stock': stock,
+            'sale' : sale,
+            'purchase' : purchase
         }
     
