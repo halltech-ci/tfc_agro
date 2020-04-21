@@ -16,6 +16,8 @@ from odoo import models, fields, api
 
 class StockMove(models.Model):
     _inherit = 'stock.move'
+    
+    #move_date = fields.Date(required=True, readonly=True, index=True, default=lambda self:self.date.date())
 
     def _update_reserved_quantity(self, need, available_quantity,
                                   location_id, lot_id=None,

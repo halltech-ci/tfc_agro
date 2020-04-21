@@ -6,6 +6,19 @@
       <field name="model">sale.order</field>
       <field name="inherit_id" ref="sale.view_order_form"/>
       <field name="arch" type="xml">
+          <!-- Added over_credit field in confirmation button-->
+          <xpath expr="//header/button[@name='action_confirm'][1]" position="attributes">
+              <attrs name="invisible">{[('state', 'not in', ['sent']), ('over_credit', '!=', False)]}</attrs>
+          </xpath>
+          <xpath expr="//header/button[@name='action_confirm'][2]" position="attributes">
+              <attrs name="invisible">{[('state', 'not in', ['draft']), ('over_credit', '!=', False)]}</attrs>
+          </xpath>
+          <!-- Added over_credit field in sale order-->
+          <!--
+          <xpath expr="//sheet/notebook/page[@name='other_information']/group/group[@name='sale_shipping]/field[@name='']" position="inside">
+              <field name="over_credit"  groups="sale.group_sale_order_dates"/>
+          </xpath>
+          -->
           <!-- Added sale_approver-->
           <xpath expr="//sheet/group" position="inside">
               <group>
@@ -20,6 +33,11 @@
           <!-- self.env.user.has_group('base.group_sale_manager') -->
           <!-- Insert sale order object-->
           <xpath expr="//sheet/group" position="after">
+              <group>
+                  <group>
+                      <field name="over_credit"/>
+                  </group>
+              </group>
               <group>
                   <group>
                       <field name="vehicle_number"/>
