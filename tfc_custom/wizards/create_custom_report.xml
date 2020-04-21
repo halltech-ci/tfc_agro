@@ -9,8 +9,8 @@
         <field name="arch" type="xml">
             <form string="Custom Reports">
                 <group col="4">
-                    <field name="date_from"/>
                     <field name="date_to"/>
+                    <field name="date_from" invisible='1'/>
                 </group>
                 <footer>
                     <button name="get_report" string="Print Report" type="object" class="oe_highlight"/>

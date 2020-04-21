@@ -32,7 +32,7 @@
             <div class="header" style="border-bottom: 2px solid black">
                 <h4 class="text-center">
                     <strong>Dayly Reports</strong>:
-                    <t t-esc="date_start"/>
+                    <t t-esc="date_end"/>
                 </h4>
             </div>
             <div class="article">
@@ -130,6 +130,7 @@
                 </table>
             </div>
             
+            <!--
             <div class="article">
                 <table class="table table-condensed table-bordered" style="width: 100%">
                     <thead>
@@ -166,7 +167,7 @@
                     </tbody>
                 </table>
             </div>
-
+            -->
             
             <div class="footer">
                 <div class="row text-center" style="border-top: 1px solid black;">
