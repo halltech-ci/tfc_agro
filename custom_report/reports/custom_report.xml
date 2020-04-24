@@ -7,7 +7,7 @@
         <field name="format">A4</field>
         <field name="page_width">0</field>
         <field name="page_width">0</field>
-        <field name="orientation">Portrait</field>
+        <field name="orientation">Landscape</field>
         <field name="margin_top">30</field>
         <field name="margin_right">5</field>
         <field name="margin_bottom">10</field>
@@ -29,12 +29,14 @@
       
     <template id="custom_report_template">
         <t t-call="web.html_container">
-            <div class="header" style="border-bottom: 2px solid black">
+          <t t-call="web.internal_layout">
+            <div class="page">
+              <div class="header" style="border-bottom: 2px solid black">
                 <h4 class="text-center">
                     <strong>Dayly Reports</strong>:
                     <t t-esc="date_end"/>
                 </h4>
-            </div>
+              </div>
             <div class="article">
                 <table class="table table-condensed table-bordered" style="width: 100%">
                     <thead>
@@ -166,24 +168,9 @@
                     </tbody>
                 </table>
             </div>
-            
-            <div class="footer">
-                <div class="row text-center" style="border-top: 1px solid black;">
-                    <div class="col col-3 offset-9 text-right">
-                        <ul class="list-inline mt-2">
-                            <li class="list-inline-item">Page:</li>
-                            <li class="list-inline-item">
-                                <span class="page"/>
-                            </li>
-                            <li class="list-inline-item">/</li>
-                            <li class="list-inline-item">
-                                <span class="topage"/>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
+          </div>
         </t>
-      </template>
+      </t>
+    </template>
   </data>
 </odoo>
