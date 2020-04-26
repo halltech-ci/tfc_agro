@@ -25,7 +25,6 @@ class CustomReport(models.AbstractModel):
     def _get_sale_report(self, date):
         '''This method gets sale order by customer and by product'''
         #First we get all sale order for the giving date
-        #sales = self.env['sale.order'].search([('state', '=', 'sale'), ('date', '=', date)])
         #date = fields.Date.today()
         sales = self.env['sale.order'].search([('state', '=', 'sale')]).filtered(lambda line: fields.Date.to_date(line.confirmation_date) == date)
         sale_report = []
@@ -178,12 +177,95 @@ class CustomReport(models.AbstractModel):
     
     def _get_debtor_agewise(self):
         today = fields.Date.today()
+        period = fields.Date.start_of(today, 'year')
+        days_24 = today - timedelta(days=14)
+        days_30 = today + timedelta(days=24)
+        days_37 = today + timedelta(days=30)
+        days_45 = today + timedelta(days=37)
+        days_60 = today + timedelta(days=45)
+        days_90 = today + timedelta(days=60)
+        debtor_report = []
         customer_ids = self.env['res.partner'].search([('customer', '=', True)]).mapped('id')
-        
         for customer in customer_ids:
-            account_moves = self.env['account.move'].search([('parter_id.id', '=', customer)])
+            customer_name = self.env['res.partner'].search([('customer', '=', True), ('id', '=', customer)]).name
+            account_moves = self.env['account.move'].search([('parter_id.id', '=', customer), ('date', '>=', period)])
+            amount_total = sum(account_moves.mapped('amount'))
+            #amount < 24 days
             account_line = self.env['account.move.line'].search([])
-        #credit = 
+            if today > days_90:
+                amount_24 = sum(account_moves.filtered(lambda l: l.date <= days_24).mapped('amount'))
+                amount_30 = sum(account_moves.filtered(lambda l: l.date > days_24 and l.date <= days_30).mapped('amount'))
+                amount_37 = sum(account_moves.filtered(lambda l: l.date > days_30 and l.date <= days_37).mapped('amount'))
+                amount_45 = sum(account_moves.filtered(lambda l: l.date > days_37 and l.date <= days_45).mapped('amount'))
+                amount_60 = sum(account_moves.filtered(lambda l: l.date > days_45 and l.date <= days_60).mapped('amount'))
+                amount_90 = sum(account_moves.filtered(lambda l: l.date > days_60 and l.date <= days_90).mapped('amount'))
+                amount_90plus = sum(account_moves.filtered(lambda l: l.date > days_90).mapped('amount'))
+            
+            elif today <= days_90 and today > days_60:
+                amount_24 = sum(account_moves.filtered(lambda l: l.date <= days_24).mapped('amount'))
+                amount_30 = sum(account_moves.filtered(lambda l: l.date > days_24 and l.date <= days_30).mapped('amount'))
+                amount_37 = sum(account_moves.filtered(lambda l: l.date > days_30 and l.date <= days_37).mapped('amount'))
+                amount_45 = sum(account_moves.filtered(lambda l: l.date > days_37 and l.date <= days_45).mapped('amount'))
+                amount_60 = sum(account_moves.filtered(lambda l: l.date > days_60 and l.date <= days_90).mapped('amount'))
+                amount_90 = sum(account_moves.filtered(lambda l: l.date > days_60 and l.date <= days_90).mapped('amount'))
+                amount_90plu = 0
+            
+            elif today <= days_60 and today > days_45:
+                amount_24 = sum(account_moves.filtered(lambda l: l.date <= days_24).mapped('amount'))
+                amount_30 = sum(account_moves.filtered(lambda l: l.date > days_24 and l.date <= days_30).mapped('amount'))
+                amount_37 = sum(account_moves.filtered(lambda l: l.date > days_30 and l.date <= days_37).mapped('amount'))
+                amount_45 = sum(account_moves.filtered(lambda l: l.date > days_37 and l.date <= days_45).mapped('amount'))
+                amount_60 = sum(account_moves.filtered(lambda l: l.date > days_60 and l.date <= days_90).mapped('amount'))
+                amount_90 = 0
+                v
+            elif today <= days_45 and today > days_37:
+                amount_24 = sum(account_moves.filtered(lambda l: l.date <= days_24).mapped('amount'))
+                amount_30 = sum(account_moves.filtered(lambda l: l.date > days_24 and l.date <= days_30).mapped('amount'))
+                amount_37 = sum(account_moves.filtered(lambda l: l.date > days_30 and l.date <= days_37).mapped('amount'))
+                amount_45 = sum(account_moves.filtered(lambda l: l.date > days_37 and l.date <= days_45).mapped('amount'))
+                amount_60 = 0
+                amount_90 = 0
+                amount_90plu = 0
+            
+            elif today <= days_37 and today > days_30:
+                amount_24 = sum(account_moves.filtered(lambda l: l.date <= days_24).mapped('amount'))
+                amount_30 = sum(account_moves.filtered(lambda l: l.date > days_24 and l.date <= days_30).mapped('amount'))
+                amount_37 = sum(account_moves.filtered(lambda l: l.date > days_30 and l.date <= days_37).mapped('amount'))
+                amount_45 = 0
+                amount_60 = 0
+                amount_90 = 0
+                amount_90plu = 0
+                
+            elif today <= days_30 and today > days_24:
+                amount_24 = sum(account_moves.filtered(lambda l: l.date <= days_24).mapped('amount'))
+                amount_30 = sum(account_moves.filtered(lambda l: l.date > days_24 and l.date <= days_30).mapped('amount'))
+                amount_37 = 0
+                amount_45 = 0
+                amount_60 = 0
+                amount_90 = 0
+                amount_90plu = 0
+            
+            elif today <= days_24:
+                amount_24 = sum(account_moves.filtered(lambda l: l.date <= days_24).mapped('amount'))
+                amount_30 = 0
+                amount_37 = 0
+                amount_45 = 0
+                amount_60 = 0
+                amount_90 = 0
+                amount_90plu = 0
+            
+            debtor_report.append({
+                'customer_name':customer_name,
+                'amount_total': amount_total,
+                'amount_24': amout_24,
+                'amount_30': amount_30,
+                'amount_37': amount_37,
+                'amount_45': amount_45,
+                'amount_60': amount_60,
+                'amount_90': amount_90,
+                'amount_90_plus': amount_90_plus
+            })
+        return debtor_report
 
     @api.model
     def _get_report_values(self, docids, data=None):
@@ -194,6 +276,7 @@ class CustomReport(models.AbstractModel):
         stock = self._get_stock_report(date_to_obj)
         sale = self._get_sale_report(date_to_obj)
         purchase = self._get_purchase_qty()
+        debtor_report = self._get_debtor_agewise()
         docs = []
         #docs.append(stock_position)
         #docs.append(sale_report)
@@ -207,6 +290,7 @@ class CustomReport(models.AbstractModel):
             'docs': docs,
             'stock': stock,
             'sale' : sale,
+            'debtor_agewise':debtor_report,
             'purchase' : purchase
         }
     
