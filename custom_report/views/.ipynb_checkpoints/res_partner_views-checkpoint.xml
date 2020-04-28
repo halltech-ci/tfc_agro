@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<odoo>
+  <data>
+    <record model="ir.ui.view" id="res_partner_form_view_inherit">
+      <field name="name">res partner form view inherit</field>
+      <field name="model">res.partner</field>
+      <field name="inherit_id" ref="base.view_partner_form"/>
+      <field name="arch" type="xml">
+          <xpath expr="//sheet/notebook/page[@name='sales_purchases']/group/group[@name='sale']/field[@name='customer']" position="after">
+              <field name="credit_limit"/>
+              <field name="debit_limit"/>
+          </xpath>
+      </field>
+    </record>
+  </data>
+</odoo>
