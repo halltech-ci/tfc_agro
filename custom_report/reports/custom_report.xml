@@ -31,14 +31,15 @@
         <t t-call="web.html_container">
           <t t-call="web.internal_layout">
               <div class="page">
-                  <div class="header" style="border-bottom: 2px solid black">
                     <h4 class="text-center">
-                        <strong>Dayly Reports</strong>:
+                        <strong>Custom Report :</strong>
                         <t t-esc="date_end"/>
                     </h4>
-                  </div>
-            
-                    <table class="table table-sm table-reports" style="width: 100%">
+                  
+                    <div>
+                        <h5> STOCK POSITION</h5>
+                    </div>
+                    <table class="table table-sm table-reports table-bordered">
                         <thead>
                             <th class="text-left">PRODUCT</th>
                             <th class="text-left">UNIT</th>
@@ -80,8 +81,10 @@
                             </t>
                         </tbody>
                     </table>
-    
-                    <table class="table table-sm table-reports" style="width: 100%">
+                    <div>
+                        <h5>TODAY SALES</h5>
+                    </div>
+                    <table class="table table-sm table-reports table-bordered">
                         <thead>
                             <th class="text-left">BUYER</th>
                             <th class="text-left">PRODUCT</th>
@@ -107,7 +110,7 @@
                                         <span t-esc="o['product_lot']"/>
                                     </td>
                                     <td class="text-left">
-                                        <span t-esc="o['sale_term']"/>
+                                        <span t-esc="o['payment_term']"/>
                                     </td>
                                     <td class="text-left">
                                         <span t-esc="o['sale_qty']"/>
@@ -128,8 +131,53 @@
                             </t>
                         </tbody>
                     </table>
-                
-                    <table class="table table-sm table-reports" style="width: 100%">
+                    <div>
+                        <h5>TODAY PUCHASES</h5>
+                    </div>
+                    <table class="table table-sm table-reports table-bordered" >
+                        <thead>
+                            <th class="text-left">VENDOR</th>
+                            <th class="text-left">PRODUCT</th>
+                            <th class="text-left">TERMS</th>
+                            <th class="text-left">QTY PURCHASED</th>
+                            <th class="text-left">UNIT PRICE</th>
+                            <th class="text-left">AMOUNT</th>
+                            <th class="text-left">PURCHASE ORDER</th>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="purchase" t-as="p">
+                                <tr>
+                                    <td class="text-left">
+                                        <span t-esc="p['vendor_name']"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-esc="p['product_name']"/>
+                                        <span t-esc="p['product_uom']"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-esc="p['payment_term']"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-esc="p['product_qty']"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-esc="p['unit_price']"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-esc="p['price_total']"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-esc="p['purchase_order']"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                  
+                    <div>
+                        <h5>STOCK AGEWISE</h5>
+                    </div>
+                    <table class="table table-sm table-reports table-bordered" >
                         <thead>
                             <th class="text-left">PRODUCT</th>
                             <th class="text-left">UNIT</th>
@@ -139,7 +187,7 @@
                             <th class="text-left">360 +</th>
                         </thead>
                         <tbody>
-                            <t t-foreach="purchase" t-as="p">
+                            <t t-foreach="stock_aged" t-as="p">
                                 <tr>
                                     <td class="text-left">
                                         <span t-esc="p['product_name']"/>
@@ -163,9 +211,60 @@
                             </t>
                         </tbody>
                     </table>
-           </div><!-- End Page-->
-        </t>
-      </t>
+                  
+                  <div>
+                        <h5>DEBTOR AGEWISE ANALYSYI</h5>
+                    </div>
+                    <table class="table table-sm table-reports table-bordered" >
+                        <thead>
+                            <th class="text-left">CUSTOMER NAME</th>
+                            <th class="text-left">AMOUNT</th>
+                            <th class="text-left">24 days-</th>
+                            <th class="text-left">24 to 30 days</th>
+                            <th class="text-left">30 to 37 days</th>
+                            <th class="text-left">37 to 45 days</th>
+                            <th class="text-left">45 to 60 days</th>
+                            <th class="text-left">60 to 90 days</th>
+                            <th class="text-left">90 days +</th>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="debtor_agewise" t-as="d">
+                                <tr>
+                                    <td class="text-left">
+                                        <span t-esc="d['customer_name']"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-esc="d['amount_total']"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-esc="d['amount_24']"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-esc="d['amount_30']"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-esc="d['amount_37']"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-esc="d['amount_45']"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-esc="d['amount_60']"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-esc="d['amount_90']"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-esc="d['amount_90_plus']"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                   
+               </div><!-- End Page-->
+            </t>
+          </t>
     </template>
   </data>
 </odoo>
