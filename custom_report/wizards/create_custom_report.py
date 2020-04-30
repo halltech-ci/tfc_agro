@@ -22,7 +22,7 @@ class CreateCustomReport(models.TransientModel):
     _description="Wizard form to create custom report"
     
     date_from = fields.Date(string="From Date")
-    date_to = fields.Date(string="Today", readonly=True, default=fields.Date.today())
+    date_to = fields.Date(string="Today", required=True, default=fields.Date.today())
     
     @api.multi
     def get_report(self):
@@ -35,7 +35,7 @@ class CreateCustomReport(models.TransientModel):
             #'form' : self.read()[0]
         }
         #action_custom_report is the report template name
-        return self.env.ref('tfc_custom.action_custom_report').with_context(landscape=True).report_action(self, data=data)
+        return self.env.ref('custom_report.action_custom_report').with_context(landscape=True).report_action(self, data=data)
     
     
 

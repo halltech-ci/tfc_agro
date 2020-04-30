@@ -155,11 +155,11 @@ class CustomReport(models.AbstractModel):
                     for line in lines:
                         if date <= range_1:
                             purchase_qty_75 += line.product_qty
-                        elif date <= range_2:
+                        elif date <= range_2 and date > range_1:
                             purchase_qty_180 += line.product_qty
-                        elif date <= range_3:
+                        elif date > range_2 and date <= range_3:
                             purchase_qty_360 += line.product_qty
-                        elif date > range_3:
+                        else:
                             purchase_qty_360_plus += line.product_qty
             purchase_position.append({
                 'product_name': product_name,
@@ -185,7 +185,7 @@ class CustomReport(models.AbstractModel):
         docs = []
         docs.append(stock_position)
         docs.append(sale_report)
-        #docs.append(purchase_report)
+        docs.append(purchase_report)
     
         return {
             'doc_ids': data['ids'],

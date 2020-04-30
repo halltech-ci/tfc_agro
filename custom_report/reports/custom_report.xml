@@ -7,7 +7,7 @@
         <field name="format">A4</field>
         <field name="page_width">0</field>
         <field name="page_width">0</field>
-        <field name="orientation">Portrait</field>
+        <field name="orientation">Landscape</field>
         <field name="margin_top">30</field>
         <field name="margin_right">5</field>
         <field name="margin_bottom">10</field>
@@ -21,20 +21,22 @@
             model="create.custom.report"
             string="Custom Reports"
             report_type="qweb-pdf"
-            name="tfc_custom.custom_report_template"
-            file="tfc_custom.custom_report_template"
+            name="custom_report.custom_report_template"
+            file="custom_report.custom_report_template"
             paperformat="paperformat_custom_report"
             menu="False"
     />
       
     <template id="custom_report_template">
         <t t-call="web.html_container">
-            <div class="header" style="border-bottom: 2px solid black">
+          <t t-call="web.internal_layout">
+            <div class="page">
+              <div class="header" style="border-bottom: 2px solid black">
                 <h4 class="text-center">
                     <strong>Dayly Reports</strong>:
                     <t t-esc="date_end"/>
                 </h4>
-            </div>
+              </div>
             <div class="article">
                 <table class="table table-condensed table-bordered" style="width: 100%">
                     <thead>
@@ -48,28 +50,28 @@
                         <th class="text-left">TRANSFERT</th>
                     </thead>
                     <tbody>
-                        <t t-foreach="docs[0]" t-as="doc">
+                        <t t-foreach="stock" t-as="s">
                             <tr>
                                 <td class="text-left">
-                                    <span t-esc="doc['product_name']"/>
+                                    <span t-esc="s['product_name']"/>
                                 </td>
                                 <td class="text-left">
-                                    <span t-esc="doc['product_uom']"/>
+                                    <span t-esc="s['product_uom']"/>
                                 </td>
                                 <td class="text-left">
-                                    <span t-esc="doc['initial_stock_qty']"/>
+                                    <span t-esc="s['initial_stock_qty']"/>
                                 </td>
                                 <td class="text-left">
-                                    <span t-esc="doc['received_qty']"/>
+                                    <span t-esc="s['received_qty']"/>
                                 </td>
                                 <td class="text-left">
-                                    <span t-esc="doc['saled_qty']"/>
+                                    <span t-esc="s['saled_qty']"/>
                                 </td>
                                 <td class="text-left">
-                                    <span t-esc="doc['rebaggage_qty']"/>
+                                    <span t-esc="s['rebaggage_qty']"/>
                                 </td>
                                 <td class="text-left">
-                                    <span t-esc="doc['actual_stock_qty']"/>
+                                    <span t-esc="s['actual_stock_qty']"/>
                                 </td>
                                 <td class="text-left">
                                     <span t-esc="doc['internal_move_qty']"/>
@@ -94,35 +96,35 @@
                         <th class="text-left">BOV N°</th>
                     </thead>
                     <tbody>
-                        <t t-foreach="docs[1]" t-as="doc">
+                        <t t-foreach="sale" t-as="o">
                             <tr>
                                 <td class="text-left">
-                                    <span t-esc="doc['customer_name']"/>
+                                    <span t-esc="o['customer_name']"/>
                                 </td>
                                 <td class="text-left">
-                                    <span t-esc="doc['product_id']"/>
-                                    <span t-esc="doc['product_uom']"/>
+                                    <span t-esc="o['product_id']"/>
+                                    <span t-esc="o['product_uom']"/>
                                 </td>
                                 <td class="text-left">
-                                    <span t-esc="doc['product_lot']"/>
+                                    <span t-esc="o['product_lot']"/>
                                 </td>
                                 <td class="text-left">
-                                    <span t-esc="doc['sale_term']"/>
+                                    <span t-esc="o['sale_term']"/>
                                 </td>
                                 <td class="text-left">
-                                    <span t-esc="doc['sale_qty']"/>
+                                    <span t-esc="o['sale_qty']"/>
                                 </td>
                                 <td class="text-left">
-                                    <span t-esc="doc['unit_price']"/>
+                                    <span t-esc="o['unit_price']"/>
                                 </td>
                                 <td class="text-left">
-                                    <span t-esc="doc['price_total']"/>
+                                    <span t-esc="o['price_total']"/>
                                 </td>
                                 <td class="text-left">
-                                    <span t-esc="doc['sale_adl']"/>
+                                    <span t-esc="o['sale_adl']"/>
                                 </td>
                                 <td class="text-left">
-                                    <span t-esc="doc['sale_adl']"/>
+                                    <span t-esc="o['sale_adl']"/>
                                 </td>
                             </tr>
                         </t>
@@ -130,7 +132,6 @@
                 </table>
             </div>
             
-            <!--
             <div class="article">
                 <table class="table table-condensed table-bordered" style="width: 100%">
                     <thead>
@@ -142,50 +143,34 @@
                         <th class="text-left">360 +</th>
                     </thead>
                     <tbody>
-                        <t t-foreach="docs[2]" t-as="doc">
+                        <t t-foreach="purchase" t-as="p">
                             <tr>
                                 <td class="text-left">
-                                    <span t-esc="doc['product_name']"/>
+                                    <span t-esc="p['product_name']"/>
                                 </td>
                                 <td class="text-left">
-                                    <span t-esc="doc['product_uom']"/>
+                                    <span t-esc="p['product_uom']"/>
                                 </td>
                                 <td class="text-left">
-                                    <span t-esc="doc['purchase_qty_75']"/>
+                                    <span t-esc="p['purchase_qty_75']"/>
                                 </td>
                                 <td class="text-left">
-                                    <span t-esc="doc['purchase_qty_180']"/>
+                                    <span t-esc="p['purchase_qty_180']"/>
                                 </td>
                                 <td class="text-left">
-                                    <span t-esc="doc['purchase_qty_360']"/>
+                                    <span t-esc="p['purchase_qty_360']"/>
                                 </td>
                                 <td class="text-left">
-                                    <span t-esc="doc['purchase_qty_360_plus']"/>
+                                    <span t-esc="p['purchase_qty_360_plus']"/>
                                 </td>
                             </tr>
                         </t>
                     </tbody>
                 </table>
             </div>
-            -->
-            
-            <div class="footer">
-                <div class="row text-center" style="border-top: 1px solid black;">
-                    <div class="col col-3 offset-9 text-right">
-                        <ul class="list-inline mt-2">
-                            <li class="list-inline-item">Page:</li>
-                            <li class="list-inline-item">
-                                <span class="page"/>
-                            </li>
-                            <li class="list-inline-item">/</li>
-                            <li class="list-inline-item">
-                                <span class="topage"/>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
+          </div>
         </t>
-      </template>
+      </t>
+    </template>
   </data>
 </odoo>

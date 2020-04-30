@@ -21,8 +21,8 @@
             model="create.custom.report"
             string="Custom Reports"
             report_type="qweb-pdf"
-            name="tfc_custom.custom_report_template"
-            file="tfc_custom.custom_report_template"
+            name="custom_report.custom_report_template"
+            file="custom_report.custom_report_template"
             paperformat="paperformat_custom_report"
             menu="False"
     />
