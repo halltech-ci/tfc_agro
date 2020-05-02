@@ -28,8 +28,8 @@
     'description': """ Extension on Cheques to handle Post Dated Cheques """,
     'depends': ['account_check_printing'],
     'data': [
-        'data/account_pdc_data.xml',
-        'views/account_payment_view.xml',
+        #'data/account_pdc_data.xml',
+        #'views/account_payment_view.xml',
     ],
     'images': ['static/description/pdc_banner.jpg'],
     'license': 'AGPL-3',
