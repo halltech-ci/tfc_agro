@@ -459,7 +459,7 @@ class CustomReport(models.AbstractModel):
             else:
                 payment_state = 'Rejected'
             customer = pdc.partner_id.name
-            company_bank = pdc.
+            company_bank = pdc.journal_id
             client_bank = pdc.bank_reference
             check_number = pdc.cheque_reference
             deposit_date = pdc.effective_date
@@ -467,10 +467,12 @@ class CustomReport(models.AbstractModel):
             amount = pdc.amount
             pdc_line = {
                 'customer_name' : customer,
-                'bank' : bank,
+                'client_bank' : client_bank,
+                'company_bank': company_bank
                 'check_number' : check_number,
                 'date': deposit_date,
-                'amount': amount
+                'amount': amount,
+                'payment_state': payment_state
             }
             deposit_check.append(pdc_line)
         return deposit_check
