@@ -408,6 +408,7 @@ class CustomReport(models.AbstractModel):
         return creditor_report
     
     #Get security check
+    '''
     def _get_pdc_security_check(self):
         date = fileds.Date.today()
         security_check = []
@@ -427,7 +428,9 @@ class CustomReport(models.AbstractModel):
             }
             security_check.append(pdc_line)
         return security_check
+    '''
     #Get deposited check. check to deposit on a given date
+    '''
     def _get_check_to_deposit(self):
         today = fields.Date.today()
         deposit_check = []
@@ -476,8 +479,9 @@ class CustomReport(models.AbstractModel):
             }
             deposit_check.append(pdc_line)
         return deposit_check
-    
+    '''
     #Get fund received.
+    '''
     def _get_fund_receved(self):
         security_check = []
         pdc_list = self.env['account.payment'].search([('partner_type', '=', 'customer'), ('state', '=', 'reconciled')]).filtered(lambda l:l.payment_date == date)
@@ -496,7 +500,7 @@ class CustomReport(models.AbstractModel):
             }
             deposit_check.append(pdc_line)
         return security_check
-    
+    '''
 
     
     @api.model
