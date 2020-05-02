@@ -20,7 +20,7 @@
     <report id="action_custom_report"
             model="create.custom.report"
             string="Custom Reports"
-            report_type="qweb-pdf"
+            report_type="qweb-html"
             name="custom_report.custom_report_template"
             file="custom_report.custom_report_template"
             paperformat="paperformat_custom_report"
@@ -35,7 +35,6 @@
                         <strong>Custom Report :</strong>
                         <t t-esc="date_end"/>
                     </h4>
-                  
                     <div>
                         <h5> STOCK POSITION</h5>
                     </div>
@@ -212,8 +211,8 @@
                         </tbody>
                     </table>
                   
-                  <div>
-                        <h5>DEBTOR AGEWISE ANALYSYI</h5>
+                    <div>
+                        <h5>DEBTOR AGEWISE ANALYSIS</h5>
                     </div>
                     <table class="table table-sm table-reports table-bordered" >
                         <thead>
@@ -256,6 +255,45 @@
                                     </td>
                                     <td class="text-left">
                                         <span t-esc="d['amount_90_plus']"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                  
+                  <div>
+                        <h5>CREDITOR ANALYSIS</h5>
+                    </div>
+                    <table class="table table-sm table-reports table-bordered" >
+                        <thead>
+                            <th class="text-left">COMPANY</th>
+                            <th class="text-left">AMOUNT</th>
+                            <th class="text-left">0-90 days</th>
+                            <th class="text-left">91-180 days</th>
+                            <th class="text-left">181-365 days</th>
+                            <th class="text-left">365 days +</th>
+                            <!--<th class="text-left">TOTAL</th>-->
+                        </thead>
+                        <tbody>
+                            <t t-foreach="creditor_report" t-as="c">
+                                <tr>
+                                    <td class="text-left">
+                                        <span t-esc="c['vendor_name']"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-esc="c['amount_total']"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-esc="c['amount_90']"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-esc="c['amount_180']"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-esc="c['amount_365']"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-esc="c['amount_365_plus']"/>
                                     </td>
                                 </tr>
                             </t>
