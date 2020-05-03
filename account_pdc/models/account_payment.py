@@ -28,7 +28,7 @@ class AccountRegisterPayments(models.TransientModel):
     bank_reference = fields.Char(copy=False)
     cheque_reference = fields.Char(copy=False)
     effective_date = fields.Date('Effective Date', help='Effective date of PDC', copy=False, default=False)
-    transaction_type = fields.Selection([('pdc', 'Post Dated Check'), ('security', 'Security'), ('deposited', 'To Be Deposited')], string="Check Type", default='pdc')
+    #transaction_type = fields.Selection([('pdc', 'Post Dated Check'), ('security', 'Security'), ('deposited', 'To Be Deposited')], string="Check Type", default='pdc')
 
     def get_payment_vals(self):
         res = super(AccountRegisterPayments, self).get_payment_vals()
@@ -47,7 +47,7 @@ class AccountPayment(models.Model):
     bank_reference = fields.Char(copy=False)
     cheque_reference = fields.Char(copy=False)
     effective_date = fields.Date('Effective Date', help='Effective date of PDC', copy=False, default=False)
-    transaction_type = fields.Selection([('pdc', 'Post Dated Check'), ('security', 'Security'), ('deposited', 'To Be Deposited')], string="Check Type", default='pdc')
+    #transaction_type = fields.Selection([('pdc', 'Post Dated Check'), ('security', 'Security'), ('deposited', 'To Be Deposited')], string="Check Type", default='pdc')
 
     @api.multi
     def print_checks(self):
