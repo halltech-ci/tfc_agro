@@ -266,16 +266,15 @@ class CustomReport(models.AbstractModel):
             stock.append(stock_line)
         return stock
     
-    
     def _get_debtor_aged(self):
         today = fields.Date.today()
         period = fields.Date.start_of(today, 'year')
-        days_24 = today - timedelta(days=14)
-        days_30 = today + timedelta(days=24)
-        days_37 = today + timedelta(days=30)
-        days_45 = today + timedelta(days=37)
-        days_60 = today + timedelta(days=45)
-        days_90 = today + timedelta(days=60)
+        days_24 = today - timedelta(days=24)
+        days_30 = today + timedelta(days=30)
+        days_37 = today + timedelta(days=37)
+        days_45 = today + timedelta(days=45)
+        days_60 = today + timedelta(days=60)
+        days_90 = today + timedelta(days=90)
         debtor_report = []
         customer_ids = self.env['res.partner'].search([('customer', '=', True)]).mapped('id')
         for customer in customer_ids:
@@ -360,6 +359,55 @@ class CustomReport(models.AbstractModel):
             })
         return debtor_report
 
+    #Get creditor analysis
+    def _get_creditor_analysis(self):
+        today = fields.Date.today()
+        period = fields.Date.start_of(today, 'year')
+        days_90 = today - timedelta(days=90)
+        days_180 = today + timedelta(days=180)
+        days_365 = today + timedelta(days=365)
+        creditor_report = []
+        vendor_ids = self.env['res.partner'].search([('supplier', '=', True)]).mapped('id')
+        for vendor in vendor_ids:
+            vendor_name = self.env['res.partner'].search([('supplier', '=', True), ('id', '=', vendor)]).name
+            account_moves = self.env['account.move'].search([('partner_id.id', '=', vendor), ('date', '>=', period)])
+            amount_total = sum(account_moves.mapped('amount'))
+            account_lines = self.env['account.move.line'].search([])
+            if today > days_365:
+                amount_90 = sum(account_moves.filtered(lambda a: a.date <= days_90).mapped('amount'))
+                amount_180 = sum(account_moves.filtered(lambda a: a.date > days_90 and a.date <= days_180).mapped('amount'))
+                amount_365 = sum(account_moves.filtered(lambda a: a.date > days_180 and a.date <= days_365).mapped('amount'))
+                amount_365_plus = sum(account_moves.filtered(lambda a: a.date > days_365).mapped('amount'))
+                
+            elif today <= days_365 and today > days_180:
+                amount_90 = sum(account_moves.filtered(lambda a: a.date <= days_90).mapped('amount'))
+                amount_180 = sum(account_moves.filtered(lambda a: a.date > days_90 and a.date <= days_180).mapped('amount'))
+                amount_365 = sum(account_moves.filtered(lambda a: a.date > days_180 and a.date <= days_365).mapped('amount'))
+                amount_365_plus = 0
+            
+            elif today <= days_180 and today > days_90:
+                amount_90 = sum(account_moves.filtered(lambda a: a.date <= days_90).mapped('amount'))
+                amount_180 = sum(account_moves.filtered(lambda a: a.date > days_90 and a.date <= days_180).mapped('amount'))
+                amount_365 = 0
+                amount_365_plus = 0
+            
+            elif today <= days_90 :
+                amount_90 = sum(account_moves.filtered(lambda a: a.date <= days_90).mapped('amount'))
+                amount_180 = 0
+                amount_365 = 0
+                amount_365_plus = 0
+            creditor_report.append(
+                {
+                'vendor_name': vendor_name,
+                'amount_total' : amount_total,
+                'amount_90': amount_90,
+                'amount_180': amount_180,
+                'amount_365': amount_365,
+                'amount_365_plus': amount_365_plus
+            })
+        return creditor_report
+    
+   
     @api.model
     def _get_report_values(self, docids, data=None):
         
@@ -371,6 +419,7 @@ class CustomReport(models.AbstractModel):
         purchase_dayly = self._get_purchase_dayly_report()
         debtor_report = self._get_debtor_aged()
         stock_aged = self._get_stock_aged()
+        creditor_report = self._get_creditor_analysis()
         docs = []
             
         return {
@@ -383,6 +432,7 @@ class CustomReport(models.AbstractModel):
             'sale' : sale_dayly,
             'debtor_agewise':debtor_report,
             'stock_aged': stock_aged,
-            'purchase' : purchase_dayly
+            'purchase' : purchase_dayly,
+            'creditor_report': creditor_report
         }
     
