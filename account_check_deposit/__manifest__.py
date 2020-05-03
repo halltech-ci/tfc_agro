@@ -18,6 +18,7 @@
                'account_check_deposit',
     'depends': [
         'account',
+        'account_accountant'
     ],
     'development_status': 'Mature',
     'data': [
