@@ -127,7 +127,7 @@ class CustomReport(models.AbstractModel):
     
     #All purchase qty for product in date range
     def _get_purchase_dayly_report(self):
-        today = fields.Date.today()
+        date = fields.Date.today()
         purchase_lines = []
         purchases = self.env['purchase.order'].search([('date_approve', '!=', False)]).filtered(lambda l : fields.Date.to_date(l.date_approve) == date)
         for purchase in purchases:
