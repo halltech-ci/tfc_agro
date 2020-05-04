@@ -22,10 +22,11 @@ class CustomReport(models.AbstractModel):
     _name="report.tfc_custom.custom_report_template"#Respect naming format report.module_name.report_template_name
     _description="Custom report for TFC AGRO"
     
-    def _get_sale_report(self, date):
+    def _get_sale_report(self):
         '''This method gets sale order by customer and by product'''
         #First we get all sale order for the giving date
         #sales = self.env['sale.order'].search([('state', '=', 'sale'), ('date', '=', date)])
+        date = fields.Date.today()
         sales = self.env['sale.order'].search([('state', '=', 'sale')]).filtered(lambda line: fields.Date.to_date(line.confirmation_date) == date)
         sale_report = []
         for sale in sales:
@@ -57,9 +58,10 @@ class CustomReport(models.AbstractModel):
                 sale_report.append(report_line)
         return sale_report
     
-    def _get_stock_position_by_date(self, date):
+    def _get_stock_position_by_date(self):
         product_list = self.env['product.product'].search([('type', '=', 'product'), ('purchased_product_qty', '>=', 0)]).mapped('id')
         stock_position = []
+        date = fields.Date.today()
         for id in product_list:
             saled_qty = 0
             sale_reserved_qty = 0
@@ -137,17 +139,6 @@ class CustomReport(models.AbstractModel):
         range_2 = start_of_period + timedelta(days=180)
         range_3 = start_of_period + timedelta(days=360)
         #get purchase order line by date
-        """
-        d = start_of_period
-        if diff_date < 75:
-            pass
-        elif diff_date < 180:
-            pass
-        elif diff_date < 360:
-            pass
-        elif diff_date > 360:
-            pass
-        """
         purchase_qty = 0    
         purchase_position = []
         for product in product_ids:
@@ -169,16 +160,16 @@ class CustomReport(models.AbstractModel):
                         elif date <= range_3:
                             purchase_qty_360 += line.product_qty
                         elif date > range_3:
-                            purchase_qty_360_sup += line.product_qty
-                purchase_position.append({
-                    'product_name': product_name,
-                    'product_uom': product_uom,
-                    'purchase_qty_75': purchase_qty_75,
-                    'purchase_qty_180': purchase_qty_180,
-                    'purchase_qty_360' : purchase_qty_360,
-                    'purchase_qty_360_plus' : purchase_qty_360_plus
-                    }
-                    )
+                            purchase_qty_360_plus += line.product_qty
+            purchase_position.append({
+                'product_name': product_name,
+                'product_uom': product_uom,
+                'purchase_qty_75': purchase_qty_75,
+                'purchase_qty_180': purchase_qty_180,
+                'purchase_qty_360' : purchase_qty_360,
+                'purchase_qty_360_plus' : purchase_qty_360_plus
+                }
+            )
         return purchase_position    
     
     @api.model
@@ -188,13 +179,13 @@ class CustomReport(models.AbstractModel):
         date_to = data['form']['date_to']
         date_to_obj = datetime.strptime(date_to, DATE_FORMAT).date()
         #date = date_utils.to_date(date_to)
-        stock_position = self._get_stock_position_by_date(date_to_obj)
-        sale_report = self._get_sale_report(date_to_obj)
+        stock_position = self._get_stock_position_by_date()
+        sale_report = self._get_sale_report()
         purchase_report = self._get_purchase_qty_history()
         docs = []
         docs.append(stock_position)
         docs.append(sale_report)
-        docs.append(purchase_report)
+        #docs.append(purchase_report)
     
         return {
             'doc_ids': data['ids'],
