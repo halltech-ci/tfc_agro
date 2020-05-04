@@ -406,8 +406,103 @@ class CustomReport(models.AbstractModel):
                 'amount_365_plus': amount_365_plus
             })
         return creditor_report
+    #Get security check
+    def _get_pdc_security_check(self):
+        date = fields.Date.today()
+        security_check = []
+        pdc_list = self.env['account.payment'].search([('payment_note', '=', 'security'), ('partner_type', '=', 'customer'), ('state', '!=', 'reconciled')]).filtered(lambda l:l.payment_date == date)
+        for pdc in pdc_list:
+            customer = pdc.partner_id.name
+            client_bank = pdc.bank_reference
+            cheque_reference = pdc.cheque_reference
+            note = pdc.payment_note
+            amount = pdc.amount
+            pdc_line = {
+                'customer_name' : customer,
+                'client_bank' : client_bank,
+                'check_number' : cheque_reference,
+                'note': note,
+                'amount': amount
+            }
+            security_check.append(pdc_line)
+        return security_check
     
-   
+    #Get deposited check. check to deposit on a given date
+    def _get_check_to_deposit(self):
+        today = fields.Date.today()
+        deposit_check = []
+        pdc_list = self.env['account.payment'].search([('partner_type', '=', 'customer'), ('state', '!=', 'reconciled'),('payment_note', '=', 'deposited')]).filtered(lambda l:l.effective_date == date)
+        for pdc in pdc_list:
+            customer = pdc.partner_id.name
+            client_bank = pdc.bank_reference
+            cheque_reference = pdc.cheque_reference
+            deposit_date = pdc.effective_date
+            note = pdc.transaction_type
+            amount = pdc.amount
+            pdc_line = {
+                'customer_name' : customer,
+                'client_bank' : client_bank,
+                'check_number' : cheque_reference,
+                'deposit_date': deposit_date,
+                'amount': amount
+            }
+            deposit_check.append(pdc_line)
+        return deposit_check
+    
+    #Get check under clearance
+    '''
+    def _get_check_under_clearance(self):
+        today = fields.Date.today()
+        clearance_check = []
+        check_ids = self.env['account.move.line'].search([('date', '=', date)]).mapped('check_deposit_id')
+        for check in check_ids:
+            if check.reconciled != False:
+                payment_state = 'Paid'
+            else:
+                payment_state = 'Rejected'
+            move_id = self.env['account.move.line'].search([('check_deposit_id', '=', check)]).move_id
+            payment = self.env['account.payment'].search([('id', '=', check)])
+            deposit = self.env['account.check.deposit'].search([('move_id', '=', move_id)])
+            customer_name = payment.partner_id.name
+            client_bank = payment.bank_reference
+            cheque_reference = payment.check_reference
+            bank_deposit = deposit.bank_journal_id.name
+            amount = deposit.total_amount
+            deposit_line = {
+                'customer_name' : customer_name,
+                'client_bank' : client_bank,
+                'bank_deposit': bank_deposit,
+                'cheque_reference' : cheque_reference,
+                'date': date,
+                'amount': amount,
+                'payment_state': payment_state
+            }
+            clearance_check.append(pdc_line)
+        return clearance_check
+    '''
+    '''
+    def get_fund(self):
+        fund_receive = []
+        funds = self.env['account.payment'].search([('state', '=', 'reconciled')])
+        for fund in funds:
+            customer_name = fund.partner_id.name
+            client_bank = fund.reference or 'Cash'
+            cheque_reference = fund.cheque_reference or ''
+            amount_receive = fund.amount
+            payment_type = fund.payment_type
+            deposit_id = self.env['account.move.line'].search([('payment_id.id', '=', fund)], limit=1).check_deposit_id.id
+            bank_deposited = self.env['account.check.deposit'].search([('id', '=', deposit_id)]).bank_journal_id.name
+            fund_line = {
+                'customer_name': customer_name,
+                'bank_deposited': bank_deposited,
+                'client_bank' : client_bank,
+                'cheque_reference': cheque_reference,
+                'payment_type' : payment_type,
+                'amount' : amount_receive
+            }
+        fund_receive.append(fund_line)
+        return fund_receive
+    '''
     @api.model
     def _get_report_values(self, docids, data=None):
         
@@ -420,6 +515,8 @@ class CustomReport(models.AbstractModel):
         debtor_report = self._get_debtor_aged()
         stock_aged = self._get_stock_aged()
         creditor_report = self._get_creditor_analysis()
+        security_check = self._get_pdc_security_check()
+        deposit_check = self._get_check_to_deposit()
         docs = []
             
         return {
@@ -433,6 +530,8 @@ class CustomReport(models.AbstractModel):
             'debtor_agewise':debtor_report,
             'stock_aged': stock_aged,
             'purchase' : purchase_dayly,
-            'creditor_report': creditor_report
+            'creditor_report': creditor_report,
+            'security_check': security_check,
+            'deposit_check' : deposit_check,
         }
     

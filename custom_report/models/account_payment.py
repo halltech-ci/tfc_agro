@@ -16,15 +16,16 @@ from odoo import models, fields, api
 
 class AccountPayment(models.Model):
     _inherit = "account.payment"
+
+    bank_reference = fields.Char(copy=False)
+    cheque_reference = fields.Char(copy=False)
+    effective_date = fields.Date('Effective Date', help='Effective dateC', copy=False, default=False)
+    payment_note = fields.Selection([('pdc', 'Post Dated Check'), ('security', 'Security')], default='')
     
-    '''
-    @api.one
-    def _get_bank_ids(self):
-        if self.partner_bank_account_id :
-            self.customer_bank = self.env['res.partner.bank'].browse[self.partner_id.bank_ids].mapped('bank_name')
-        else:
-            self.customer_bank = False
-    '''
-    partner_id = fields.Many2one('res.partner', string='Partner')
-    customer_bank = fields.Many2one('res.partner.bank', string="Partner Bank")
-    cheque_number = fields.Char(string="Cheque Reference")
+class AccountRegisterPayments(models.TransientModel):
+    _inherit = "account.register.payments"
+
+    bank_reference = fields.Char(copy=False)
+    cheque_reference = fields.Char(copy=False)
+    effective_date = fields.Date('Effective Date', help='Effective date', copy=False, default=False)
+    payment_note = fields.Selection([('pdc', 'Post Dated Check'), ('security', 'Security'), ('deposited', 'To Be Deposited')], default='')

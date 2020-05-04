@@ -20,7 +20,7 @@
     <report id="action_custom_report"
             model="create.custom.report"
             string="Custom Reports"
-            report_type="qweb-pdf"
+            report_type="qweb-html"
             name="custom_report.custom_report_template"
             file="custom_report.custom_report_template"
             paperformat="paperformat_custom_report"
@@ -212,7 +212,7 @@
                         </tbody>
                     </table>
                   
-                  <div>
+                    <div>
                         <h5>DEBTOR AGEWISE ANALYSYI</h5>
                     </div>
                     <table class="table table-sm table-reports table-bordered" >
@@ -261,7 +261,77 @@
                             </t>
                         </tbody>
                     </table>
-                   
+                    <!-- Security Check-->
+                    <div>
+                        <h5>SECURITY CHECK</h5>
+                    </div>
+                    <table class="table table-sm table-reports table-bordered" >
+                        <thead>
+                            <th class="text-left">CUSTOMER NAME</th>
+                            <th class="text-left">CLIENT BANK</th>
+                            <th class="text-left">CHECK NUMBER</th>
+                            <th class="text-left">NOTE</th>
+                            <th class="text-left">AMOUNT</th>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="security_check" t-as="sc">
+                                <tr>
+                                    <td class="text-left">
+                                        <span t-esc="sc['customer_name']"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-esc="sc['client_bank']"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-esc="sc['check_number']"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-esc="sc['note']"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-esc="sc['amount']"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    <!-- Deposit Check-->
+                    <div>
+                        <h5>DEPOSIT CHECK</h5>
+                    </div>
+                    <table class="table table-sm table-reports table-bordered" >
+                        <thead>
+                            <th class="text-left">CUSTOMER NAME</th>
+                            <th class="text-left">CLIENT BANK</th>
+                            <th class="text-left">CHECK NUMBER</th>
+                            <th class="text-left">DATE</th>
+                            <th class="text-left">AMOUNT</th>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="check_deposit" t-as="cd">
+                                <tr>
+                                    <td class="text-left">
+                                        <span t-esc="cd['customer_name']"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-esc="cd['client_bank']"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-esc="cd['check_number']"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-esc="cd['deposit_date']"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-esc="cd['amount']"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+
+                    
+                  
                </div><!-- End Page-->
             </t>
           </t>
