@@ -21,7 +21,7 @@ class CreateCustomReport(models.TransientModel):
     _name="create.custom.report"
     _description="Wizard form to create custom report"
     
-    date_from = fields.Date(string="From Date")
+    date_from = fields.Date(string="From Date", default=fields.Date.today())
     date_to = fields.Date(string="Today", required=True, default=fields.Date.today())
     
     @api.multi
