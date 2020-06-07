@@ -22,4 +22,5 @@ class StockPicking(models.Model):
     vehicle_number = fields.Char(string='Vehicle Number', related='group_id.sale_id.vehicle_number')
     driver_contacts = fields.Char(string="Driver Phone Number", related='group_id.sale_id.driver_contacts')
     driver_company = fields.Char(string="Driver Company")
+    chargeur = fields.Char(string="Chargeur")
     

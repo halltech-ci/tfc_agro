@@ -8,14 +8,13 @@
         </xpath>
         
         <xpath expr="//div[hasclass('page')]//div[hasclass('row', 'mt32', 'mb32')]" position="replace">            
-            <div class="row col-auto" style="font-size:30px;">
+            <div class="row col-auto" style="font-size:25px;">
                 <strong>Client : </strong>
                 <span t-field=" doc.partner_id" t-options='{"widget": "contact", "fields": ["name"], "no_marker": True}'/>
                     <p t-if="doc.partner_id.vat"><t t-esc="doc.company_id.country_id.vat_label or 'Tax ID'"/>: 
                         <span t-field="doc.partner_id.vat"/>
                     </p>
             </div>
-            <br></br>
             <table class="table table-sm">
                 <tbody>
                     <tr>
@@ -45,7 +44,7 @@
             <br></br>
             <div class="text-center">
                 <t t-if="not (env.context.get('proforma', False) or is_pro_forma)">
-                    <span t-if="doc.state not in ['draft','sent']">AUTORISATION DE LIVRAISON:TFC/ADL</span>
+                    <span t-if="doc.state not in ['draft','sent']">AUTORISATION DE LIVRAISON:</span>
                     <span t-if="doc.state in ['draft','sent']">BON DE VENTE:TFC/BOV</span>
                 </t>
                 <t t-if="env.context.get('proforma', False) or is_pro_forma">
