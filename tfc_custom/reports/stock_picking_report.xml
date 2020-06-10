@@ -36,6 +36,10 @@
                             <strong>Edited By:</strong>
                             <p t-field="o.write_uid.name"/>
                         </td>
+                        <td class='text-left' t-if='o.write_uid'>
+                            <strong>Chargeur:</strong>
+                            <p t-field="o.chargeur"/>
+                        </td>
                     </tr>
                 </tbody>
             </table>
