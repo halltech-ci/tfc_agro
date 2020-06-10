@@ -20,16 +20,17 @@
           </xpath>
           -->
           <!-- Added sale_approver-->
+          <!--
           <xpath expr="//sheet/group" position="inside">
               <group>
                   <field name="sale_approver" attrs="{'invisible':[('state', '=', 'draft')]}"/>
-              </group>
+              </group> -->
               <!--
               <group>
                   <field name="debit_client" attrs="{'invisible':[('state', '=', 'draft')]}"/>
               </group>
               -->
-          </xpath>
+          <!-- </xpath> -->
           <!-- self.env.user.has_group('base.group_sale_manager') -->
           <!-- Insert sale order object-->
           <xpath expr="//sheet/group" position="after">
