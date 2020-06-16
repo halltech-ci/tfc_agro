@@ -23,6 +23,7 @@
     'depends': ['base',
                 'account_accountant',
                 'account',
+                'sale',
                ],
 
     # always loaded
