@@ -20,11 +20,12 @@
           <xpath expr="//sheet/group" position="inside">
               <group>
                   <field name="driver_company"/>
-                  <field name="vehicle_number"/>
+                  <field name="driver_name"/>
               </group>
               <group>
-                  <field name="driver_name"/>
+                  <field name="chargeur"/>
                   <field name="driver_contacts"/>
+                  <field name="vehicle_number"/>
               </group>
           </xpath>
       </field>

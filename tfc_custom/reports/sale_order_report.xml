@@ -15,7 +15,6 @@
                         <span t-field="doc.partner_id.vat"/>
                     </p>
             </div>
-            <br></br>
             <table class="table table-sm">
                 <tbody>
                     <tr>
@@ -45,7 +44,7 @@
             <br></br>
             <div class="text-center">
                 <t t-if="not (env.context.get('proforma', False) or is_pro_forma)">
-                    <span t-if="doc.state not in ['draft','sent']">AUTORISATION DE LIVRAISON:TFC/ADL</span>
+                    <span t-if="doc.state not in ['draft','sent']">AUTORISATION DE LIVRAISON:</span>
                     <span t-if="doc.state in ['draft','sent']">BON DE VENTE:TFC/BOV</span>
                 </t>
                 <t t-if="env.context.get('proforma', False) or is_pro_forma">

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from num2words import num2words
 from odoo import models, fields, api, _
 from odoo.addons import decimal_precision as dp
 from odoo.exceptions import UserError, ValidationError
@@ -29,7 +29,24 @@ class SaleOrder(models.Model):
     customer_order_ref=fields.Char(string="Customer Order Ref")
     sale_approver=fields.Many2one('res.users', string="Approver")
     
+    
     #date = fields.Date(required=True, readonly=True, index=True, default=fields.Date.today())
+    @api.multi
+    def num_to_words(self, num):
+        self.ensure_one()
+        
+        def _num2words(number, lang):
+            try:
+                return num2words(number, lang=lang).title()
+            except NotImplementedError:
+                return num2words(number, lang='en').title()
+        if num2words is None:
+            logging.getLogger(__name__).warning("The library 'num2words' is missing, cannot render textual amounts.")
+            return ""
+        lang_code = self.env.context.get('lang') or self.env.user.lang
+        lang = self.env['res.lang'].with_context(active_test=False).search([('code', '=', lang_code)])
+        num_to_word = _num2words(num, lang=lang.iso_code)
+        return num_to_word
     
     @api.depends('partner_invoice_id.credit', 'partner_invoice_id.credit_limit')
     def compute_over_credit(self):
@@ -37,14 +54,28 @@ class SaleOrder(models.Model):
             record[('over_credit')] = record.partner_invoice_id.credit > record.partner_invoice_id.credit_limit
     
     over_credit = fields.Boolean(string="Over Credit", store=True, readonly=True, compute=compute_over_credit)
-      
+    
+    
+    @api.one
+    @api.depends('order_line.product_uom_qty')
+    def _compute_total_qty(self):
+        self.sum_qty = sum(line.product_uom_qty for line in self.order_line)
+        
+    sum_qty = fields.Float(string="Total Qty", compute='_compute_total_qty')
+    
+    @api.multi
+    def _compute_num_to_words(self):
+        for rec in self:
+            rec.qty_to_text = str(self.num_to_words(rec.sum_qty))
+            
+    qty_to_text = fields.Char(string="Qty In Words", compute='_compute_num_to_words')
     
     @api.multi
     def _compute_amount_in_word(self):
         for rec in self:
             rec.amount_to_text = str(rec.currency_id.amount_to_text(rec.amount_total)) #+ ' only'
 
-    amount_to_text = fields.Char(string="Amount In Words:", compute='_compute_amount_in_word')    
+    amount_to_text = fields.Char(string="Amount In Words:", compute='_compute_amount_in_word')
     
     #Product qty in Lot must be greather than product qty in sale order
     '''
