@@ -18,6 +18,7 @@ class SaleOrderLine(models.Model):
             self.lot = " "
     
     lot = fields.Char(string="Lot_id", compute="_compute_lot_name")
+    confirmation_date = fields.Datetime(string="Date Order", default= lambda self : self.order_id.confirmation_date)
     
     
             

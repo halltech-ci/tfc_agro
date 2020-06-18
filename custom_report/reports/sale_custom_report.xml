@@ -1,9 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
   <data>
+    <!-- Add filter form view-->
+    <!--
+    <record id="sale_custom_report_filter" model="ir.ui.view">
+        <field name="name">Sale_report_filter</field>
+        <field name="model">sale.order.line</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Sale Report Filter">
+                <group col="4">
+                    <field name="date_to" string="From :"/>
+                    <field name="date_from" string="To :"/>
+                    <button name="get_sale_report" string="Show Report" type="object" class="oe_highlight"/>
+                    <button string="Cancel" special="cancel"/>
+                </group>
+            </form>
+        </field>
+    </record>
+    -->
+    <!-- Display Sale Report in tree view-->
     <record id="sale_custom_report_list" model="ir.ui.view">
-        <field name="name">sale.order.line.tree</field>
-            <field name="model">sale.order.line</field>
+        <field name="name">sale report view</field>
+           <field name="model">sale.order.line</field>
             <field name="priority">2</field>
             <field name="arch" type="xml">
                 <tree string="Sale Report" create="false">
@@ -13,8 +32,9 @@
                     <field name="lot"/>
                     <field name="product_uom_qty"/>
                     <field name="price_unit"/>
-                    <field name="price_total"/>
+                    <field name="price_total" sum="TOTAL"/>
                     <field name="order_id"/>
+                    <!--<filed name="confirmation_date"/>-->
                 </tree>
         </field>
     </record>
