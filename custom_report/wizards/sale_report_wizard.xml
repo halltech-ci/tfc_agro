@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+      
+    <record id="action_sale_report_filter" model="ir.actions.act_window">
+        <field name="name">Sale Report Filter</field>
+            <field name="sale.report.wizard">res.partner</field>
+            <field name="domain">
+                [('customer', '=', True), ('user_id', '=', uid), ('lang',
+                '!=', 'fr_FR')]
+        </field>
+    </record>
