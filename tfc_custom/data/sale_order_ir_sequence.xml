@@ -3,16 +3,30 @@
     <data noupdate="1">
 
         <!-- Sequences for sale.order -->
-        <record id="sale_order_ir_sequence_1" model="ir.sequence">
-            <field name="name">Sales Order Sequence</field>
-            <field name="code">sale.order.sequence</field>
+        <record id="sale_adl_ir_sequence_" model="ir.sequence">
+            <field name="name">Sales Adl Sequence</field>
+            <field name="code">sale.adl.sequence</field>
             <field name="prefix">TFC/ADL/%(range_year)s/</field>
             <field eval="1" name="number_next"/>
             <field eval="1" name="number_increment"/>
             <field eval="True" name="use_date_range"/>
-            <field name="padding">4</field>
+            <field name="padding">5</field>
             <field name="company_id" eval="False"/>
             <field name='implementation'>standard</field>
         </record>
+        
+         <record id="sale_bov_ir_sequence_1" model="ir.sequence">
+            <field name="name">Sales Bov Sequence</field>
+            <field name="code">sale.bov.sequence</field>
+            <field name="prefix">TFC/BOV/%(range_year)s/</field>
+            <field eval="1" name="number_next"/>
+            <field eval="1" name="number_increment"/>
+            <field eval="True" name="use_date_range"/>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+            <field name='implementation'>standard</field>
+        </record>
+        
+        
     </data>
 </odoo>
