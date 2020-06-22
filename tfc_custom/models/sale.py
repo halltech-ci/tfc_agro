@@ -6,20 +6,6 @@ from odoo.exceptions import UserError, ValidationError
 
 from datetime import datetime
 
-
-# class tfc_custom(models.Model):
-#     _name = 'tfc_custom.tfc_custom'
-
-#     name = fields.Char()
-#     value = fields.Integer()
-#     value2 = fields.Float(compute="_value_pc", store=True)
-#     description = fields.Text()
-#
-#     @api.depends('value')
-#     def _value_pc(self):
-#         self.value2 = float(self.value) / 100
-
-
 class SaleOrder(models.Model):
     _inherit='sale.order'
     
@@ -31,9 +17,9 @@ class SaleOrder(models.Model):
     
     
     #date = fields.Date(required=True, readonly=True, index=True, default=fields.Date.today())
-    @api.multi
-    def num_to_words(self, num):
-        self.ensure_one()
+    #@api.multi
+    def _num_to_words(self, num):
+        #self.ensure_one()
         
         def _num2words(number, lang):
             try:
@@ -66,7 +52,7 @@ class SaleOrder(models.Model):
     @api.multi
     def _compute_num_to_words(self):
         for rec in self:
-            rec.qty_to_text = str(self.num_to_words(rec.sum_qty))
+            rec.qty_to_text = str(self._num_to_words(rec.sum_qty))
             
     qty_to_text = fields.Char(string="Qty In Words", compute='_compute_num_to_words')
     
@@ -76,21 +62,6 @@ class SaleOrder(models.Model):
             rec.amount_to_text = str(rec.currency_id.amount_to_text(rec.amount_total)) #+ ' only'
 
     amount_to_text = fields.Char(string="Amount In Words:", compute='_compute_amount_in_word')
-    
-    #Product qty in Lot must be greather than product qty in sale order
-    '''
-    @api.model
-    def check_product_qty_in_lot(self):
-        #get line_ids in sale order
-        if self.order_line:         
-            order_lines_list = self.order_line
-            for line_id in order_lines_list:
-                product_occurence = self.env['sale.order.line'].search_count([('id', '=', line_id)])
-                if product_occurence > 1:
-                    
-                
-            
-    '''    
     
     @api.model
     def get_move_from_line(self, line):
@@ -159,7 +130,8 @@ class SaleOrder(models.Model):
             vals['pricelist_id'] = vals.setdefault('pricelist_id', partner.property_product_pricelist and partner.property_product_pricelist.id)
         result = super(SaleOrder, self).create(vals)
         return result
-    
+    #Override write method to change BOV to ADL when status change   
+
 class SaleOrderLine(models.Model):
     _inherit='sale.order.line'
     
