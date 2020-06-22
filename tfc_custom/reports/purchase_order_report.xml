@@ -1,18 +1,73 @@
 <odoo>
   <data>
     <template id="inherit_report_purchasequotation_document" inherit_id="purchase.report_purchasequotation_document">    
+        <xpath expr="//t[@t-set='address']" position="replace">
+            <div></div>
+        </xpath>
         <xpath expr="//div[hasclass('page')]/h2" position="replace">
-            <h4>DEMANDE DE COTATION/RFQ N°:<span t-field="o.name"/></h4>
+            <div class="text-center">
+                <h4>DEMANDE DE COTATION<span t-field="o.name"/></h4>
+            </div>
         </xpath>
     </template>
             
     <template id="inherit_report_purchaseorder_document" inherit_id="purchase.report_purchaseorder_document">
-        <!-- Add custom sequence in purchase-->
-        <xpath expr="//div[hasclass('page')]/h2[1]" position="replace">
-            <h4 t-if="o.state != 'draft'">BON DE COMMANDE/PURCHASE ORDER N°:<span t-field="o.name"/></h4>
+        <xpath expr="//t[@t-set='address']" position="replace">
+            <div></div>
         </xpath>
-        <xpath expr="//div[hasclass('page')]/h2[2]" position="replace">
-            <h4 t-if="o.state == 'draft'">DEMANDE DE COTATION/RFQ N°:<span t-field="o.name"/></h4>
+        <!-- Add custom sequence in purchase-->
+        <xpath expr="//div[hasclass('page')]/h2[1]" position='replace'>
+        </xpath>
+        <xpath expr="//div[hasclass('page')]/h2[2]" position='replace'>
+        </xpath>
+        <xpath expr="//div[hasclass('page')]/h2[2]" position='replace'>
+        </xpath>
+        
+        <xpath expr="//div[hasclass('page')]/div[hasclass('oe_structure')]" position='after'>
+            <div class="text-center">
+                <t t-if="o.state in ['done', 'purchase']" class="text-center">
+                    <h4>BON DE COMMANDE</h4>
+                </t>
+                <t t-if="o.state in ['draft', 'sent', 'to apporve']" class="text-center">
+                    <h4>DEMANDE DE COTATION</h4>
+                </t>
+            </div>
+            <br></br>
+            <div class="row col-auto text-left" style="font-size:25px;">
+                <strong>CLIENT: </strong>
+                <span t-field='o.partner_id'/>
+            </div>
+            <br></br>
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th class='text-left'><strong>Date</strong></th>
+                        <th class='text-left'><strong>Partner Ref.</strong></th>
+                        <th class='text-left'><strong>BDC N°</strong></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class='text-left'>
+                            <t>
+                                <span t-field='o.date_order'/>
+                            </t>
+                        </td>
+                        <td class='text-left'>
+                            <t> 
+                                <span t-field='o.partner_ref'/>
+                            </t>
+                        </td>
+                        <td class='text-left'>
+                            <t>
+                                <span t-field='o.name'/>
+                            </t>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </xpath>
+        <xpath expr="//div[hasclass('page')]/div[hasclass('row', 'mt32', 'mb32')]" position="replace">
         </xpath>
         
         <xpath expr="//div[hasclass('page')]/p[@t-field='o.notes']" position="before">

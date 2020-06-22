@@ -63,21 +63,6 @@ class SaleOrder(models.Model):
 
     amount_to_text = fields.Char(string="Amount In Words:", compute='_compute_amount_in_word')
     
-    #Product qty in Lot must be greather than product qty in sale order
-    '''
-    @api.model
-    def check_product_qty_in_lot(self):
-        #get line_ids in sale order
-        if self.order_line:         
-            order_lines_list = self.order_line
-            for line_id in order_lines_list:
-                product_occurence = self.env['sale.order.line'].search_count([('id', '=', line_id)])
-                if product_occurence > 1:
-                    
-                
-            
-    '''    
-    
     @api.model
     def get_move_from_line(self, line):
         move = self.env['stock.move']
@@ -145,7 +130,8 @@ class SaleOrder(models.Model):
             vals['pricelist_id'] = vals.setdefault('pricelist_id', partner.property_product_pricelist and partner.property_product_pricelist.id)
         result = super(SaleOrder, self).create(vals)
         return result
-    
+    #Override write method to change BOV to ADL when status change   
+
 class SaleOrderLine(models.Model):
     _inherit='sale.order.line'
     

@@ -15,6 +15,7 @@
                         <span t-field="doc.partner_id.vat"/>
                     </p>
             </div>
+            <br></br>
             <table class="table table-sm">
                 <thead>
                     <tr>
@@ -49,6 +50,7 @@
         </xpath>
         <!-- -->
         <xpath expr="//div[hasclass('page')]/h2" position="replace">
+            <br></br>
             <br></br>
             <div class="text-center">
                 <t t-if="not (env.context.get('proforma', False) or is_pro_forma)">

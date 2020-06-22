@@ -7,7 +7,9 @@
         </xpath>
         
         <xpath expr="//div[hasclass('page')]/h2" position="replace">
-            <div class="text-center">
+            <br></br>
+            <br></br>
+            <div class="text-center" style="font-size:30px;">
                 <span t-if="o.picking_type_id.code == 'outgoing'">BON DE LIVRAISON</span>
                 <span t-if="o.picking_type_id.code == 'incoming'">STOCK RECEPTION NOTE</span>
                 <span t-if="o.picking_type_id.code == 'internal'">STOCK TRANSFER NOTE</span>
@@ -21,6 +23,7 @@
         
         
         <xpath expr="//div[hasclass('page')]//table[1]" position="replace">
+            <br></br>
             <table class="table table-sm">
                 <thead>
                     <tr>
