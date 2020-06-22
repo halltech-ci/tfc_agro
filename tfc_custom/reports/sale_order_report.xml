@@ -8,30 +8,38 @@
         </xpath>
         
         <xpath expr="//div[hasclass('page')]//div[hasclass('row', 'mt32', 'mb32')]" position="replace">            
-            <div class="row col-auto" style="font-size:25px;">
-                <strong>Client : </strong>
+            <div class="row col-auto" style="font-size:30px;">
+                <strong>Client: </strong>
                 <span t-field=" doc.partner_id" t-options='{"widget": "contact", "fields": ["name"], "no_marker": True}'/>
                     <p t-if="doc.partner_id.vat"><t t-esc="doc.company_id.country_id.vat_label or 'Tax ID'"/>: 
                         <span t-field="doc.partner_id.vat"/>
                     </p>
             </div>
             <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th t-if="doc.date_order and doc.state in ['draft','sent']" class='text-right'><strong>Quotation Date</strong></th>
+                        <th t-if="doc.confirmation_date and doc.state not in ['draft','sent']" class='text-left'><strong>Ordered Date</strong></th>
+                        <th t-if="doc.confirmation_date and doc.state not in ['draft','sent']" class='text-left'><strong>ADL N°:</strong></th>
+                        <th t-if="doc.client_order_ref" class='text-right'><strong>Client Ref.</strong></th>
+                        <th t-if="doc.origin" class='text-left'><strong>BOV N°:</strong></th>
+                    </tr>
+                </thead>
                 <tbody>
                     <tr>
                         <td t-if="doc.date_order and doc.state in ['draft','sent']" class='text-right'>
-                            <strong>Quotation Date:</strong>
+                            <span t-field="doc.confirmation_date"/>
+                        </td>
+                        <td t-if="doc.confirmation_date and doc.state not in ['draft','sent']" class='text-left'>
                             <span t-field="doc.date_order"/>
                         </td>
                         <td t-if="doc.confirmation_date and doc.state not in ['draft','sent']" class='text-left'>
-                            <strong>Date Ordered:</strong>
-                            <span t-field="doc.confirmation_date"/>
+                            <p t-field="doc.name"/>
                         </td>
                         <td t-if="doc.client_order_ref" class='text-right'>
-                            <strong>Your Reference:</strong>
                             <span t-field="doc.client_order_ref"/>
                         </td>
                         <td t-if="doc.origin" class='text-left'>
-                            <strong>BOV:</strong>
                             <span t-field="doc.origin"/>
                         </td>
                     </tr>
@@ -50,7 +58,7 @@
                 <t t-if="env.context.get('proforma', False) or is_pro_forma">
                     <span>Pro-Forma Invoice # </span>
                 </t>
-                <span t-field="doc.name"/>
+                <!--<span t-field="doc.name"/>-->
             </div>
             <br></br>
         </xpath>

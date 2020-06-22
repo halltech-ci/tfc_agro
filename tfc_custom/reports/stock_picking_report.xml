@@ -2,43 +2,121 @@
 <odoo>
   <data>
     <template id="inherit_stock_picking_document" inherit_id="stock.report_delivery_document">
-        <xpath expr="//div[hasclass('page')]/p" position="before">
+        <xpath expr="//t/t[@t-set='partner']" position="replace">
             <div></div>
-            <div></div>
+        </xpath>
+        
+        <xpath expr="//div[hasclass('page')]/h2" position="replace">
+            <div class="text-center">
+                <span t-if="o.picking_type_id.code == 'outgoing'">BON DE LIVRAISON</span>
+                <span t-if="o.picking_type_id.code == 'incoming'">STOCK RECEPTION NOTE</span>
+                <span t-if="o.picking_type_id.code == 'internal'">STOCK TRANSFER NOTE</span>
+            </div>
+            <br></br>
+            <div class="row col-auto text-left" style="font-size:25px;">
+                <strong>CLIENT: </strong>
+                <span t-field='o.partner_id'/>
+            </div>
+        </xpath>
+        
+        
+        <xpath expr="//div[hasclass('page')]//table[1]" position="replace">
             <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th><strong>Date</strong></th>
+                        <th>
+                            <t t-if="o.picking_type_id.code == 'outgoing'">
+                                <strong>BDL N°:</strong>
+                            </t>
+                            <t t-if="o.picking_type_id.code == 'incoming'">
+                                <strong>SRN N°</strong>
+                            </t>
+                            <t t-if="o.picking_type_id.code == 'internal'">
+                                <strong>STN N°:</strong>
+                            </t>
+                        </th>
+                        <th>
+                            <t t-if="o.picking_type_id.code == 'outgoing' and o.origin">
+                                <strong>ADL N°:</strong>
+                            </t>
+                            <t t-if="o.picking_type_id.code == 'incoming' and o.origin">
+                                <strong>PO N°</strong>
+                            </t>
+                        </th>
+                    </tr>
+                </thead>
                 <tbody>
                     <tr>
-                        <td class='text-left' t-if='o.driver_company'>
-                            <strong>Driver Company:</strong>
-                            <p t-field="o.driver_company"/>
+                        <td>
+                            <t t-if="o.state == 'done'">
+                                <span t-field="o.date_done"/>
+                            </t>
+                            <t t-if="o.state != 'done'">
+                                <span t-field="o.scheduled_date"/>
+                            </t>
                         </td>
-                        <td class='text-left' t-if="o.vehicle_number">
-                            <strong>Vehicle Number:</strong>
-                            <p t-field="o.vehicle_number"/>
+                        <td>
+                            <t t-if="o.picking_type_id.code == 'outgoing'">
+                                <span t-field="o.name"/>
+                            </t>
+                            <t t-if="o.picking_type_id.code == 'incoming'">
+                                <span t-field="o.name"/>
+                            </t>
+                            <t t-if="o.picking_type_id.code == 'internal'">
+                                <span t-field="o.name"/>
+                            </t>
                         </td>
-                        <td class='text-left' t-if='o.driver_name'>
-                            <strong>Driver Name:</strong>
-                            <p t-field="o.driver_name"/>
-                        </td>
-                        <td class='text-left' t-if='o.driver_contacts'>
-                            <strong>Driver Phone Number:</strong>
-                            <p t-field="o.driver_contacts"/>
+                        <td t-if="o.picking_type_id.code in ['incoming', 'outgoing'] and o.origin">
+                            <span t-field="o.origin"/>
                         </td>
                     </tr>
                 </tbody>
             </table>
-            <div></div>
-            <div></div>
-            <table>
+        </xpath>
+        
+        <xpath expr="//div[hasclass('page')]/p" position="before">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th><strong>Driver Company</strong></th>
+                        <th><strong>Vehicle Number</strong></th>
+                        <th><strong>Driver Name</strong></th>
+                        <th><strong>Driver Phone</strong></th>
+                    </tr>
+                </thead>
                 <tbody>
                     <tr>
-                        <td class='text-left' t-if='o.write_uid'>
-                            <strong>Edited By:</strong>
-                            <p t-field="o.write_uid.name"/>
+                        <td class='text-left'>
+                            <span t-field="o.driver_company"/>
                         </td>
-                        <td class='text-left' t-if='o.write_uid'>
-                            <strong>Chargeur:</strong>
-                            <p t-field="o.chargeur"/>
+                        <td class='text-left'>
+                            <span t-field="o.vehicle_number"/>
+                        </td>
+                        <td class='text-left'>
+                            <span t-field="o.driver_name"/>
+                        </td>
+                        <td class='text-left'>
+                            <span t-field="o.driver_contacts"/>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <br></br>
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th><strong>Edited By</strong></th>
+                        <th><strong>Chargeur</strong></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class='text-left'>
+                            <span t-field="o.write_uid.name"/>
+                        </td>
+                        <td class='text-left'>
+                            <span t-field="o.chargeur"/>
                         </td>
                     </tr>
                 </tbody>

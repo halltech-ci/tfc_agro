@@ -24,6 +24,7 @@
                 'account_accountant',
                 'account',
                 'sale',
+                'board',
                ],
 
     # always loaded
@@ -36,6 +37,7 @@
         'wizards/create_custom_report.xml',
         'reports/custom_report.xml',
         'reports/sale_custom_report.xml',
+        'views/dashboard.xml'
     ],
     # only loaded in demonstration mode
     'demo': [
