@@ -7,14 +7,7 @@ from odoo.exceptions import UserError, ValidationError
 from datetime import datetime
 
 class SaleOrder(models.Model):
-    _inherit='sale.order'
-    
-    vehicle_number=fields.Char(string='Vehicle Number')
-    driver_name=fields.Char(string="Driver Name")
-    driver_contacts=fields.Char(string="Driver Contact")
-    customer_order_ref=fields.Char(string="Customer Order Ref")
-    sale_approver=fields.Many2one('res.users', string="Approver")
-    
+    _inherit='sale.order'  
     
     #date = fields.Date(required=True, readonly=True, index=True, default=fields.Date.today())
     #@api.multi
@@ -39,28 +32,31 @@ class SaleOrder(models.Model):
         for record in self:
             record[('over_credit')] = record.partner_invoice_id.credit > record.partner_invoice_id.credit_limit
     
-    over_credit = fields.Boolean(string="Over Credit", store=True, readonly=True, compute=compute_over_credit)
-    
-    
     @api.one
     @api.depends('order_line.product_uom_qty')
     def _compute_total_qty(self):
         self.sum_qty = sum(line.product_uom_qty for line in self.order_line)
-        
-    sum_qty = fields.Float(string="Total Qty", compute='_compute_total_qty')
     
     @api.multi
     def _compute_num_to_words(self):
         for rec in self:
             rec.qty_to_text = str(self._num_to_words(rec.sum_qty))
-            
-    qty_to_text = fields.Char(string="Qty In Words", compute='_compute_num_to_words')
+    
     
     @api.multi
     def _compute_amount_in_word(self):
         for rec in self:
             rec.amount_to_text = str(rec.currency_id.amount_to_text(rec.amount_total)) #+ ' only'
-
+    
+    vehicle_number=fields.Char(string='Vehicle Number')
+    driver_name=fields.Char(string="Driver Name")
+    driver_contacts=fields.Char(string="Driver Contact")
+    customer_order_ref=fields.Char(string="Customer Order Ref")
+    sale_approver=fields.Many2one('res.users', string="Approver")
+    over_credit = fields.Boolean(string="Over Credit", store=True, readonly=True, compute=compute_over_credit)
+    is_change_to_adl=fields.Boolean(string='is_bov_to_adl', compute = "_is_change_to_adl")
+    sum_qty = fields.Float(string="Total Qty", compute='_compute_total_qty')            
+    qty_to_text = fields.Char(string="Qty In Words", compute='_compute_num_to_words')
     amount_to_text = fields.Char(string="Amount In Words:", compute='_compute_amount_in_word')
     
     @api.model
@@ -108,9 +104,7 @@ class SaleOrder(models.Model):
                         % line.lot_id.name
                     )
             self._check_move_state(line)
-        return res
-    
-    
+        return res    
     
     #Inherit create method to add custom sequence in sale order
     @api.model
@@ -130,7 +124,18 @@ class SaleOrder(models.Model):
             vals['pricelist_id'] = vals.setdefault('pricelist_id', partner.property_product_pricelist and partner.property_product_pricelist.id)
         result = super(SaleOrder, self).create(vals)
         return result
-    #Override write method to change BOV to ADL when status change   
+    #Override write method to change BOV to ADL when status change
+    
+    @api.multi
+    def _is_change_to_adl(self):
+        self.ensure_one()
+        if self.state == "draft" and self.name != '/':
+            self._is_change_to_adl = True
+            
+    '''
+    def change_bov_adl(self):
+        if self.is_change_to_adl():
+    '''     
 
 class SaleOrderLine(models.Model):
     _inherit='sale.order.line'
@@ -138,7 +143,7 @@ class SaleOrderLine(models.Model):
     lot_id=fields.Many2one('stock.production.lot', string='Lot', copy=False)
     lot_quantity=fields.Float(string="Quantity in Lot", related='lot_id.product_qty', default=1.00, 
                               required=True, digits=dp.get_precision('Product Unit of Measure')
-    )
+    )    
     
     @api.one
     @api.constrains('lot_id', 'product_uom_qty')
