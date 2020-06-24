@@ -9,11 +9,7 @@ from datetime import datetime
 class SaleOrder(models.Model):
     _inherit='sale.order'  
     
-    #date = fields.Date(required=True, readonly=True, index=True, default=fields.Date.today())
-    #@api.multi
     def _num_to_words(self, num):
-        #self.ensure_one()
-        
         def _num2words(number, lang):
             try:
                 return num2words(number, lang=lang).title()
@@ -41,8 +37,6 @@ class SaleOrder(models.Model):
     def _compute_num_to_words(self):
         for rec in self:
             rec.qty_to_text = str(self._num_to_words(rec.sum_qty))
-    
-    
     @api.multi
     def _compute_amount_in_word(self):
         for rec in self:
@@ -54,10 +48,10 @@ class SaleOrder(models.Model):
     customer_order_ref=fields.Char(string="Customer Order Ref")
     sale_approver=fields.Many2one('res.users', string="Approver")
     over_credit = fields.Boolean(string="Over Credit", store=True, readonly=True, compute=compute_over_credit)
-    is_change_to_adl=fields.Boolean(string='is_bov_to_adl', compute = "_is_change_to_adl")
     sum_qty = fields.Float(string="Total Qty", compute='_compute_total_qty')            
     qty_to_text = fields.Char(string="Qty In Words", compute='_compute_num_to_words')
     amount_to_text = fields.Char(string="Amount In Words:", compute='_compute_amount_in_word')
+    partner_total_due = fields.Monetary(string='Total Due:', related="partner_invoice_id.total_due")
     
     @api.model
     def get_move_from_line(self, line):
@@ -111,7 +105,7 @@ class SaleOrder(models.Model):
     def create(self, vals):
         if vals.get('name', _('New')) == _('New'):
             if 'company_id' in vals:
-                vals['name'] = self.env['ir.sequence'].with_context(force_company=vals['company_id']).next_by_code('sale.adl.sequence') or _('New')
+                vals['name'] = self.env['ir.sequence'].with_context(force_company=vals['company_id']).next_by_code('sale.bov.sequence') or _('New')
             else:
                 vals['name'] = self.env['ir.sequence'].next_by_code('sale.adl.sequence') or _('New')
 
@@ -124,19 +118,23 @@ class SaleOrder(models.Model):
             vals['pricelist_id'] = vals.setdefault('pricelist_id', partner.property_product_pricelist and partner.property_product_pricelist.id)
         result = super(SaleOrder, self).create(vals)
         return result
-    #Override write method to change BOV to ADL when status change
     
+    #Override write method to change BOV to ADL when status change
     @api.multi
-    def _is_change_to_adl(self):
-        self.ensure_one()
-        if self.state == "draft" and self.name != '/':
-            self._is_change_to_adl = True
-            
-    '''
-    def change_bov_adl(self):
-        if self.is_change_to_adl():
-    '''     
-
+    def action_confirm(self):
+        if super(SaleOrder, self).action_confirm():
+            for order in self:
+                if order.state == 'sale':
+                    if order.origin and order.origin != '':
+                        quo = order.origin + ', ' + order.name
+                    else:
+                        quo = order.name
+                    order.write({
+                        'origin': quo,
+                        'name': self.env['ir.sequence'].next_by_code('sale.adl.sequence')
+                    })
+        return True
+    
 class SaleOrderLine(models.Model):
     _inherit='sale.order.line'
     

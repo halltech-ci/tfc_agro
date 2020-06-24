@@ -2,13 +2,13 @@
 <odoo>
   <data>
     <!-- Display Sale Report in tree view-->
-    <record id="sale_custom_report_list" model="ir.ui.view">
-        <field name="name">sale report view</field>
-        <field name="model">sale.order.line</field>
+    <record id="financial_custom_report" model="ir.ui.view">
+        <field name="name">Account Custom Report</field>
+        <field name="model">account.move.line</field>
         <field name="priority">2</field>
         <field name="arch" type="xml">
             <tree string="Sale Report" create="false" default_order="order_id desc">
-                <field name='order_partner_id'/>
+                <field name='partner_id'/>
                 <field name="product_id"/>
                 <field name="product_uom"/>
                 <field name="lot"/>

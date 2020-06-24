@@ -10,6 +10,7 @@
           <xpath expr="//header/button[@name='action_confirm'][1]" position="attributes">
               <attrs name="invisible">{[('state', 'not in', ['sent']), ('over_credit', '!=', False)]}</attrs>
           </xpath>
+          <!-- -->
           <xpath expr="//header/button[@name='action_confirm'][2]" position="attributes">
               <attrs name="invisible">{[('state', 'not in', ['draft']), ('over_credit', '!=', False)]}</attrs>
           </xpath>
@@ -30,13 +31,14 @@
                   <field name="debit_client" attrs="{'invisible':[('state', '=', 'draft')]}"/>
               </group>
               -->
-          <!-- </xpath> -->
-          <!-- self.env.user.has_group('base.group_sale_manager') -->
           <!-- Insert sale order object-->
           <xpath expr="//sheet/group" position="after">
               <group>
                   <group>
                       <field name="over_credit"/>
+                  </group>
+                  <group>
+                      <field name="partner_total_due"/>
                   </group>
               </group>
               <group>

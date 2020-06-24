@@ -24,8 +24,6 @@ class StockPicking(models.Model):
     driver_company = fields.Char(string="Driver Company")
     chargeur = fields.Char(string="Chargeur")
     
-    
-    
     @api.model
     def create(self, vals):
         # TDE FIXME: clean that brol

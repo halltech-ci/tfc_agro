@@ -37,6 +37,7 @@
         'wizards/create_custom_report.xml',
         'reports/custom_report.xml',
         'reports/sale_custom_report.xml',
+        'reports/stock_custom_report.xml',
         'views/dashboard.xml'
     ],
     # only loaded in demonstration mode
