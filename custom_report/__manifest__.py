@@ -23,6 +23,8 @@
     'depends': ['base',
                 'account_accountant',
                 'account',
+                'sale',
+                'board',
                ],
 
     # always loaded
@@ -34,6 +36,9 @@
         #'views/res_partner_views.xml',
         'wizards/create_custom_report.xml',
         'reports/custom_report.xml',
+        'reports/sale_custom_report.xml',
+        'reports/stock_custom_report.xml',
+        'views/dashboard.xml'
     ],
     # only loaded in demonstration mode
     'demo': [

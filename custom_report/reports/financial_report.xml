@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+    <!-- Display Sale Report in tree view-->
+    <record id="financial_custom_report" model="ir.ui.view">
+        <field name="name">Account Custom Report</field>
+        <field name="model">account.move.line</field>
+        <field name="priority">2</field>
+        <field name="arch" type="xml">
+            <tree string="Sale Report" create="false" default_order="order_id desc">
+                <field name='partner_id'/>
+                <field name="product_id"/>
+                <field name="product_uom"/>
+                <field name="lot"/>
+                <field name="payment_term"/>
+                <field name="product_uom_qty"/>
+                <field name="price_unit"/>
+                <field name="price_total" sum="TOTAL"/>
+                <field name="order_id"/>
+                <field name="date_order" invisible="1"/>
+                <!--<filed name="date_order" invisible="1"/>-->
+            </tree>
+        </field>
+    </record>
+    <!-- Custom search view-->
+      <record id="view_sales_order_filter" model="ir.ui.view">
+          <field name="name">sale.report.search</field>
+          <field name="model">sale.order.line</field>
+          <field name="priority" eval="15"/>
+          <field name="arch" type="xml">
+              <search string="Search Sale Order">
+                  <field name="name" string="Sales Order" filter_domain="['|',('product_id','ilike',self),('order_partner_id','ilike',self), ('lot','ilike',self)]"/>
+                  <field name='order_partner_id'/>
+                  <field name="product_id"/>
+                  <group expand="0" string="Group By">
+                        <filter string="Customer" name="customer" domain="[]" context="{'group_by':'order_partner_id'}"/>
+                        <filter string="Sale Order" name="sale_order" domain="[]" context="{'group_by':'order_id'}"/>
+                    </group>
+              </search>
+          </field>
+      </record>
+
+    <record id="action_sale_custom_report" model="ir.actions.act_window">
+        <field name="name">Sale Custom Report</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">sale.order.line</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="sale_custom_report_list"/>
+        <field name="domain">[('state', 'not in', ('draft', 'sent', 'cancel'))]</field>
+        <field name="target">main</field>
+    </record>
+    
+    <!--
+    <record id="action_sale_order_custom_report" model="ir.actions.act_window">
+        <field name="name">Sale Order Custom Report</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">sale.order</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="sale_order_custom_report"/>
+        <field name="domain">[('state', 'not in', ('draft', 'sent', 'cancel'))]</field>
+        <field name="target">main</field>
+    </record>
+    -->
+    <menuitem id="sale_custom_report" name="Sale Custom Report" parent="sale.menu_sale_report" 
+        groups="sales_team.group_sale_manager" sequence="1"
+        action="action_sale_custom_report"/>
+    <!-- 
+    <menuitem id="sale_order_custom_report" name="Sale Order Custom Report" parent="sale.menu_sale_report" 
+        groups="sales_team.group_sale_manager" sequence="2"
+        action="action_sale_order_custom_report"/>
+    -->
+  </data>
+</odoo>

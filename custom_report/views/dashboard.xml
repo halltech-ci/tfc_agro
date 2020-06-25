@@ -1,0 +1,33 @@
+<odoo>
+  <data>
+    <!-- explicit list view definition -->
+    <record id="sale_dashboard_tree_view" model="ir.ui.view">
+        <field name="name">sales.dashboard.tree.view</field>
+        <field name="model">sale.order.line</field>
+        <field name="arch" type="xml">
+            <form>
+                <field name="order_partner_id"/>
+                <field name="name"/>
+                <field name="product_uom"/>
+                <field name="lot"/>
+                <field name="payment_term"/>
+                <field name="product_uom_qty"/>
+                <field name="price_unit"/>
+                <field name="product_uom"/>
+                <field name="price_total"/>
+                <field name="order_id"/>
+            </form>
+        </field>
+    </record>
+    <!-- Dashboard action-->
+    <record id="custom_sales_dashboard_action" model="ir.actions.act_window">
+        <field name="name">Sales Dashboard</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">sale.order.line</field>
+        <field name="view_mode">tree, search</field>
+        <field name="view_type">form</field>
+        <field name="view_id" ref="sale_dashboard_tree_view"/>
+    </record>
+    <menuitem id="dashboard_test" name="Sale Dashboard" parent="sale.sale_order_menu" action="custom_sales_dashboard_action"/>
+  </data>
+</odoo>
