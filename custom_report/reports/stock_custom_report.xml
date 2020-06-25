@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+    <!-- Display Sale Report in tree view-->
+    <record model="ir.ui.view" id="stock_product_move_list_inherit">
+      <field name="name">Product_Move_List</field>
+      <field name="model">stock.move.line</field>
+      <field name="inherit_id" ref="stock.view_move_line_tree"/>
+      <field name="arch" type="xml">
+          <xpath expr="//tree/field[@name='product_id']" postion="after">
+              <field name='lot_id'/>
+          </xpath>
+      </field>
+    </record>
+  </data>
+</odoo>
