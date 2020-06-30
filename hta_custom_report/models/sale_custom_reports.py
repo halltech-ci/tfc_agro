@@ -44,6 +44,7 @@ class SaleCustomReports(models.AbstractModel):
           
         total = 0
         for line in results:
+            total += line.get('price_total')
             product_uom = self.env['product.product'].search([('id', '=', line.get('product_uom'))]).uom_name
             if self.env['stock.production.lot'].browse(line.get('lot_id')):
                 product_lot = self.env['stock.production.lot'].browse(line.get('lot_id')).name
@@ -58,6 +59,15 @@ class SaleCustomReports(models.AbstractModel):
                 'unfoldable': True,
                 'columns':[{'name': v} for v in columns],
             })
+        lines.append({
+            'id': 'total',
+            'name': _('Total'),
+            'level': 4,
+            'colspan': 7,
+            'class': 'total',
+            'columns': [{'name': total}]
+            })
+
         return lines
                 
     def _get_report_name(self):
