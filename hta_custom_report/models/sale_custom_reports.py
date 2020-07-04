@@ -24,7 +24,7 @@ class SaleCustomReports(models.AbstractModel):
     '''
     def _get_columns_name(self, options):
         columns = [
-            {'name': _('Customer')},
+            {},
             {'name': _('Product')},
             {'name': _('Unit')},
             {'name': _('Lot')},
@@ -46,9 +46,6 @@ class SaleCustomReports(models.AbstractModel):
         """
         customers = self.env['sale.order.line'].search(sale_domain).mapped('order_partner_id') 
      
-    
-    
-    
     '''This method sould return the list of lines of the report. The line_id parameter is set when unfolding a line in the report, in this 
     case this method should only return a subset of the line corresponding to line_id and domain
     o- The order of the list is the order in which the line will be display in the report.
@@ -73,16 +70,26 @@ class SaleCustomReports(models.AbstractModel):
         #tables, where_clause, where_params = self.env['sale.order.line'].with_context(strict_range=True)._query_get()
         #user_type_id = self.env['account.account.type'].search([('type', '=', 'receivable')])
         context = self.env.context
+        where_clause = ''
+        where_params = []
+        
+        if line_id != None:
+            where_clause = 'AND p.id = %s '# + where_clause
+            where_params = [line_id] + where_params
+            unfold_query = """
+            SELECT sum(\"sale_order_line\".price_total) AS total, "sale_order_line".id, "sale_order_line".name,"sale_order_line".order_id,  p.id AS customer_id, p.name AS customer_name FROM "sale_order_line", "res_partner" AS p
+        WHERE "sale_order_line".state IN ('sale') AND ("sale_order_line".order_partner_id = p.id) """+where_clause+"""
+        GROUP BY p.id, p.name,  "sale_order_line".id ORDER BY "sale_order_line".id
+            """
         
         sql_query = """
-        SELECT sum(\"sale_order_line\".price_total) AS total, p.id AS customer_id, p.name AS customer_name, so.id AS so_id, so.name AS so_name FROM "sale_order_line", "res_partner" AS p, "sale_order" AS so
-        WHERE "sale_order_line".state IN ('sale') AND "sale_order_line".order_id = so.id AND so.partner_id = p.id
-        GROUP BY p.id, so_id ORDER BY p.name
+        SELECT sum(\"sale_order_line\".price_total) AS total, p.id, p.name FROM "sale_order_line", "res_partner" AS p
+        WHERE "sale_order_line".state IN ('sale') AND "sale_order_line".order_partner_id = p.id
+        GROUP BY p.name, p.id ORDER BY p.name
         """
 
         self.env.cr.execute(sql_query, [])
         results = self.env.cr.dictfetchall()
-          
         sum_total = 0
         for line in results:
             #total += line.get('total')
@@ -92,22 +99,36 @@ class SaleCustomReports(models.AbstractModel):
             #else:
             #    product_lot = ''
             #columns = [line.get('name'), product_uom, product_lot, line.get('payment_term'), line.get('product_uom_qty'), line.get('price_unit'), line.get('price_total'), line.get('so_name')]
-            columns = ['', '', '', '', '', '',line.get('total'), line.get('so_name')]
+            columns = ['', '', '', '', '', '',line.get('total'), '']
             sum_total += line.get('total')
             lines.append({
-                'id': line.get('customer_id'),
-                'name': line.get('customer_name'),
+                'id': line.get('id'),
+                'name': line.get('name'),
                 'level': 2,
-                'unfoldable': False,
-                #'unfolded': line_id == line.get('so_name') and True or False,
+                'unfoldable': True,
+                'unfolded': line_id == line.get('id') and True or False,
                 'columns':[{'name': v} for v in columns],
             })
+        #Adding sale orders
+        if line_id :
+            self.env.cr.execute(unfold_query, where_params)
+            results = self.env.cr.dictfetchall()
+            for child_line in results:
+                columns = ['', '', '', '',child_line.get('total'), child_line.get('order_id')]
+                lines.append({
+                    'id': child_line.get('id'),
+                    'name': child_line.get('name'),
+                    'level': 4,
+                    'parent_id' : line_id,
+                    'columns': [{'name': v} for v in columns],
+                })
+
         lines.append({
             'id': 'total',
             'name': _('Total'),
             'level': 4,
             'colspan': 7,
-            'class': 'total',
+            'class': 'o_account_reports_domain_total',
             'columns': [{'name': sum_total}]
             })
 
