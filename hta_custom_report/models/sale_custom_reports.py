@@ -69,52 +69,34 @@ class SaleCustomReports(models.AbstractModel):
         lines = []
         #tables, where_clause, where_params = self.env['sale.order.line'].with_context(strict_range=True)._query_get()
         #user_type_id = self.env['account.account.type'].search([('type', '=', 'receivable')])
-        context = self.env.context
-        where_clause = ''
-        where_params = []
-        
-        if line_id != None:
-            where_clause = 'AND p.id = %s '# + where_clause
-            where_params = [line_id] + where_params
-            unfold_query = """
-            SELECT sum(\"sale_order_line\".price_total) AS total, "sale_order_line".id, "sale_order_line".name,"sale_order_line".order_id,  p.id AS customer_id, p.name AS customer_name FROM "sale_order_line", "res_partner" AS p
-        WHERE "sale_order_line".state IN ('sale') AND ("sale_order_line".order_partner_id = p.id) """+where_clause+"""
-        GROUP BY p.id, p.name,  "sale_order_line".id ORDER BY "sale_order_line".id
-            """
-        
-        sql_query = """
-        SELECT sum(\"sale_order_line\".price_total) AS total, p.id, p.name FROM "sale_order_line", "res_partner" AS p
-        WHERE "sale_order_line".state IN ('sale') AND "sale_order_line".order_partner_id = p.id
-        GROUP BY p.name, p.id ORDER BY p.name
-        """
+        domain = [('state', '=', 'sale')]
 
-        self.env.cr.execute(sql_query, [])
-        results = self.env.cr.dictfetchall()
-        sum_total = 0
-        for line in results:
-            #total += line.get('total')
-            #product_uom = self.env['product.product'].search([('id', '=', line.get('product_uom'))]).uom_name
-            #if self.env['stock.production.lot'].browse(line.get('lot_id')):
-            #    product_lot = self.env['stock.production.lot'].browse(line.get('lot_id')).name
-            #else:
-            #    product_lot = ''
-            #columns = [line.get('name'), product_uom, product_lot, line.get('payment_term'), line.get('product_uom_qty'), line.get('price_unit'), line.get('price_total'), line.get('so_name')]
-            columns = ['', '', '', '', '', '',line.get('total'), '']
-            sum_total += line.get('total')
+        if line_id != None:
+            domain = [('order_partner_id', '=', line_id)] + domain
+            unfold_query = self.env['sale.order.line'].with_context(strict_range=True).search_read(domain)
+        
+        orm_query = self.env['sale.order.line'].with_context(strict_range=True).read_group(domain, ['price_total:sum','order_partner_id', 'order_id'], ['order_partner_id'], ['order_partner_id'])
+        
+
+        #self.env.cr.execute(sql_query, [])
+        #results = self.env.cr.dictfetchall()
+        total = 0
+        for line in orm_query:
+            columns = ['', '', '', '', '', '',line.get('price_total'), '']
+            total += line.get('price_total')
+            partner_name = self.env['res.partner'].browse(line.get('order_partner_id')[0]).name
             lines.append({
-                'id': line.get('id'),
-                'name': line.get('name'),
+                'id': line.get('order_partner_id')[0],
+                'name': partner_name,
                 'level': 2,
                 'unfoldable': True,
-                'unfolded': line_id == line.get('id') and True or False,
+                'unfolded': line_id == line.get('order_partner_id') and True or False,
                 'columns':[{'name': v} for v in columns],
             })
-        #Adding sale orders
+        #Adding sale orders lines
         if line_id :
-            self.env.cr.execute(unfold_query, where_params)
-            results = self.env.cr.dictfetchall()
-            for child_line in results:
-                columns = ['', '', '', '',child_line.get('total'), child_line.get('order_id')]
+            for child_line in unfold_query:
+                columns = ['', '', '', '', '', '', child_line.get('price_total'), child_line.get('order_id')[1]]
                 lines.append({
                     'id': child_line.get('id'),
                     'name': child_line.get('name'),
@@ -123,15 +105,16 @@ class SaleCustomReports(models.AbstractModel):
                     'columns': [{'name': v} for v in columns],
                 })
 
-        lines.append({
-            'id': 'total',
-            'name': _('Total'),
-            'level': 4,
-            'colspan': 7,
-            'class': 'o_account_reports_domain_total',
-            'columns': [{'name': sum_total}]
-            })
-
+        if total and not line_id:
+            lines.append({
+                'id': 'total',
+                'name': _('Total'),
+                'colspan': 7,
+                'level': 0,
+                'class': 'total',
+                'columns': [{'name': total}]
+                })
+        
         return lines
                 
     def _get_report_name(self):
