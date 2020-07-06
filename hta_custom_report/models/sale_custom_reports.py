@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import time
-from odoo import api, models, _
+from odoo import api, models, fields, _
 from odoo.tools.misc import formatLang
 from odoo.exceptions import UserError
 from odoo.addons.web.controllers.main import clean_action
+
+from datetime import datetime, date
+from odoo.tools.misc import format_date
 
 class SaleCustomReports(models.AbstractModel):
     _name = "account.report.sale.custom.reports"
@@ -12,8 +15,8 @@ class SaleCustomReports(models.AbstractModel):
     _description = "hta sale custom report"
     
     filter_date = {'date_from': '', 'date_to': '', 'filter': 'this_month'}
-    filter_partner = True
-    filter_all_entries = False
+    #filter_partner = True
+    #filter_all_entries = False
     
     '''_get_columns_name return a list of dict objects that reprsents header of the table for the report
     o- Each element of the list correspond to a column in the report.
@@ -25,22 +28,33 @@ class SaleCustomReports(models.AbstractModel):
     def _get_columns_name(self, options):
         columns = [
             {},
-            {'name': _('Product')},
-            {'name': _('Unit')},
-            {'name': _('Lot')},
-            {'name': _('Payment Terms')},
+            {'name': _('Product'), 'class': 'text-right'},
+            {'name': _('Unit'), 'class': 'text-right'},
+            {'name': _('Vessel'), 'class': 'text-right'},
+            {'name': _('Payment Terms'), 'class': 'text-right'},
             {'name': _('Sold Qty'), 'class': 'number'},
             {'name': _('Unit Price'), 'class': 'number'},
             {'name': _('Price Total'), 'class': 'number'},
-            {'name': _('ADL N°')}
+            {'name': _('ADL N°'), 'class': 'text-right'}
         ]
         return columns
     
-    """Group query  by order_id.
-    options are define by filter define by user
-    this method get list of all customer.
+    #Get options in context
+    def _set_context(self, options):
+        ctx = super(SaleCustomReports, self)._set_context(options)
+        ctx['strict_range'] = True
+        return ctx
+    
+    
     """
-    def _do_group_by_customer_id(self, options, line_id):
+    Context
+    ---------
+    The context is a python dictionary and is used to pass certain data to a method. Since nearly all methods have a context parameter you can use the context to pass data through several levels of python methods. For example you can set a context value in a XML-view and process it in the write() method of the osv object.
+    """
+    def _get_filters_otions(self, options):
+            
+        if options['date'].get('date_from'):
+            date_from = options['date'].get('date_from')
         sale_domain = [('state', 'in', ('sale'))]
         sql_query = """SELECT 
         """
@@ -67,9 +81,15 @@ class SaleCustomReports(models.AbstractModel):
     @api.model
     def _get_lines(self, options, line_id=None):
         lines = []
-        #tables, where_clause, where_params = self.env['sale.order.line'].with_context(strict_range=True)._query_get()
-        #user_type_id = self.env['account.account.type'].search([('type', '=', 'receivable')])
+        #partners = []
         domain = [('state', '=', 'sale')]
+        
+        date_from = options['date'].get('date_from')
+        date_to = options['date'].get('date_to')
+        date_from_datetime = fields.Datetime.from_string(date_from)
+        date_to_datetime = fields.Datetime.from_string(date_to)
+        domain=[('date_order', '>=', date_from_datetime), ('date_order', '<=', date_to_datetime)] + domain
+    
 
         if line_id != None:
             domain = [('order_partner_id', '=', line_id)] + domain
@@ -96,23 +116,25 @@ class SaleCustomReports(models.AbstractModel):
         #Adding sale orders lines
         if line_id :
             for child_line in unfold_query:
-                columns = ['', '', '', '', '', '', child_line.get('price_total'), child_line.get('order_id')[1]]
+                columns = [child_line.get('name'), child_line.get('product_uom')[1], child_line.get('lot_id'), child_line.get('payment_term'), child_line.get('product_uom_qty'), child_line.get('price_unit'), child_line.get('price_total'), child_line.get('order_id')[1]]
                 lines.append({
                     'id': child_line.get('id'),
-                    'name': child_line.get('name'),
+                    'name': format_date(self.env, child_line.get('date_order')),
+                    'class': 'date',
                     'level': 4,
                     'parent_id' : line_id,
                     'columns': [{'name': v} for v in columns],
                 })
 
         if total and not line_id:
+            columns = ['', '', '', '', '', '', total, '']
             lines.append({
                 'id': 'total',
                 'name': _('Total'),
-                'colspan': 7,
+                #'colspan': 7,
                 'level': 0,
                 'class': 'total',
-                'columns': [{'name': total}]
+                'columns': [{'name': v} for v in columns]
                 })
         
         return lines
