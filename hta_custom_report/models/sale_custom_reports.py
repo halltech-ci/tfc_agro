@@ -81,6 +81,7 @@ class SaleCustomReports(models.AbstractModel):
     @api.model
     def _get_lines(self, options, line_id=None):
         lines = []
+        context = self.env.context
         #partners = []
         domain = [('state', '=', 'sale')]
         
@@ -94,6 +95,7 @@ class SaleCustomReports(models.AbstractModel):
         if line_id != None:
             domain = [('order_partner_id', '=', line_id)] + domain
             unfold_query = self.env['sale.order.line'].with_context(strict_range=True).search_read(domain)
+            #res = self.
         
         orm_query = self.env['sale.order.line'].with_context(strict_range=True).read_group(domain, ['price_total:sum','order_partner_id', 'order_id'], ['order_partner_id'], ['order_partner_id'])
         
