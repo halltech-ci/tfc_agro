@@ -8,6 +8,7 @@
         <field name="priority">2</field>
         <field name="arch" type="xml">
             <tree string="Sale Report" create="false" default_order="order_id desc">
+                <!-- <button string="Print" type="object" name='Print_to_pdf'/> -->
                 <field name='order_partner_id'/>
                 <field name="product_id"/>
                 <field name="product_uom"/>
