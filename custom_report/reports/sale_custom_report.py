@@ -30,4 +30,8 @@ class SaleOrderLine(models.Model):
     date_order = fields.Datetime(string="Date Order", related="order_id.date_order", store=True)
     
     
+    def Print_to_pdf(self):
+        pass
+    
+    
             
