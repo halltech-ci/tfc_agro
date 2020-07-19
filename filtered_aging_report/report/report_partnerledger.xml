@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+
+		<template id="aged_report">
+			<t t-call="web.html_container">
+				<t t-call="filtered_aging_report.aged_layout">
+					<div class="o_account_reports_body">
+						<div class="o_account_reports_header">
+	                		<h2><t t-esc="data['rep_data']['rep_name']"></t></h2>
+	                	</div>
+	                	<div>
+							<div class="row">
+								<div class="col-3">
+									<strong>As of:</strong>
+									<p style="padding-left:5px;" t-esc="data['rep_data']['date']" />
+								</div>
+								<div class="col-3" t-if="data['rep_data']['salesperson']">
+									<strong>Salesperson:</strong>
+									<p style="padding-left:5px;" t-esc="data['rep_data']['salesperson']" />
+								</div>
+							</div>
+						</div>
+						<br/>
+						<div class="o_account_reports_summary">
+			                <div t-if="data['rep_data']['note']" class="o_account_report_summary" role="alert">
+			                    <p t-esc="data['rep_data']['note']"/>
+			                </div>
+			            </div>
+			            <br/>
+						<table class="o_account_reports_table table-striped" width="100%">
+							<thead >
+								<tr style="font-size: 13px;border:1px solid black; " class="o_account_report_column_header">
+									<th style="border:1px solid black; " class="o_account_report_column_header"></th>
+									<th class="o_account_report_column_header number"
+										style="white-space:nowrap;border:1px solid black; ">
+										Not due on:
+										<span t-esc="data['rep_data']['date']" />
+									</th>
+									<th class="o_account_report_column_header number"
+										style="white-space:nowrap;text-align: right;border:1px solid black; ">1 - 30</th>
+									<th class="o_account_report_column_header number"
+										style="white-space:nowrap;text-align: right;border:1px solid black; ">31 - 60</th>
+									<th class="o_account_report_column_header number"
+										style="white-space:nowrap;text-align: right;border:1px solid black; ">61 - 90</th>
+									<th class="o_account_report_column_header number"
+										style="white-space:nowrap;text-align: right;border:1px solid black; ">91 - 120</th>
+									<th class="o_account_report_column_header number"
+										style="white-space:nowrap;text-align: right;border:1px solid black; ">Older</th>
+									<th class="o_account_report_column_header number"
+										style="white-space:nowrap;text-align: right;border:1px solid black; ">Total</th>
+								</tr>
+							</thead>
+							<tbody>
+								<t t-set="total" t-value="{}"/>
+								<t t-if="data['rep_data']['state']">
+									<t t-foreach="data['lines']" t-as="d">
+										<t t-if="d != 'Total'">
+											<tr style="font-size: 13px;">
+												<td width="30%;" class="o_account_report_column_header" style="white-space:nowrap;border:1px solid black; ">
+													<strong>
+														<span t-esc="d" />
+													</strong>
+												</td>
+												<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; "></td>
+												<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; "></td>
+												<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; "></td>
+												<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; "></td>
+												<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; "></td>
+												<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; "> </td>
+												<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; "></td>
+											</tr>
+											<t t-set="cols" t-value="data['lines'][d]['cols']" />
+											<t t-foreach="cols" t-as="col">
+												<tr  style="font-size: 13px;" t-if="col['name'] != 'Total'">
+													<td class="o_account_report_column_header" style="white-space:nowrap;border:1px solid black; ">
+														<span t-if="col['level'] == 2" style="visibility: hidden;border:1px solid black; ">.....</span>
+														<span t-if="col['level'] == 4" style="visibility: hidden;border:1px solid black; ">..........</span>
+														<span t-esc="col['name']" />
+													</td>
+													<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; ">
+														<span t-esc="col['columns'][3]['name']" />
+													</td>
+													<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; ">
+														<span t-esc="col['columns'][4]['name']" />
+													</td>
+													<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; ">
+														<span t-esc="col['columns'][5]['name']" />
+													</td>
+													<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; ">
+														<span t-esc="col['columns'][6]['name']" />
+													</td>
+													<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; ">
+														<span t-esc="col['columns'][7]['name']" />
+													</td>
+													<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; ">
+														<span t-esc="col['columns'][8]['name']" />
+													</td>
+													<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; ">
+														<span t-esc="col['columns'][9]['name']" />
+													</td>
+												</tr>
+											</t>
+										</t>
+										<t t-if="d == 'Total'">
+											<t t-set="total" t-value="data['lines'][d]"/>
+										</t>
+									</t>
+									<tr style="font-size: 13px;" t-if="total and total['cols']">
+										<td class="o_account_report_column_header" style="white-space:nowrap;border:1px solid black; ">
+											<span t-esc="total['cols'][0]['name']" />
+										</td>
+										<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; ">
+											<span t-esc="total['cols'][0]['columns'][3]['name']" />
+										</td>
+										<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; ">
+											<span t-esc="total['cols'][0]['columns'][4]['name']" />
+										</td>
+										<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; ">
+											<span t-esc="total['cols'][0]['columns'][5]['name']" />
+										</td>
+										<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; ">
+											<span t-esc="total['cols'][0]['columns'][6]['name']" />
+										</td>
+										<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; ">
+											<span t-esc="total['cols'][0]['columns'][7]['name']" />
+										</td>
+										<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; ">
+											<span t-esc="total['cols'][0]['columns'][8]['name']" />
+										</td>
+										<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; ">
+											<span t-esc="total['cols'][0]['columns'][9]['name']" />
+										</td>
+									</tr>
+								</t>
+								<t t-set="tot" t-value="{}"/>
+								<t t-if="not data['rep_data']['state']" >
+								<t t-foreach="data['lines']" t-as="d">
+									<tr style="font-size: 13px;" t-if="d['name'] != 'Total'">
+										<td class="o_account_report_column_header" style="white-space:nowrap;border:1px solid black; ">
+											<span t-if="d['level'] == 2" style="visibility: hidden;border:1px solid black; ">.....</span>
+											<span t-if="d['level'] == 4" style="visibility: hidden;border:1px solid black; ">..........</span>
+											<span t-esc="d['name']" />
+										</td>
+										<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; ">
+											<span t-esc="d['columns'][3]['name']" />
+										</td>
+										<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; ">
+											<span t-esc="d['columns'][4]['name']" />
+										</td>
+										<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; ">
+											<span t-esc="d['columns'][5]['name']" />
+										</td>
+										<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; ">
+											<span t-esc="d['columns'][6]['name']" />
+										</td>
+										<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; ">
+											<span t-esc="d['columns'][7]['name']" />
+										</td>
+										<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; ">
+											<span t-esc="d['columns'][8]['name']" />
+										</td>
+										<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; ">
+											<span t-esc="d['columns'][9]['name']" />
+										</td>
+									</tr>
+									<tr style="font-size: 13px;" t-if="d['name'] == 'Total'">
+										<t t-set="tot" t-value="d"/>
+									</tr>
+								</t>
+									<tr style="font-size: 13px;  font-weight:bold;" t-if="tot != {}">
+										<td class="o_account_report_column_header" style="white-space:nowrap;border:1px solid black; ">
+											<span t-esc="tot['name']" />
+										</td>
+										<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; ">
+											<span t-esc="tot['columns'][3]['name']" />
+										</td>
+										<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; ">
+											<span t-esc="tot['columns'][4]['name']" />
+										</td>
+										<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; ">
+											<span t-esc="tot['columns'][5]['name']" />
+										</td>
+										<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; ">
+											<span t-esc="tot['columns'][6]['name']" />
+										</td>
+										<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; ">
+											<span t-esc="tot['columns'][7]['name']" />
+										</td>
+										<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; ">
+											<span t-esc="tot['columns'][8]['name']" />
+										</td>
+										<td class="o_account_report_column_header number" style="white-space:nowrap;text-align: right;border:1px solid black; ">
+											<span t-esc="tot['columns'][9]['name']" />
+										</td>
+									</tr>
+								</t>
+							</tbody>
+						</table>
+					</div>
+				</t>
+			</t>
+		</template>
+		
+		<record id="report_aged_format" model="report.paperformat">
+            <field name="name">SW - Filtered Aging Report </field>            
+	        <field name="format">A4</field>
+	        <field name="page_height">0</field>
+	        <field name="page_width">0</field>
+	        <field name="orientation">Portrait</field>
+	        <field name="margin_top">10</field>
+	        <field name="margin_bottom">15</field>
+	        <field name="margin_left">5</field>
+	        <field name="margin_right">5</field>
+	        <field name="header_line" eval="False"/>
+	        <field name="header_spacing">10</field>
+	        <field name="dpi">80</field>
+        </record>
+		<report id="action_report_aged" model="res.partner"
+			string="Aged Report" report_type="qweb-pdf"
+			name="filtered_aging_report.aged_report"
+			file="filtered_aging_report.aged_report" menu="False"
+			paperformat="filtered_aging_report.report_aged_format" />
+	</data>
+</odoo>

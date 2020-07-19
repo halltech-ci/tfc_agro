@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+		<record model="ir.ui.view" id="account_aged_partner_wizard">
+			<field name="name">account.aged.partner.wizard</field>
+			<field name="model">account.aged.partner.wizard</field>
+			<field name="arch" type="xml">
+				<form>
+					<group>
+						<group>
+							<field name="date" />
+							<field name="aging_type" />
+							<field name="type" />
+						</group>
+						<group>
+							<field name="group_by" />
+							<field name="ignore_limit" />
+						</group>
+					</group>
+					<field name="note" placeholder="Note..."/>
+					<footer>
+						<button string="PDF" name="export_pdf" type="object"
+							class="oe_highlight" />
+						<button string="Excel" name="export_excel"
+							type="object" class="oe_highlight" />
+						<button string="Cancel" class="oe_link" special="cancel" />
+					</footer>
+				</form>
+			</field>
+		</record>
+
+		<record id="action_account_aged_partner_wizard" model="ir.actions.act_window">
+            <field name="name">Aged Report</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.aged.partner.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="binding_model_id" ref="base.model_res_partner" />
+            <field name="binding_type">report</field>
+        </record>
+
+	</data>
+</odoo>
