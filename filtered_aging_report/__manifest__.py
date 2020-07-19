@@ -18,7 +18,7 @@
         'report/layout.xml',
         'wizard/aged_report_wizard_view.xml',
         'report/report_partnerledger.xml',
-        'data/account_financial_report_data.xml',
+        #'data/account_financial_report_data.xml',
     ],
     'images':  ["static/description/image.png"],
 }
