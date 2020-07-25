@@ -22,6 +22,23 @@ class CustomReport(models.AbstractModel):
     _name="report.custom_report.custom_report_template"#Respect naming format report.module_name.report_template_name
     _description="Custom report for TFC AGRO"
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     def _get_sale_dayly_report(self):
         '''This method gets sale order by customer and by product'''
         #First we get all sale order for the giving date

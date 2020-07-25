@@ -1,20 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from odoo import models, fields, api, _
-#from datetime import datetime, date
-#from odoo.tools import DEFAULT_SERVER_DATE_FORMAT as DATE_FORMAT, DEFAULT_SERVER_DATETIME_FORMAT, date_utils
-
-# class tfc_custom(models.Model):
-#     _name = 'tfc_custom.tfc_custom'
-
-#     name = fields.Char()
-#     value = fields.Integer()
-#     value2 = fields.Float(compute="_value_pc", store=True)
-#     description = fields.Text()
-#
-#     @api.depends('value')
-#     def _value_pc(self):
-#         self.value2 = float(self.value) / 100
+from odoo.exceptions import ValidationError
+from io import BytesIO
+import xlwt
+import base64
+from datetime import datetime, date
 
 
 class CreateCustomReport(models.TransientModel):
@@ -23,6 +14,18 @@ class CreateCustomReport(models.TransientModel):
     
     date_from = fields.Date(string="From Date", default=fields.Date.today())
     date_to = fields.Date(string="Today", required=True, default=fields.Date.today())
+    warehouse_ids = fields.Many2many('stock.warehouse', 'warehouse_custom_report_rel', string="Warehouse", required=True)
+    location_id = fields.Many2one('stock.location', string="Location")
+    filter_by = fields.Selection([('product', 'Product'), ('category', 'Category')], string="Filter By")
+    group_by_categ = fields.Boolean(string="Category Group By")
+    with_zero = fields.Boolean(string="With Zero Values")
+    state = fields.Selection([('choose', 'choose'), ('get', 'get')], default='choose')
+    name = fields.Char(string='File Name', readonly=True)
+    data = fields.Binary(string='File', readonly=True)
+    product_ids = fields.Many2many('product.product', 'product_custom_report_rel', string="Products")
+    category_ids = fields.Many2many('product.category', 'product_categ_custom_report_rel', string="Categories")
+    is_today_movement = fields.Boolean(string="Today Movement")
+
     
     @api.multi
     def get_report(self):
@@ -38,38 +41,3 @@ class CreateCustomReport(models.TransientModel):
         return self.env.ref('custom_report.action_custom_report').with_context(landscape=True).report_action(self, data=data)
     
     
-
-'''
-class CreateCustomReport(models.TransientModel):
-    _name="create.custom.report"
-    _description="Wizard form to create custom report"
-
-    compute_at_date = fields.Selection([
-        (0, 'Current Inventory'),
-        (1, 'At a Specific Date')
-    ], string="Compute", help="Choose to analyze the current inventory or from a specific date in the past.")
-    date = fields.Datetime('Inventory at Date', help="Choose a date to get the inventory at that date", default=fields.Datetime.now)
-
-    def open_table(self):
-        self.ensure_one()
-
-        if self.compute_at_date:
-            tree_view_id = self.env.ref('stock.view_stock_product_tree').id
-            form_view_id = self.env.ref('stock.product_form_view_procurement_button').id
-            # We pass `to_date` in the context so that `qty_available` will be computed across
-            # moves until date.
-            action = {
-                'type': 'ir.actions.act_window',
-                'views': [(tree_view_id, 'tree'), (form_view_id, 'form')],
-                'view_mode': 'tree,form',
-                'name': _('Products'),
-                'res_model': 'product.product',
-                'domain': "[('type', '=', 'product')]",
-                'context': dict(self.env.context, to_date=self.date),
-            }
-            return action
-        else:
-            self.env['stock.quant']._merge_quants()
-            self.env['stock.quant']._unlink_zero_quants()
-            return self.env.ref('stock.quantsact').read()[0]
-'''
