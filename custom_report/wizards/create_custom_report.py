@@ -12,9 +12,10 @@ class CreateCustomReport(models.TransientModel):
     _name="create.custom.report"
     _description="Wizard form to create custom report"
     
-    date_from = fields.Date(string="From Date", default=fields.Date.today())
-    date_to = fields.Date(string="Today", required=True, default=fields.Date.today())
+    start_date = fields.Date(string="From Date", default=fields.Date.today())
+    end_date = fields.Date(string="Today", required=True, default=fields.Date.today())
     warehouse_ids = fields.Many2many('stock.warehouse', 'warehouse_custom_report_rel', string="Warehouse", required=True)
+    company_id = fields.Many2one('res.company', string="Company", default=lambda self: self.env.user.company_id.id, required=True)
     location_id = fields.Many2one('stock.location', string="Location")
     filter_by = fields.Selection([('product', 'Product'), ('category', 'Category')], string="Filter By")
     group_by_categ = fields.Boolean(string="Category Group By")
@@ -27,17 +28,60 @@ class CreateCustomReport(models.TransientModel):
     is_today_movement = fields.Boolean(string="Today Movement")
 
     
+    @api.onchange('warehouse_ids')
+    def onchange_warehouse_ids(self):
+        if self.warehouse_ids:
+            self.location_id = False
+
+    @api.onchange('filter_by')
+    def onchange_filter_by(self):
+        self.product_ids = self.category_ids = False
+
+    @api.onchange('company_id')
+    def onchange_company_id(self):
+        if self.company_id:
+            self.warehouse_ids = self.location_id = False
+
+    def check_date_range(self):
+        if self.end_date < self.start_date:
+            raise ValidationError(_('Enter proper date range'))
+            
     @api.multi
-    def get_report(self):
-        #I get data enter in form
-        data = {
-            'model': self._name,
-            'ids' : self.ids,
-            #data['form'] = self.read(['date_from', 'date_to', 'journal_ids', 'target_move', 'company_id'])[0]
-            'form' :self.read(['date_from', 'date_to'])[0]
-            #'form' : self.read()[0]
+    def generate_pdf_report(self):
+        self.check_date_range()
+        datas = {'form':
+            {
+                'company_id': self.company_id.id,
+                'warehouse_ids': [y.id for y in self.warehouse_ids],
+                'location_id': self.location_id and self.location_id.id or False,
+                'start_date': date.today() if self.is_today_movement else self.start_date,
+                'end_date': date.today() if self.is_today_movement else self.end_date,
+                'id': self.id,
+                'product_ids': self.product_ids.ids,
+                'product_categ_ids': self.category_ids.ids
+            },
         }
-        #action_custom_report is the report template name
-        return self.env.ref('custom_report.action_custom_report').with_context(landscape=True).report_action(self, data=data)
+        return self.env.ref('custom_report.action_custom_report').report_action(self, data=datas)
     
+    @api.multi
+    def generate_xls_report(self):
+        self.check_date_range()
+        pass
+
     
+class stock_location(models.Model):
+    _inherit = 'stock.location'
+
+    @api.model
+    def name_search(self, name, args, operator='ilike', limit=100):
+        if self._context.get('company_id'):
+            domain = [('company_id', '=', self._context.get('company_id')), ('usage', '=', 'internal')]
+            if self._context.get('warehouse_ids') and self._context.get('warehouse_ids')[0][2]:
+                warehouse_ids = self._context.get('warehouse_ids')[0][2]
+                stock_ids = []
+                for warehouse in self.env['stock.warehouse'].browse(warehouse_ids):
+                    stock_ids.append(warehouse.view_location_id.id)
+                domain.append(('location_id', 'child_of', stock_ids))
+            args += domain
+        return super(stock_location, self).name_search(name, args, operator, limit)
+

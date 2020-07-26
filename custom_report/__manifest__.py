@@ -37,6 +37,7 @@
         #'views/res_partner_views.xml',
         'wizards/create_custom_report.xml',
         'reports/custom_report.xml',
+        'reports/custom_report_template.xml',
         'reports/sale_custom_report.xml',
         #'reports/stock_custom_report.xml',
         'views/dashboard.xml'
