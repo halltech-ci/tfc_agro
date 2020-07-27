@@ -20,7 +20,7 @@
     <report id="action_custom_report"
             model="create.custom.report"
             string="Custom Reports"
-            report_type="qweb-pdf"
+            report_type="qweb-html"
             name="custom_report.custom_report_template"
             file="custom_report.custom_report_template"
             paperformat="paperformat_custom_report"

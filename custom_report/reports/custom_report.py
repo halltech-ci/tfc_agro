@@ -1,22 +1,13 @@
 # -*- coding: utf-8 -*-
 
+import pytz
+import time
+from operator import itemgetter
+from itertools import groupby
 from odoo import models, fields, api
-from datetime import datetime, timedelta
-from odoo.tools import DEFAULT_SERVER_DATE_FORMAT as DATE_FORMAT, DEFAULT_SERVER_DATETIME_FORMAT
-from odoo.tools import date_utils
+from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
+from datetime import datetime, date
 import re
-
-# class tfc_custom(models.Model):
-#     _name = 'tfc_custom.tfc_custom'
-
-#     name = fields.Char()
-#     value = fields.Integer()
-#     value2 = fields.Float(compute="_value_pc", store=True)
-#     description = fields.Text()
-#
-#     @api.depends('value')
-#     def _value_pc(self):
-#         self.value2 = float(self.value) / 100
 
 class CustomReport(models.AbstractModel):
     _name="report.custom_report.custom_report_template"#Respect naming format report.module_name.report_template_name
@@ -35,6 +26,13 @@ class CustomReport(models.AbstractModel):
         if not product_ids:
              product_ids = product_product_obj.search(domain)
         return product_ids
+    
+    
+    def _get_product_uom(self, product_id):
+        product_ids = _get_product(record)
+        product_uom = self.env['product.product'].browse(product_id).name
+        return product_uom
+    
     
     def get_location(self, records, warehouses=None):
         stock_ids = []
@@ -126,6 +124,21 @@ class CustomReport(models.AbstractModel):
         res = self._cr.dictfetchall()
         return res[0].get('qty', 0.00) if res else 0.00
 
+    
+    def get_product_move(self, product):
+        domain = [('state', '=', 'done')]
+        start_date = str(date.today()) if record.is_today_movement else str(record.start_date)
+        end_date = str(date.today()) if record.is_today_movement else str(record.end_date)
+        start_date += ' 00:00:00'
+        end_date += ' 23:59:59'
+        domain += [('date', '<=', end_date), ('date', '>=', start_date)]
+        moves = self.env['stock.move'].search(domain)
+        sales_move = moves.search_read([('picking_code', '=', 'outgoing')]) if moves.search([('picking_code', '=', 'outgoing')]).exists() else False
+        purchases_purchase = moves.search_read([('picking_code', '=', 'incoming')]) if moves.search([('picking_code', '=', 'incoming')]).exists() else False
+        internal_move = moves.search_read([('picking_code', '=', 'internal')]) if moves.search([('picking_code', '=', 'internal')]).exists() else False
+        
+            
+    
     def get_product_sale_qty(self, record, product=None,warehouses=None):
         if not product:
             product = self._get_products(record)
@@ -141,6 +154,7 @@ class CustomReport(models.AbstractModel):
 
             start_date += ' 00:00:00'
             end_date += ' 23:59:59'
+            #product_qty_out = 
             self._cr.execute('''
                             SELECT pp.id AS product_id,pt.categ_id,
                                 sum((
@@ -186,6 +200,7 @@ class CustomReport(models.AbstractModel):
                             GROUP BY pt.categ_id, pp.id order by pt.categ_id
                             ''', (tuple(locations), tuple(locations), tuple(locations), tuple(locations), tuple(locations), tuple(locations), start_date, end_date, product_data))
             values = self._cr.dictfetchall()
+            #values = {'product_id': id, 'categ_id': categ_id, 'product_qty_out': categ_id, 'product_qty_out': qty_out, 'product_qty_in': qty_in, 'product_qty_internal': qty_int, 'prduct_qty_adjustment': qty_adj}
             if record.group_by_categ:
                 sort_by_categories = sorted(values, key=itemgetter('categ_id'))
                 records_by_categories = dict((k, [v for v in itr]) for k, itr in groupby(sort_by_categories, itemgetter('categ_id')))
@@ -228,6 +243,7 @@ class CustomReport(models.AbstractModel):
            'get_products':self._get_products,
            'get_product_sale_qty':self.get_product_sale_qty,
            'get_location':self.get_location(records),
+           'product_uom': self._get_product_uom
         }
         return res
 

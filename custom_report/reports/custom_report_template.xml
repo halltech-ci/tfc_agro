@@ -4,7 +4,7 @@
     <template id="custom_report_template">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
-                <t t-call="web.external_layout">
+                <t t-call="web.internal_layout">
                   <div class="page">
                       
                     <style>
@@ -27,6 +27,7 @@
                     <br/>
                     <div class="">
                         <t t-foreach="o.warehouse_ids" t-as="warehouse">
+                            <br/><br/>
                             <table class="table" id="custom">
                                 <tbody>
                                     <tr style="border-top:2px;">
@@ -47,15 +48,87 @@
                                             <t t-if="not o.location_id">
                                                 <span>All</span>
                                             </t>
-                                            </td>
-                                            <td><span t-esc="o.start_date"/> To <span t-esc="o.end_date"/></td>
-                                            <td><span t-field="user.name"/></td>
+                                        </td>
+                                        <td><span t-esc="o.start_date"/> To <span t-esc="o.end_date"/></td>
+                                        <td><span t-field="user.name"/></td>
+                                        <td>
+                                            <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <p>Stock Postion</p>
+                            <table class="table table-condensed" id="custom">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Unit</th>
+                                        <th>Initial Stock</th>
+                                        <th>Received</th>
+                                        <th>Sales</th>
+                                        <th>Transfer</th>
+                                        <th>Adjustment</th>
+                                        <th>Conversion</th>
+                                        <th>Actual Stock</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="invoice_tbody">
+                                    <t t-set="sum_begning" t-value="0.0"/>
+                                    <t t-set="sum_product_qty_in" t-value="0.0"/>
+                                    <t t-set="sum_product_qty_out" t-value="0.0"/>
+                                    <t t-set="sum_product_qty_internal" t-value="0.0"/>
+                                    <t t-set="sum_product_qty_adjustment" t-value="0.0"/>
+                                    <t t-foreach="get_products(o)" t-as="product">
+                                        <t t-set="ending_qty" t-value="0.00"/>
+                                        <t t-value="get_beginning_inventory(o,product,warehouses=warehouse)" t-set="product_beg_qty"/>
+                                        <t t-value="get_product_sale_qty(o,product,warehouses=warehouse)" t-set="product_val"/>
+                                        <t t-set="ending_qty" t-value="product_beg_qty + product_val['product_qty_in'] + product_val['product_qty_out'] + product_val['product_qty_internal']
+                                            + product_val['product_qty_adjustment']"
+                                        />
+                                        <t t-set="today_movment_qty" t-value="product_val['product_qty_in'] + product_val['product_qty_out'] + product_val['product_qty_internal'] + 
+                                                product_val['product_qty_adjustment']"/>
+                                        <tr>
+                                            <td><span t-esc="product.name_get()[0][1]"/></td>
+                                            <!-- Product unit of mesure-->
                                             <td>
-                                                <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/>
+                                                <span t-esc="product.uom_id.name"/>
+                                            </td>
+                                            <!-- Initial stock-->
+                                            <td>
+                                                <span t-esc="product_beg_qty"/>
+                                                <t t-set="sum_begning" t-value="sum_begning + product_beg_qty"/>
+                                            </td>
+                                            <!--Received -->
+                                            <td>
+                                                <span t-esc="product_val['product_qty_in']"/>
+                                                <t t-set="sum_product_qty_in" t-value="sum_product_qty_in + product_val['product_qty_in']"/>
+                                            </td>
+                                            <!-- Sale qty-->
+                                            <td>
+                                                <span t-esc="abs(product_val['product_qty_out'])"/>
+                                                <t t-set="sum_product_qty_out" t-value="sum_product_qty_out + product_val['product_qty_out']"/>
+                                            </td>
+                                            <!-- Internal transfert-->
+                                            <td>
+                                                <span t-esc="product_val['product_qty_internal']"/>
+                                                <t t-set="sum_product_qty_internal" t-value="sum_product_qty_internal + product_val['product_qty_internal']"/>
+                                            </td>
+                                            <!--Stock adjustment-->
+                                            <td>
+                                                <span t-esc="product_val['product_qty_adjustment']"/>
+                                                <t t-set="sum_product_qty_adjustment" t-value="sum_product_qty_adjustment + product_val['product_qty_adjustment']"/>
+                                            </td>
+                                            <td></td>
+                                            <td>
+                                                <span t-esc="product_beg_qty + product_val['product_qty_in'] + product_val['product_qty_out'] + product_val['product_qty_adjustment']"/>
                                             </td>
                                         </tr>
-
+                                        
+                                    </t>
                                 </tbody>
+                            </table>
+                            <p>Sales</p>
+                            <table>
                             </table>
                         </t>
                     </div>
