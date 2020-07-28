@@ -28,12 +28,6 @@ class CustomReport(models.AbstractModel):
         return product_ids
     
     
-    def _get_product_uom(self, product_id):
-        product_ids = _get_product(record)
-        product_uom = self.env['product.product'].browse(product_id).name
-        return product_uom
-    
-    
     def get_location(self, records, warehouses=None):
         stock_ids = []
         location_obj = self.env['stock.location']
@@ -124,19 +118,24 @@ class CustomReport(models.AbstractModel):
         res = self._cr.dictfetchall()
         return res[0].get('qty', 0.00) if res else 0.00
 
-    
-    def get_product_move(self, product):
+    def get_product_move(self, record):
         domain = [('state', '=', 'done')]
         start_date = str(date.today()) if record.is_today_movement else str(record.start_date)
         end_date = str(date.today()) if record.is_today_movement else str(record.end_date)
-        start_date += ' 00:00:00'
-        end_date += ' 23:59:59'
         domain += [('date', '<=', end_date), ('date', '>=', start_date)]
-        moves = self.env['stock.move'].search(domain)
-        sales_move = moves.search_read([('picking_code', '=', 'outgoing')]) if moves.search([('picking_code', '=', 'outgoing')]).exists() else False
-        purchases_purchase = moves.search_read([('picking_code', '=', 'incoming')]) if moves.search([('picking_code', '=', 'incoming')]).exists() else False
-        internal_move = moves.search_read([('picking_code', '=', 'internal')]) if moves.search([('picking_code', '=', 'internal')]).exists() else False
-        
+        moves = self.env['stock.move.line'].search(domain)
+        #self.env['stock.move.line'].search([]).filtered(lambda l : l.picking_id.picking_type_code == 'incoming')
+        #moves = self.env['stock.move'].search(domain)
+        sales_move = moves.filtered(lambda l : l.move_id.picking_code == 'outgoing')
+        purchases_move = moves.filtered(lambda l : l.move_id.picking_code == 'incoming')
+        internal_move = moves.filtered(lambda l : l.move_id.picking_code == 'internal')
+        #product_name=get('name'), product_qty=get('product_qty'), product_uom=get('product_uom')[1], partner_name=get('partner_id')[1], origin=get('') 
+        product_move = {
+            'sales_move': sales_move,
+            'purchase_move': purchases_move,
+            'internal_move': internal_move
+            }
+        return product_move
             
     
     def get_product_sale_qty(self, record, product=None,warehouses=None):
@@ -243,7 +242,8 @@ class CustomReport(models.AbstractModel):
            'get_products':self._get_products,
            'get_product_sale_qty':self.get_product_sale_qty,
            'get_location':self.get_location(records),
-           'product_uom': self._get_product_uom
+           #'product_uom': self._get_product_uom,
+           'get_product_move': self.get_product_move
         }
         return res
 

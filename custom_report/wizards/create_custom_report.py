@@ -26,6 +26,8 @@ class CreateCustomReport(models.TransientModel):
     product_ids = fields.Many2many('product.product', 'product_custom_report_rel', string="Products")
     category_ids = fields.Many2many('product.category', 'product_categ_custom_report_rel', string="Categories")
     is_today_movement = fields.Boolean(string="Today Movement")
+    #partner_ids = fields.Many2many('res_partner', 'partner_custom_report_rel', string="Partners")
+    partner_type = fields.Selection([('customer', 'Customer'), ('suplier', 'Vendor')], string='Purchase/Sale')
 
     
     @api.onchange('warehouse_ids')
