@@ -123,11 +123,11 @@ class CustomReport(models.AbstractModel):
         start_date = str(date.today()) if record.is_today_movement else str(record.start_date)
         end_date = str(date.today()) if record.is_today_movement else str(record.end_date)
         domain += [('date', '<=', end_date), ('date', '>=', start_date)]
-        moves = self.env['stock.move.line'].search(domain)
+        moves = self.env['stock.move.line'].search(domain).filtered(lambda l: l.move_id.product_type == 'product')
         #self.env['stock.move.line'].search([]).filtered(lambda l : l.picking_id.picking_type_code == 'incoming')
         #moves = self.env['stock.move'].search(domain)
-        sales_move = moves.filtered(lambda l : l.move_id.picking_code == 'outgoing')
-        purchases_move = moves.filtered(lambda l : l.move_id.picking_code == 'incoming')
+        sales_move = moves.filtered(lambda l : l.move_id.picking_code == 'outgoing' and len(l.move_id.sale_line_id) > 0)
+        purchases_move = moves.filtered(lambda l : l.move_id.picking_code == 'incoming' and len(l.move_id.purchase_line_id) > 0)
         internal_move = moves.filtered(lambda l : l.move_id.picking_code == 'internal')
         #product_name=get('name'), product_qty=get('product_qty'), product_uom=get('product_uom')[1], partner_name=get('partner_id')[1], origin=get('') 
         product_move = {

@@ -145,19 +145,76 @@
                                 <tbody>
                                     <t t-foreach="get_product_move(o).get('sales_move')" t-as="sales">
                                         <tr>
-                                            <td><span t-esc="sales.move_id.partner_id.name"/></td>
+                                            <td><span t-esc="sales.move_id.picking_partner_id.name"/></td>
                                             <td><span t-esc="sales.product_id.name"/></td>
-                                            <td></td>
+                                            <td><span t-esc="sales.move_id.product_uom.name"/></td>
                                             <td><span t-esc="sales.lot_id.name"/></td>
-                                            <td></td>
+                                            <td><span t-esc="sales.move_id.sale_line_id.order_id.payment_term_id"/></td>
                                             <td><span t-esc="sales.qty_done"/></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
+                                            <td><span t-esc="sales.move_id.sale_line_id.price_unit"/></td>
+                                            <td><span t-esc="sales.move_id.sale_line_id.price_total"/></td>
+                                            <td><span t-esc="sales.move_id.sale_line_id.order_id.name"/></td>
                                         </tr>
                                     </t>
                                 </tbody>
                             </table>
+                            <p>Purchases</p>
+                            <table class="table" id="custom">
+                                <thead>
+                                    <tr>
+                                        <th>Buyer</th>
+                                        <th>Product</th>
+                                        <th>Unit</th>
+                                        <th>Vessel</th>
+                                        <th>Puchase Qty</th>
+                                        <th>Price</th>
+                                        <th>Amount</th>
+                                        <th>Purchase Ref.</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="get_product_move(o).get('purchase_move')" t-as="purchases">
+                                        <tr>
+                                            <td><span t-esc="purchases.move_id.picking_partner_id.name"/></td>
+                                            <td><span t-esc="purchases.product_id.name"/></td>
+                                            <td><span t-esc="purchases.move_id.product_uom.name"/></td>
+                                            <td><span t-esc="purchases.lot_id.name"/></td>
+                                            <td><span t-esc="purchases.qty_done"/></td>
+                                            <td><span t-esc="purchases.move_id.purchase_line_id.price_unit"/></td>
+                                            <td><span t-esc="purchases.move_id.purchase_line_id.price_total"/></td>
+                                            <td><span t-esc="purchases.move_id.purchase_line_id.order_id.name"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                            
+                            <p>Stock Age</p>
+                            <table class="table" id="custom">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Unit</th>
+                                        <th>0-75 Days</th>
+                                        <th>75-180 Days</th>
+                                        <th>191-360 Days</th>
+                                        <th>360 Days+</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="get_product_move(o).get('purchase_move')" t-as="purchases">
+                                        <tr>
+                                            <td><span t-esc="purchases.move_id.picking_partner_id.name"/></td>
+                                            <td><span t-esc="purchases.product_id.name"/></td>
+                                            <td><span t-esc="purchases.move_id.product_uom.name"/></td>
+                                            <td><span t-esc="purchases.lot_id.name"/></td>
+                                            <td><span t-esc="purchases.qty_done"/></td>
+                                            <td><span t-esc="purchases.move_id.purchase_line_id.price_unit"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+
+
                         </t>
                     </div>
                    </div><!-- End Page-->
