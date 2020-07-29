@@ -1,537 +1,255 @@
 # -*- coding: utf-8 -*-
 
+import pytz
+import time
+from operator import itemgetter
+from itertools import groupby
 from odoo import models, fields, api
-from datetime import datetime, timedelta
-from odoo.tools import DEFAULT_SERVER_DATE_FORMAT as DATE_FORMAT, DEFAULT_SERVER_DATETIME_FORMAT
-from odoo.tools import date_utils
+from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
+from datetime import datetime, date
 import re
-
-# class tfc_custom(models.Model):
-#     _name = 'tfc_custom.tfc_custom'
-
-#     name = fields.Char()
-#     value = fields.Integer()
-#     value2 = fields.Float(compute="_value_pc", store=True)
-#     description = fields.Text()
-#
-#     @api.depends('value')
-#     def _value_pc(self):
-#         self.value2 = float(self.value) / 100
 
 class CustomReport(models.AbstractModel):
     _name="report.custom_report.custom_report_template"#Respect naming format report.module_name.report_template_name
     _description="Custom report for TFC AGRO"
     
-    def _get_sale_dayly_report(self):
-        '''This method gets sale order by customer and by product'''
-        #First we get all sale order for the giving date
-        date = fields.Date.today()
-        sales = self.env['sale.order'].search([('state', '=', 'sale')]).filtered(lambda line: fields.Date.to_date(line.confirmation_date) == date)
-        sale_report = []
-        for sale in sales:
-            #get customer name
-            customer_name = sale.partner_id.name
-            sale_adl = sale.name
-            if sale.payment_term_id:
-                payment_term = sale.payment_term_id.name
-            else:
-                payment_term = ''
-            #Get order line information
-            order_lines = sale.order_line
-            for order_line in order_lines:
-                if order_line.lot_id:
-                    product_lot = order_line.lot_id.name
+    
+    def _get_products(self, record):
+        product_product_obj = self.env['product.product']
+        domain = [('type', '=', 'product')]
+        product_ids = False
+        if record.category_ids:
+            domain.append(('categ_id', 'in', record.category_ids.ids))
+            product_ids = product_product_obj.search(domain)
+        if record.product_ids:
+            product_ids = record.product_ids
+        if not product_ids:
+             product_ids = product_product_obj.search(domain)
+        return product_ids
+    
+    def _get_stock_age(self, records):
+        pass
+    
+    def get_location(self, records, warehouses=None):
+        stock_ids = []
+        location_obj = self.env['stock.location']
+        domain = [('company_id', '=', records.company_id.id), ('usage', '=', 'internal')]
+        if warehouses:
+            for warehouse in warehouses:
+                stock_ids.append(warehouse.view_location_id.id)
+            domain.append(('location_id', 'child_of', stock_ids))
+        elif records.warehouse_ids:
+            for warehouse in records.warehouse_ids:
+                stock_ids.append(warehouse.view_location_id.id)
+            domain.append(('location_id', 'child_of', stock_ids))
+        final_stock_ids = location_obj.search(domain).ids
+        return final_stock_ids
+    
+    def convert_withtimezone(self, userdate):
+        user_date = datetime.strptime(userdate, DEFAULT_SERVER_DATETIME_FORMAT)
+        tz_name = self.env.context.get('tz') or self.env.user.tz
+        if tz_name:
+            utc = pytz.timezone('UTC')
+            context_tz = pytz.timezone(tz_name)
+            user_datetime = user_date
+            local_timestamp = context_tz.localize(user_datetime, is_dst=False)
+            user_datetime = local_timestamp.astimezone(utc)
+            return user_datetime.strftime(DEFAULT_SERVER_DATETIME_FORMAT)
+        return user_date.strftime(DEFAULT_SERVER_DATETIME_FORMAT)
+    
+    
+    def _get_beginning_inventory(self, record, product,warehouses=None):
+        locations = [record.location_id.id] if record.location_id else self.get_location(record,warehouses)
+        if isinstance(product, int):
+            product_data = product
+        else:
+            product_data = product.id
+
+        start_date = str(date.today()) if record.is_today_movement else str(record.start_date)
+        from_date = self.convert_withtimezone(start_date + ' 00:00:00')
+        self._cr.execute(''' 
+                        SELECT id as product_id,coalesce(sum(qty), 0.0) as qty
+                        FROM
+                            ((
+                            SELECT pp.id, pp.default_code,m.date,
+                                CASE when pt.uom_id = m.product_uom 
+                                THEN u.name 
+                                ELSE (select name from uom_uom where id = pt.uom_id) 
+                                END AS name,
+
+                                CASE when pt.uom_id = m.product_uom
+                                THEN coalesce(sum(-m.product_qty)::decimal, 0.0)
+                                ELSE coalesce(sum(-m.product_qty * pu.factor / u.factor )::decimal, 0.0) 
+                                END AS qty
+
+                            FROM product_product pp 
+                            LEFT JOIN stock_move m ON (m.product_id=pp.id)
+                            LEFT JOIN product_template pt ON (pp.product_tmpl_id=pt.id)
+                            LEFT JOIN stock_location l ON (m.location_id=l.id)    
+                            LEFT JOIN stock_picking p ON (m.picking_id=p.id)
+                            LEFT JOIN uom_uom pu ON (pt.uom_id=pu.id)
+                            LEFT JOIN uom_uom u ON (m.product_uom=u.id)
+                            WHERE m.date <  %s AND (m.location_id in %s) AND m.state='done' AND pp.active=True AND pp.id = %s
+                            GROUP BY  pp.id, pt.uom_id , m.product_uom ,pp.default_code,u.name,m.date
+                            ) 
+                            UNION ALL
+                            (
+                            SELECT pp.id, pp.default_code,m.date,
+                                CASE when pt.uom_id = m.product_uom 
+                                THEN u.name 
+                                ELSE (select name from uom_uom where id = pt.uom_id) 
+                                END AS name,
+                                CASE when pt.uom_id = m.product_uom 
+                                THEN coalesce(sum(m.product_qty)::decimal, 0.0)
+                                ELSE coalesce(sum(m.product_qty * pu.factor / u.factor )::decimal, 0.0) 
+                                END  AS qty
+                            FROM product_product pp 
+                            LEFT JOIN stock_move m ON (m.product_id=pp.id)
+                            LEFT JOIN product_template pt ON (pp.product_tmpl_id=pt.id)
+                            LEFT JOIN stock_location l ON (m.location_dest_id=l.id)    
+                            LEFT JOIN stock_picking p ON (m.picking_id=p.id)
+                            LEFT JOIN uom_uom pu ON (pt.uom_id=pu.id)
+                            LEFT JOIN uom_uom u ON (m.product_uom=u.id)
+                            WHERE m.date < %s AND (m.location_dest_id in %s) AND m.state='done' AND pp.active=True AND pp.id = %s
+                            GROUP BY  pp.id,pt.uom_id , m.product_uom ,pp.default_code,u.name,m.date
+                            ))
+                        AS foo
+                        GROUP BY id
+                    ''', (from_date, tuple(locations), product_data, from_date, tuple(locations), product_data))
+
+        res = self._cr.dictfetchall()
+        return res[0].get('qty', 0.00) if res else 0.00
+
+    def get_product_move(self, record):
+        domain = [('state', '=', 'done')]
+        start_date = str(date.today()) if record.is_today_movement else str(record.start_date)
+        end_date = str(date.today()) if record.is_today_movement else str(record.end_date)
+        start_date += ' 00:00:00'
+        end_date += ' 23:59:59'
+
+        domain += [('date', '<=', end_date), ('date', '>=', start_date)]
+        moves = self.env['stock.move.line'].search(domain).filtered(lambda l: l.move_id.product_type == 'product')
+        #self.env['stock.move.line'].search([]).filtered(lambda l : l.picking_id.picking_type_code == 'incoming')
+        #moves = self.env['stock.move'].search(domain)
+        sales_move = moves.filtered(lambda l : l.move_id.picking_code == 'outgoing' and len(l.move_id.sale_line_id) > 0)
+        purchases_move = moves.filtered(lambda l : l.move_id.picking_code == 'incoming' and len(l.move_id.purchase_line_id) > 0)
+        internal_move = moves.filtered(lambda l : l.move_id.picking_code == 'internal')
+        #product_name=get('name'), product_qty=get('product_qty'), product_uom=get('product_uom')[1], partner_name=get('partner_id')[1], origin=get('') 
+        product_move = {
+            'sales_move': sales_move,
+            'purchase_move': purchases_move,
+            'internal_move': internal_move
+            }
+        return product_move
+            
+    
+    def get_product_sale_qty(self, record, product=None,warehouses=None):
+        if not product:
+            product = self._get_products(record)
+        if isinstance(product, list):
+            product_data = tuple(product)
+        else:
+            product_data = tuple(product.ids)
+
+        if product_data:
+            locations = [record.location_id.id] if record.location_id else self.get_location(record, warehouses)
+            start_date = str(date.today()) if record.is_today_movement else str(record.start_date)
+            end_date = str(date.today()) if record.is_today_movement else str(record.end_date)
+
+            start_date += ' 00:00:00'
+            end_date += ' 23:59:59'
+            #product_qty_out = 
+            self._cr.execute('''
+                            SELECT pp.id AS product_id,pt.categ_id,
+                                sum((
+                                CASE WHEN spt.code in ('outgoing') AND sm.location_id in %s AND sourcel.usage !='inventory' AND destl.usage !='inventory'
+                                THEN -(sm.product_qty * pu.factor / pu2.factor)
+                                ELSE 0.0 
+                                END
+                                )) AS product_qty_out,
+                                 sum((
+                                CASE WHEN spt.code in ('incoming') AND sm.location_dest_id in %s AND sourcel.usage !='inventory' AND destl.usage !='inventory' 
+                                THEN (sm.product_qty * pu.factor / pu2.factor) 
+                                ELSE 0.0 
+                                END
+                                )) AS product_qty_in,
+
+                                sum((
+                                CASE WHEN (spt.code ='internal' OR spt.code is null) AND sm.location_dest_id in %s AND sourcel.usage !='inventory' AND destl.usage !='inventory' 
+                                THEN (sm.product_qty * pu.factor / pu2.factor)  
+                                WHEN (spt.code ='internal' OR spt.code is null) AND sm.location_id in %s AND sourcel.usage !='inventory' AND destl.usage !='inventory' 
+                                THEN -(sm.product_qty * pu.factor / pu2.factor) 
+                                ELSE 0.0 
+                                END
+                                )) AS product_qty_internal,
+
+                                sum((
+                                CASE WHEN sourcel.usage = 'inventory' AND sm.location_dest_id in %s  
+                                THEN  (sm.product_qty * pu.factor / pu2.factor)
+                                WHEN destl.usage ='inventory' AND sm.location_id in %s 
+                                THEN -(sm.product_qty * pu.factor / pu2.factor)
+                                ELSE 0.0 
+                                END
+                                )) AS product_qty_adjustment
+                            FROM product_product pp 
+                            LEFT JOIN  stock_move sm ON (sm.product_id = pp.id and sm.date >= %s and sm.date <= %s and sm.state = 'done' and sm.location_id != sm.location_dest_id)
+                            LEFT JOIN stock_picking sp ON (sm.picking_id=sp.id)
+                            LEFT JOIN stock_picking_type spt ON (spt.id=sp.picking_type_id)
+                            LEFT JOIN stock_location sourcel ON (sm.location_id=sourcel.id)
+                            LEFT JOIN stock_location destl ON (sm.location_dest_id=destl.id)
+                            LEFT JOIN uom_uom pu ON (sm.product_uom=pu.id)
+                            LEFT JOIN uom_uom pu2 ON (sm.product_uom=pu2.id)
+                            LEFT JOIN product_template pt ON (pp.product_tmpl_id=pt.id)
+                            WHERE pp.id in %s
+                            GROUP BY pt.categ_id, pp.id order by pt.categ_id
+                            ''', (tuple(locations), tuple(locations), tuple(locations), tuple(locations), tuple(locations), tuple(locations), start_date, end_date, product_data))
+            values = self._cr.dictfetchall()
+            #values = {'product_id': id, 'categ_id': categ_id, 'product_qty_out': categ_id, 'product_qty_out': qty_out, 'product_qty_in': qty_in, 'product_qty_internal': qty_int, 'prduct_qty_adjustment': qty_adj}
+            if record.group_by_categ:
+                sort_by_categories = sorted(values, key=itemgetter('categ_id'))
+                records_by_categories = dict((k, [v for v in itr]) for k, itr in groupby(sort_by_categories, itemgetter('categ_id')))
+                if not record.with_zero:
+                    today_record_by_cat = {}
+                    for key, value in records_by_categories.items():
+                        for each in value:
+                            product_beg_qty = self._get_beginning_inventory(record, each['product_id'])
+                            today_movment_total = each.get('product_qty_in') + each.get('product_qty_internal') + each.get('product_qty_adjustment') + each.get('product_qty_out')
+                            if record.is_today_movement:
+                                if today_movment_total != 0:
+                                    if key not in today_record_by_cat:
+                                        today_record_by_cat.update({key:[each]})
+                                    else:
+                                        today_record_by_cat[key] += [each]
+                            elif (product_beg_qty + today_movment_total) != 0:
+                                if key not in today_record_by_cat:
+                                    today_record_by_cat.update({key:[each]})
+                                else:
+                                    today_record_by_cat[key] += [each]
+                    return today_record_by_cat
                 else:
-                    product_lot = ''
-                report_line = {
-                    'product_id':order_line.product_id.name,
-                    'sale_qty' : order_line.product_uom_qty,
-                    'unit_price' : order_line.price_unit,
-                    'product_uom' : order_line.product_uom.name,
-                    'product_lot' : product_lot,
-                    'price_total' : order_line.price_total,
-                    'customer_name' : customer_name,
-                    'sale_adl' : sale_adl,
-                    'payment_term' : payment_term,
-                }
-            sale_report.append(report_line)
-        return sale_report
-    
-    def _get_stock_dayly_report(self):
-        date = fields.Date.today()
-        product_list = self.env['product.product'].search([('type', '=', 'product'), ('purchased_product_qty', '>=', 0)]).mapped('id')
-        stock_position = []
-        #date = fields.Date.today()
-        for id in product_list:
-            sale_qty_at_date = 0
-            purchase_qty_at_date = 0
-            rebaggage_plus_at_date = 0
-            rebaggage_moins_at_date = 0
-            internal_move_at_date = 0
-            initial_stock = 0
-            actual_stock = 0
-            rebaggage_qty = 0
-            pattern_sl = '^PC/.+SL'
-            pattern_dl = '^PC/.+DL'
-            pattern_inv = '^INV:'
-            product_name = self.env['product.product'].search([('id', '=', id), ('type', '=', 'product'), ('purchased_product_qty', '>=', 0)]).name
-            product_uom = self.env['product.product'].search([('id', '=', id), ('type', '=', 'product'), ('purchased_product_qty', '>=', 0)]).uom_name
-            #actual_stock_qty = self.env['product.product'].search([('id', '=', id), ('type', '=', 'product'), ('purchased_product_qty', '>=', 0)]).qty_available
-            moves = self.env['stock.move'].search([('product_id.id', '=', id)])#.filtered(lambda line: fields.Date.to_date(line.date) == date)
-            if moves.exists():
-                purchase = self.env['stock.move'].search([('product_id.id', '=', id), ('picking_code', '=','incoming'), ('state', '=', 'done'), ('purchase_line_id', '!=', False)])
-                inventory = self.env['stock.move'].search([('product_id.id', '=', id), ('state', '=', 'done')]).filtered(lambda r : re.match(pattern_inv, r.name))
-                receive = self.env['stock.move'].search([('product_id.id', '=', id), ('picking_code', '=','incoming'), ('state', '=', 'done')])
-                sale = self.env['stock.move'].search([('product_id.id', '=', id), ('sale_line_id', '!=', False), ('picking_code', '=','outgoing'), ('state', '=', 'done')])
-                internal_move = self.env['stock.move'].search([('product_id.id', '=', id), ('picking_code', '=','internal'), ('state', '=', 'done')])
-                rebaggage_plus = moves.filtered(lambda r : re.match(pattern_sl, r.name))
-                rebaggage_moins = moves.filtered(lambda r : re.match(pattern_dl, r.name))
-                #actual_stock_qty = total_purchase - total_sale
-                total_purchase = sum(purchase.filtered(lambda p : fields.Date.to_date(p.date) < date).mapped('quantity_done'))
-                total_sale = sum(sale.filtered(lambda p : fields.Date.to_date(p.date) < date).mapped('quantity_done'))
-                total_rebaggage_moins = sum(rebaggage_moins.filtered(lambda p : fields.Date.to_date(p.date) < date).mapped('quantity_done'))
-                total_rebaggage_plus = sum(rebaggage_plus.filtered(lambda p : fields.Date.to_date(p.date) < date).mapped('quantity_done'))
-                total_inv_qty = sum(inventory.filtered(lambda p : fields.Date.to_date(p.date) < date).mapped('quantity_done'))#qty for stock ajustement
-                initial_stock = total_purchase - total_sale + total_inv_qty - total_rebaggage_moins + total_rebaggage_moins
-                #today transaction
-                if (sale.filtered(lambda s : fields.Date.to_date(s.date) == date)):
-                    sale_qty_at_date = sum(sale.filtered(lambda s : fields.Date.to_date(s.date) == date).mapped('quantity_done'))
-
-                if (purchase.filtered(lambda p : fields.Date.to_date(p.date)) == date):
-                    purchase_qty_at_date = sum(purchase.filtered(lambda p : fields.Date.to_date(p.date) == date).mapped('quantity_done'))
-
-                if (rebaggage_plus.filtered(lambda p : fields.Date.to_date(p.date) == date)):
-                    rebaggage_plus_at_date = sum(rebaggage_plus.filtered(lambda p : fields.Date.to_date(p.date == date)).mapped('quantity_done'))
-                if (rebaggage_moins.filtered(lambda p : fields.Date.to_date(p.date) == date)):
-                    rebaggage_moins_at_date = sum(rebaggage_moins.filtered(lambda p : fields.Date.to_date(p.date) == date).mapped('quantity_done'))
-                else:
-                    rebaggage_moins_at_date = 0
-                if (internal_move.filtered(lambda p : fields.Date.to_date(p.date) == date)):
-                    internal_move_at_date = sum(internal_move.filtered(lambda p : fields.Date.to_date(p.date) == date).mapped('quantity_done'))
-
-                actual_stock = initial_stock + purchase_qty_at_date - sale_qty_at_date - rebaggage_moins_at_date + rebaggage_plus_at_date
-                rebaggage_qty = rebaggage_plus_at_date - rebaggage_moins_at_date 
-                #actuel = initial + recu - vendu - converti ==> initial = actuel + vendu + converti - recu
-            stock_position.append({
-                'product_name':product_name,
-                'product_uom':product_uom,
-                'saled_qty': sale_qty_at_date,
-                #'sale_reserved_qty' : sale_reserved_qty,
-                'received_qty' : purchase_qty_at_date,
-                'internal_move_qty' : internal_move_at_date,
-                'rebaggage_qty' : rebaggage_qty,
-                'actual_stock_qty' : actual_stock,
-                'initial_stock_qty' : initial_stock,
-            })
-        return stock_position
-    
-    #All purchase qty for product in date range
-    def _get_purchase_dayly_report(self):
-        date = fields.Date.today()
-        purchase_lines = []
-        purchases = self.env['purchase.order'].search([('date_approve', '!=', False)]).filtered(lambda l : fields.Date.to_date(l.date_approve) == date)
-        for purchase in purchases:
-            vendor_name = purchase.partner_id.name
-            payment_term = purchase.payment_term_id or False
-            lines = purchase.order_line
-            for line in lines:
-                product_name = line.name
-                product_uom = line.product_uom
-                product_qty = line.product_qty
-                unit_price= line.price_unit
-                price_total = line.price_total
-                currency = line.currency_id.name
-                purchase_order = line.order_id
-                purchase_line = {
-                'vendor_name': vendor_name,
-                'product_name': product_name,
-                'product_uom': product_uom,
-                'payment_term': payment_term_id,
-                'product_qty': product_qty,
-                'unit_price' : unit_price,
-                'price_total' : price_total,
-                'purchase_order': purchase_order
-                }
-                purchase_lines.append(purchase_line)
-        return purchase_lines
-    
-    def _get_stock_aged(self):
-        product = self.env['product.product'].search([('type', '=', 'product'), ('purchased_product_qty', '>=', 0)])
-        product_ids = product.mapped('id')#Get only list of product id
-        today = fields.Date.today()
-        period = fields.Date.start_of(today, 'year')
-        range_1 = period + timedelta(days=75)
-        range_2 = period + timedelta(days=180)
-        range_3 = period + timedelta(days=360)
-        stock = []
-        pattern_sl = '^PC/.+SL'
-        pattern_dl = '^PC/.+DL'
-        for product in product_ids:
-            stock_move_75 = 0
-            stock_move_180 = 0
-            stock_move_360 = 0
-            stock_move_360_plus = 0
-            stock_in_75 = 0
-            stock_in_180 = 0
-            stock_in_360 = 0
-            stock_in_360_plus = 0
-            product_id = self.env['product.product'].search([('type', '=', 'product'), ('purchased_product_qty', '>=', 0), ('id', '=', product)])
-            product_name = product_id.name            
-            product_uom = product_id.uom_name
-            #Get all stock move from starting period
-            stock_move = self.env['stock.move'].search([('product_id.id', '=', product)])
-            stock_rebag_plus = stock_move.filtered(lambda r : re.match(pattern_sl, r.name))
-            stock_rebag_moins = stock_move.filtered(lambda r : re.match(pattern_dl, r.name))
-            stock_in = self.env['stock.move'].search([('product_id.id', '=', product), ('picking_code', '=', 'incoming'), ('state', '=', 'done'), ('purchase_line_id', '!=', False)])
-            stock_out = self.env['stock.move'].search([('product_id.id', '=', product), ('picking_code', '=', 'outgoing'), ('state', '=', 'done'), ('sale_line_id', '!=', False)])
-            stock_mts = self.env['stock.move'].search([('product_id.id', '=', product), ('picking_code', '=', 'internal'), ('state', '=', 'done')])
-            #-------------------------------0-75
-            stock_in_75 = sum(stock_in.filtered(lambda l: fields.Date.to_date(l.date) >= period and fields.Date.to_date(l.date) < range_1).mapped('quantity_done'))
-            stock_out_75 = sum(stock_out.filtered(lambda l: fields.Date.to_date(l.date) >= period and fields.Date.to_date(l.date) < range_1).mapped('quantity_done'))
-            stock_rebag_75_plus = sum(stock_rebag_plus.filtered(lambda l: fields.Date.to_date(l.date) >= period and fields.Date.to_date(l.date) < range_1).mapped('quantity_done'))
-            stock_rebag_75_moins = sum(stock_rebag_moins.filtered(lambda l: fields.Date.to_date(l.date) >= period and fields.Date.to_date(l.date) < range_1).mapped('quantity_done'))
-            #-------------------------------------------75-180
-            stock_in_180 = sum(stock_in.filtered(lambda l: fields.Date.to_date(l.date) >= range_1 and fields.Date.to_date(l.date) < range_2).mapped('quantity_done'))
-            stock_out_180 = sum(stock_out.filtered(lambda l: fields.Date.to_date(l.date) >= range_1 and fields.Date.to_date(l.date) < range_2).mapped('quantity_done'))
-            stock_rebag_180_plus = sum(stock_rebag_plus.filtered(lambda l: fields.Date.to_date(l.date) >= range_1 and fields.Date.to_date(l.date) < range_2).mapped('quantity_done'))
-            stock_rebag_180_moins = sum(stock_rebag_moins.filtered(lambda l: fields.Date.to_date(l.date) >= range_1 and fields.Date.to_date(l.date) < range_2).mapped('quantity_done'))
-            #-----------------------------------------180-360
-            stock_in_360 = sum(stock_in.filtered(lambda l: fields.Date.to_date(l.date) >= range_2 and fields.Date.to_date(l.date) < range_3).mapped('quantity_done'))
-            stock_out_360 = sum(stock_out.filtered(lambda l: fields.Date.to_date(l.date) >= range_2 and fields.Date.to_date(l.date) < range_3).mapped('quantity_done'))
-            stock_rebag_360_plus = sum(stock_rebag_plus.filtered(lambda l: fields.Date.to_date(l.date) >= range_2 and fields.Date.to_date(l.date) < range_3).mapped('quantity_done'))
-            stock_rebag_360_moins = sum(stock_rebag_moins.filtered(lambda l: fields.Date.to_date(l.date) >= range_2 and fields.Date.to_date(l.date) < range_3).mapped('quantity_done'))
-            #-----------------------------------------------236+
-            stock_in_360_plus = sum(stock_in.filtered(lambda l: fields.Date.to_date(l.date) >= range_3).mapped('quantity_done'))
-            stock_out_360_plus = sum(stock_out.filtered(lambda l: fields.Date.to_date(l.date) >= range_3).mapped('quantity_done'))
-            stock_rebag_plus_360_plus = sum(stock_rebag_plus.filtered(lambda l: fields.Date.to_date(l.date) >= range_3).mapped('quantity_done'))
-            stock_rebag_moins_360_moins = sum(stock_rebag_moins.filtered(lambda l: fields.Date.to_date(l.date) >= range_3).mapped('quantity_done'))
-            #range_3_plus
-            if today > range_3:
-                #stock 75
-                stock_move_75 = stock_in_75 + stock_rebag_75_plus - stock_out_75 - stock_rebag_75_moins
-                #stock 180
-                stock_move_180 = stock_in_180 + stock_rebag_180_plus - stock_out_180 - stock_rebag_180_moins
-                #stock 360
-                stock_move_360 = stock_in_360 + stock_rebag_360_plus - stock_out_360 - stock_rebag_360_moins
-                #stock 360 plus
-                stock_move_360_plus = stock_in_360_plus + stock_rebag_plus_360_plus - stock_out_360_plus - stock_rebag_moins_360_moins
-
-            if today <= range_3 and today > range_2:
-                #stock 75
-                stock_move_75 = stock_in_75 + stock_rebag_75_plus - stock_out_75 - stock_rebag_75_moins
-                #stock 180
-                stock_move_180 = stock_in_180 + stock_rebag_180_plus - stock_out_180 - stock_rebag_180_moins
-                #stock 360
-                stock_move_360 = stock_in_360 + stock_rebag_360_plus - stock_out_360 - stock_rebag_360_moins
-                #stock 360 plus
-                stock_move_360_plus = 0
-
-            if today <= range_2 and today > range_1:
-                #stock 75
-                stock_move_75 = stock_in_75 + stock_rebag_75_plus - stock_out_75 - stock_rebag_75_moins
-                #stock 180
-                stock_move_180 = stock_in_180 + stock_rebag_180_plus - stock_out_180 - stock_rebag_180_moins
-                #stock 360
-                stock_move_360 = 0
-                #stock 360 plus
-                stock_move_360_plus = 0
-
-            if today <= range_2 and today > range_1:
-                #stock 75
-                stock_move_75 = stock_in_75 + stock_rebag_75_plus - stock_out_75 - stock_rebag_75_moins
-                #stock 180
-                stock_move_180 = stock_in_180 + stock_rebag_180_plus - stock_out_180 - stock_rebag_180_moins
-                #stock 360
-                stock_move_360 = 0
-                #stock 360 plus
-                stock_move_360_plus = 0
-
-            if today <= range_1 and today > period:
-                #stock 75
-                stock_move_75 = stock_in_75 + stock_rebag_75_plus - stock_out_75 - stock_rebag_75_moins
-                #stock 180
-                stock_move_180 = 0
-                #stock 360
-                stock_move_360 = 0
-                #stock 360 plus
-                stock_move_360_plus = 0
-            stock_line = {
-                'product_name': product_name,
-                'product_uom': product_uom,
-                'purchase_qty_75': stock_move_75,
-                'purchase_qty_180': stock_move_180,
-                'purchase_qty_360' : stock_move_360,
-                'purchase_qty_360_plus' : stock_move_360_plus
-            }
-            stock.append(stock_line)
-        return stock
-    
-    def _get_debtor_aged(self):
-        today = fields.Date.today()
-        period = fields.Date.start_of(today, 'year')
-        days_24 = today - timedelta(days=24)
-        days_30 = today + timedelta(days=30)
-        days_37 = today + timedelta(days=37)
-        days_45 = today + timedelta(days=45)
-        days_60 = today + timedelta(days=60)
-        days_90 = today + timedelta(days=90)
-        debtor_report = []
-        customer_ids = self.env['res.partner'].search([('customer', '=', True)]).mapped('id')
-        for customer in customer_ids:
-            customer_name = self.env['res.partner'].search([('customer', '=', True), ('id', '=', customer)]).name
-            account_moves = self.env['account.move'].search([('partner_id.id', '=', customer), ('date', '>=', period)])
-            amount_total = sum(account_moves.mapped('amount'))
-            #amount < 24 days
-            account_line = self.env['account.move.line'].search([])
-            if today > days_90:
-                amount_24 = sum(account_moves.filtered(lambda l: l.date <= days_24).mapped('amount'))
-                amount_30 = sum(account_moves.filtered(lambda l: l.date > days_24 and l.date <= days_30).mapped('amount'))
-                amount_37 = sum(account_moves.filtered(lambda l: l.date > days_30 and l.date <= days_37).mapped('amount'))
-                amount_45 = sum(account_moves.filtered(lambda l: l.date > days_37 and l.date <= days_45).mapped('amount'))
-                amount_60 = sum(account_moves.filtered(lambda l: l.date > days_45 and l.date <= days_60).mapped('amount'))
-                amount_90 = sum(account_moves.filtered(lambda l: l.date > days_60 and l.date <= days_90).mapped('amount'))
-                amount_90_plus = sum(account_moves.filtered(lambda l: l.date > days_90).mapped('amount'))
-            
-            elif today <= days_90 and today > days_60:
-                amount_24 = sum(account_moves.filtered(lambda l: l.date <= days_24).mapped('amount'))
-                amount_30 = sum(account_moves.filtered(lambda l: l.date > days_24 and l.date <= days_30).mapped('amount'))
-                amount_37 = sum(account_moves.filtered(lambda l: l.date > days_30 and l.date <= days_37).mapped('amount'))
-                amount_45 = sum(account_moves.filtered(lambda l: l.date > days_37 and l.date <= days_45).mapped('amount'))
-                amount_60 = sum(account_moves.filtered(lambda l: l.date > days_60 and l.date <= days_90).mapped('amount'))
-                amount_90 = sum(account_moves.filtered(lambda l: l.date > days_60 and l.date <= days_90).mapped('amount'))
-                amount_90_plus = 0
-            
-            elif today <= days_60 and today > days_45:
-                amount_24 = sum(account_moves.filtered(lambda l: l.date <= days_24).mapped('amount'))
-                amount_30 = sum(account_moves.filtered(lambda l: l.date > days_24 and l.date <= days_30).mapped('amount'))
-                amount_37 = sum(account_moves.filtered(lambda l: l.date > days_30 and l.date <= days_37).mapped('amount'))
-                amount_45 = sum(account_moves.filtered(lambda l: l.date > days_37 and l.date <= days_45).mapped('amount'))
-                amount_60 = sum(account_moves.filtered(lambda l: l.date > days_60 and l.date <= days_90).mapped('amount'))
-                amount_90 = 0
-                amount_90_plus = 0
-                
-            elif today <= days_45 and today > days_37:
-                amount_24 = sum(account_moves.filtered(lambda l: l.date <= days_24).mapped('amount'))
-                amount_30 = sum(account_moves.filtered(lambda l: l.date > days_24 and l.date <= days_30).mapped('amount'))
-                amount_37 = sum(account_moves.filtered(lambda l: l.date > days_30 and l.date <= days_37).mapped('amount'))
-                amount_45 = sum(account_moves.filtered(lambda l: l.date > days_37 and l.date <= days_45).mapped('amount'))
-                amount_60 = 0
-                amount_90 = 0
-                amount_90_plus = 0
-            
-            elif today <= days_37 and today > days_30:
-                amount_24 = sum(account_moves.filtered(lambda l: l.date <= days_24).mapped('amount'))
-                amount_30 = sum(account_moves.filtered(lambda l: l.date > days_24 and l.date <= days_30).mapped('amount'))
-                amount_37 = sum(account_moves.filtered(lambda l: l.date > days_30 and l.date <= days_37).mapped('amount'))
-                amount_45 = 0
-                amount_60 = 0
-                amount_90 = 0
-                amount_90_plus = 0
-                
-            elif today <= days_30 and today > days_24:
-                amount_24 = sum(account_moves.filtered(lambda l: l.date <= days_24).mapped('amount'))
-                amount_30 = sum(account_moves.filtered(lambda l: l.date > days_24 and l.date <= days_30).mapped('amount'))
-                amount_37 = 0
-                amount_45 = 0
-                amount_60 = 0
-                amount_90 = 0
-                amount_90_plus = 0
-            
-            elif today <= days_24:
-                amount_24 = sum(account_moves.filtered(lambda l: l.date <= days_24).mapped('amount'))
-                amount_30 = 0
-                amount_37 = 0
-                amount_45 = 0
-                amount_60 = 0
-                amount_90 = 0
-                amount_90_plus = 0
-            
-            debtor_report.append({
-                'customer_name':customer_name,
-                'amount_total': amount_total,
-                'amount_24': amount_24,
-                'amount_30': amount_30,
-                'amount_37': amount_37,
-                'amount_45': amount_45,
-                'amount_60': amount_60,
-                'amount_90': amount_90,
-                'amount_90_plus': amount_90_plus
-            })
-        return debtor_report
-
-    #Get creditor analysis
-    def _get_creditor_analysis(self):
-        today = fields.Date.today()
-        period = fields.Date.start_of(today, 'year')
-        days_90 = today - timedelta(days=90)
-        days_180 = today + timedelta(days=180)
-        days_365 = today + timedelta(days=365)
-        creditor_report = []
-        vendor_ids = self.env['res.partner'].search([('supplier', '=', True)]).mapped('id')
-        for vendor in vendor_ids:
-            vendor_name = self.env['res.partner'].search([('supplier', '=', True), ('id', '=', vendor)]).name
-            account_moves = self.env['account.move'].search([('partner_id.id', '=', vendor), ('date', '>=', period)])
-            amount_total = sum(account_moves.mapped('amount'))
-            account_lines = self.env['account.move.line'].search([])
-            if today > days_365:
-                amount_90 = sum(account_moves.filtered(lambda a: a.date <= days_90).mapped('amount'))
-                amount_180 = sum(account_moves.filtered(lambda a: a.date > days_90 and a.date <= days_180).mapped('amount'))
-                amount_365 = sum(account_moves.filtered(lambda a: a.date > days_180 and a.date <= days_365).mapped('amount'))
-                amount_365_plus = sum(account_moves.filtered(lambda a: a.date > days_365).mapped('amount'))
-                
-            elif today <= days_365 and today > days_180:
-                amount_90 = sum(account_moves.filtered(lambda a: a.date <= days_90).mapped('amount'))
-                amount_180 = sum(account_moves.filtered(lambda a: a.date > days_90 and a.date <= days_180).mapped('amount'))
-                amount_365 = sum(account_moves.filtered(lambda a: a.date > days_180 and a.date <= days_365).mapped('amount'))
-                amount_365_plus = 0
-            
-            elif today <= days_180 and today > days_90:
-                amount_90 = sum(account_moves.filtered(lambda a: a.date <= days_90).mapped('amount'))
-                amount_180 = sum(account_moves.filtered(lambda a: a.date > days_90 and a.date <= days_180).mapped('amount'))
-                amount_365 = 0
-                amount_365_plus = 0
-            
-            elif today <= days_90 :
-                amount_90 = sum(account_moves.filtered(lambda a: a.date <= days_90).mapped('amount'))
-                amount_180 = 0
-                amount_365 = 0
-                amount_365_plus = 0
-            creditor_report.append(
-                {
-                'vendor_name': vendor_name,
-                'amount_total' : amount_total,
-                'amount_90': amount_90,
-                'amount_180': amount_180,
-                'amount_365': amount_365,
-                'amount_365_plus': amount_365_plus
-            })
-        return creditor_report
-    #Get security check
-    def _get_pdc_security_check(self):
-        date = fields.Date.today()
-        security_check = []
-        pdc_list = self.env['account.payment'].search([('payment_note', '=', 'security'), ('partner_type', '=', 'customer'), ('state', '!=', 'reconciled')]).filtered(lambda l:l.payment_date == date)
-        for pdc in pdc_list:
-            customer = pdc.partner_id.name
-            client_bank = pdc.bank_reference
-            cheque_reference = pdc.cheque_reference
-            note = pdc.payment_note
-            amount = pdc.amount
-            pdc_line = {
-                'customer_name' : customer,
-                'client_bank' : client_bank,
-                'check_number' : cheque_reference,
-                'note': note,
-                'amount': amount
-            }
-            security_check.append(pdc_line)
-        return security_check
-    
-    #Get deposited check. check to deposit on a given date
-    def _get_check_to_deposit(self):
-        today = fields.Date.today()
-        deposit_check = []
-        pdc_list = self.env['account.payment'].search([('partner_type', '=', 'customer'), ('state', '!=', 'reconciled'),('payment_note', '=', 'deposited')]).filtered(lambda l:l.effective_date == date)
-        for pdc in pdc_list:
-            customer = pdc.partner_id.name
-            client_bank = pdc.bank_reference
-            cheque_reference = pdc.cheque_reference
-            deposit_date = pdc.effective_date
-            note = pdc.transaction_type
-            amount = pdc.amount
-            pdc_line = {
-                'customer_name' : customer,
-                'client_bank' : client_bank,
-                'check_number' : cheque_reference,
-                'deposit_date': deposit_date,
-                'amount': amount
-            }
-            deposit_check.append(pdc_line)
-        return deposit_check
-    
-    #Get check under clearance
-    '''
-    def _get_check_under_clearance(self):
-        today = fields.Date.today()
-        clearance_check = []
-        check_ids = self.env['account.move.line'].search([('date', '=', date)]).mapped('check_deposit_id')
-        for check in check_ids:
-            if check.reconciled != False:
-                payment_state = 'Paid'
+                    return records_by_categories
             else:
-                payment_state = 'Rejected'
-            move_id = self.env['account.move.line'].search([('check_deposit_id', '=', check)]).move_id
-            payment = self.env['account.payment'].search([('id', '=', check)])
-            deposit = self.env['account.check.deposit'].search([('move_id', '=', move_id)])
-            customer_name = payment.partner_id.name
-            client_bank = payment.bank_reference
-            cheque_reference = payment.check_reference
-            bank_deposit = deposit.bank_journal_id.name
-            amount = deposit.total_amount
-            deposit_line = {
-                'customer_name' : customer_name,
-                'client_bank' : client_bank,
-                'bank_deposit': bank_deposit,
-                'cheque_reference' : cheque_reference,
-                'date': date,
-                'amount': amount,
-                'payment_state': payment_state
-            }
-            clearance_check.append(pdc_line)
-        return clearance_check
-    '''
-    '''
-    def get_fund(self):
-        fund_receive = []
-        funds = self.env['account.payment'].search([('state', '=', 'reconciled')])
-        for fund in funds:
-            customer_name = fund.partner_id.name
-            client_bank = fund.reference or 'Cash'
-            cheque_reference = fund.cheque_reference or ''
-            amount_receive = fund.amount
-            payment_type = fund.payment_type
-            deposit_id = self.env['account.move.line'].search([('payment_id.id', '=', fund)], limit=1).check_deposit_id.id
-            bank_deposited = self.env['account.check.deposit'].search([('id', '=', deposit_id)]).bank_journal_id.name
-            fund_line = {
-                'customer_name': customer_name,
-                'bank_deposited': bank_deposited,
-                'client_bank' : client_bank,
-                'cheque_reference': cheque_reference,
-                'payment_type' : payment_type,
-                'amount' : amount_receive
-            }
-        fund_receive.append(fund_line)
-        return fund_receive
-    '''
+                return values[0]
+
+
     @api.model
     def _get_report_values(self, docids, data=None):
-        
-        date_from = data['form']['date_from']
-        date_to = data['form']['date_to']
-        date_to_obj = datetime.strptime(date_to, DATE_FORMAT).date()
-        stock_dayly = self._get_stock_dayly_report()
-        sale_dayly = self._get_sale_dayly_report()
-        purchase_dayly = self._get_purchase_dayly_report()
-        debtor_report = self._get_debtor_aged()
-        stock_aged = self._get_stock_aged()
-        creditor_report = self._get_creditor_analysis()
-        security_check = self._get_pdc_security_check()
-        deposit_check = self._get_check_to_deposit()
-        docs = []
-            
-        return {
-            'doc_ids': data['ids'],
-            'doc_model': data['model'],#self._name,#'create.custom.report', #model of the record
-            'date_start':date_from,
-            'date_end':date_to,
-            'docs': docs,
-            'stock': stock_dayly,
-            'sale' : sale_dayly,
-            'debtor_agewise':debtor_report,
-            'stock_aged': stock_aged,
-            'purchase' : purchase_dayly,
-            'creditor_report': creditor_report,
-            'security_check': security_check,
-            'deposit_check' : deposit_check,
+        report = self.env['ir.actions.report']._get_report_from_name('custom_report.custom_report_template')
+        record_id = data['form']['id'] if data and data.get('form', False) and data.get('form').get('id', False) else docids[0]
+        records = self.env['create.custom.report'].browse(record_id)
+        docids = records.ids
+        res = {
+           'doc_model': report.model,
+           'doc_ids': docids,
+           'docs': records,
+           'data': data,
+           'get_beginning_inventory': self._get_beginning_inventory,
+           'get_products':self._get_products,
+           'get_product_sale_qty':self.get_product_sale_qty,
+           'get_location':self.get_location(records),
+           #'product_uom': self._get_product_uom,
+           'get_product_move': self.get_product_move
         }
+        return res
+
     

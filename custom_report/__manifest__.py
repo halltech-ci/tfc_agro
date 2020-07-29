@@ -25,6 +25,7 @@
                 'account',
                 'sale',
                 'board',
+                'stock',
                ],
 
     # always loaded
@@ -34,8 +35,9 @@
         'views/templates.xml',
         #'views/account_payment_views.xml',
         #'views/res_partner_views.xml',
-        #'wizards/create_custom_report.xml',
-        #'reports/custom_report.xml',
+        'wizards/create_custom_report.xml',
+        'reports/custom_report.xml',
+        'reports/custom_report_template.xml',
         'reports/sale_custom_report.xml',
         #'reports/stock_custom_report.xml',
         'views/dashboard.xml'
