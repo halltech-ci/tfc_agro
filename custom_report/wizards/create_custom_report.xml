@@ -22,6 +22,12 @@
                         <field name="location_id" options="{'no_create':True,'no_edit':True}" 
                             context="{'warehouse_ids':warehouse_ids,'company_id':company_id}"/>
                     </group>
+                    <group col="6" string="Aging Report">
+                        <field name="periods_length" class="oe_inline"/>
+                        <field name="debtor_age_wise" class="oe_inline"/>
+                        <field name="customer_age_wise" class="oe_inline"/>
+                    </group>
+
                     <group col="6" states ="choose">
                         <field name="group_by_categ" class="oe_inline"/>
                         <field name="with_zero" attrs="{'invisible':[('is_today_movement','=',True)]}" class="oe_inline"/>

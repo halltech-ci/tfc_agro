@@ -27,6 +27,8 @@ class CustomReport(models.AbstractModel):
              product_ids = product_product_obj.search(domain)
         return product_ids
     
+    def _get_stock_age(self, records):
+        pass
     
     def get_location(self, records, warehouses=None):
         stock_ids = []
@@ -122,6 +124,9 @@ class CustomReport(models.AbstractModel):
         domain = [('state', '=', 'done')]
         start_date = str(date.today()) if record.is_today_movement else str(record.start_date)
         end_date = str(date.today()) if record.is_today_movement else str(record.end_date)
+        start_date += ' 00:00:00'
+        end_date += ' 23:59:59'
+
         domain += [('date', '<=', end_date), ('date', '>=', start_date)]
         moves = self.env['stock.move.line'].search(domain).filtered(lambda l: l.move_id.product_type == 'product')
         #self.env['stock.move.line'].search([]).filtered(lambda l : l.picking_id.picking_type_code == 'incoming')

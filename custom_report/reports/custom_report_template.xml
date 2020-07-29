@@ -203,12 +203,12 @@
                                 <tbody>
                                     <t t-foreach="get_product_move(o).get('purchase_move')" t-as="purchases">
                                         <tr>
-                                            <td><span t-esc="purchases.move_id.picking_partner_id.name"/></td>
-                                            <td><span t-esc="purchases.product_id.name"/></td>
-                                            <td><span t-esc="purchases.move_id.product_uom.name"/></td>
-                                            <td><span t-esc="purchases.lot_id.name"/></td>
-                                            <td><span t-esc="purchases.qty_done"/></td>
-                                            <td><span t-esc="purchases.move_id.purchase_line_id.price_unit"/></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
                                         </tr>
                                     </t>
                                 </tbody>
