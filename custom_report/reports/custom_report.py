@@ -141,7 +141,55 @@ class CustomReport(models.AbstractModel):
             'internal_move': internal_move
             }
         return product_move
+    
+    def get_period_range(self):
+        period_list = [75, 180, 360]
+        today = str(date.today()) + ' 00:00:00'
+        periods = [(0, today)]
+        start = 1
+        i = 0
+        res = []
+        for period in period_list:
+            limit_period = str(date.today() - timedelta(days=period)) + ' 00:00:00'
+            range_name = [begin, period]
+            begin = period_list[i] + 1
+            i += 1
+            tranche = '{0}'.format(range_name), limit_period
             
+            domain = [('date', '<=', limit_period)]
+            periods.append(tranche)
+            #[('(1, 24)', '2020-07-06 00:00:00'), ('(25, 30)', '2020-06-30 00:00:00'), ('(31, 37)', '2020-06-23 00:00:00'), ('(38, 45)', '2020-06-15 00:00:00'), ('(46, 60)', '2020-05-31 00:00:00')]
+        period_length = len(periods)
+        for l in range(1, peridod_length):
+            name = periods[l][0]
+            end = periods[l][1]
+            start = periods[i-1]
+            domain = [('date', '<', start) and ('date', '>=', end)]
+            res.append({
+                'name': name,
+                'domain': domain
+            })
+        return res
+        
+    
+    def get_stock_age(self, record, product=None, warehouses=None):
+        domain = [('state', '=', 'done')]
+        stock_obj = self.env['stock.move.line'].search(domain)
+        if not product:
+            product = self._get_products(record)
+        if isinstance(product, list):
+            product_data = tuple(product)
+        else:
+            product_data = tuple(product.ids)
+            
+        if product_data:
+            locations = [record.location_id.id] if record.location_id else self.get_location(record, warehouses)
+            start_date = str(date.today()) if record.is_today_movement else str(record.start_date)
+            end_date = str(date.today()) if record.is_today_movement else str(record.end_date)
+            start_date += ' 00:00:00'
+            end_date += ' 23:59:59'
+            
+                
     
     def get_product_sale_qty(self, record, product=None,warehouses=None):
         if not product:
