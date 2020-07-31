@@ -29,9 +29,9 @@ class CreateCustomReport(models.TransientModel):
     #partner_ids = fields.Many2many('res_partner', 'partner_custom_report_rel', string="Partners")
     partner_type = fields.Selection([('customer', 'Customer'), ('suplier', 'Vendor')], string='Purchase/Sale')
     periods_length = fields.Integer(string="Periods Length")
-    debtor_age_wise = fields.Boolean(string="Debtor Age Wise")
-    customer_age_wise = fields.Boolean(string="Customer Age Wise")
-
+    debtor_age_wise = fields.Boolean(string="Debtor Agewise", default=True)
+    customer_age_wise = fields.Boolean(string="Customer Agewise", default=True)
+    stock_age_wise = fields.Boolean(string="Stock Agewise", default=True)
     
     @api.onchange('warehouse_ids')
     def onchange_warehouse_ids(self):

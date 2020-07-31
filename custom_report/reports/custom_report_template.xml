@@ -196,18 +196,19 @@
                                         <th>Unit</th>
                                         <th>0-75 Days</th>
                                         <th>75-180 Days</th>
-                                        <th>191-360 Days</th>
+                                        <th>181-360 Days</th>
                                         <th>360 Days+</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <t t-foreach="get_product_move(o).get('purchase_move')" t-as="purchases">
+                                    <t t-foreach="get_products(o)" t-as="product">
+                                        <t t-value="get_stock_agewise(product.id)" t-set="stock_age"/>
                                         <tr>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
+                                            <td><span t-esc="product.name"/></td>
+                                            <td><span t-esc="product.uom_name"/></td>
+                                            <td><span t-esc="stock_age[0][1]"/></td>
+                                            <td><span t-esc="stock_age[1][1]"/></td>
+                                            <td><span t-esc="stock_age[2][1]"/></td>
                                             <td></td>
                                         </tr>
                                     </t>
