@@ -28,7 +28,8 @@ class CreateCustomReport(models.TransientModel):
     is_today_movement = fields.Boolean(string="Today Movement")
     #partner_ids = fields.Many2many('res_partner', 'partner_custom_report_rel', string="Partners")
     partner_type = fields.Selection([('customer', 'Customer'), ('suplier', 'Vendor')], string='Purchase/Sale')
-    periods_length = fields.Integer(string="Periods Length")
+    period_length = fields.Integer(string="Periods Length")
+    period_wide = fields.Integer(string = "Period_wide", default=6)
     debtor_age_wise = fields.Boolean(string="Debtor Agewise", default=True)
     customer_age_wise = fields.Boolean(string="Customer Agewise", default=True)
     stock_age_wise = fields.Boolean(string="Stock Agewise", default=True)
@@ -50,10 +51,16 @@ class CreateCustomReport(models.TransientModel):
     def check_date_range(self):
         if self.end_date < self.start_date:
             raise ValidationError(_('Enter proper date range'))
+    
+    def check_period_wide(self):
+        if self.period_wide:
+            if self.period_wide < self.period_length:
+                raise ValidationError(_('Period Wide must be greater than period length'))
             
     @api.multi
     def generate_pdf_report(self):
         self.check_date_range()
+        #self.check_period_range()
         datas = {'form':
             {
                 'company_id': self.company_id.id,
