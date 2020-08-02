@@ -27,9 +27,6 @@ class CustomReport(models.AbstractModel):
              product_ids = product_product_obj.search(domain)
         return product_ids
     
-    def _get_stock_age(self, records):
-        pass
-    
     def get_location(self, records, warehouses=None):
         stock_ids = []
         location_obj = self.env['stock.location']
@@ -140,9 +137,43 @@ class CustomReport(models.AbstractModel):
             }
         return product_move
     
+    #period_length in days et period in month
+    def _get_stock_aging(self, product):
+        
+        domain = [('state', '=', 'done'), ('product_id', '=', product)]
+        stock_obj = self.env['stock.move.line'].search([])
+        moves = stock_obj#self.env['stock.move.line'].search(domain)
+        sales_move = moves.filtered(lambda l : l.move_id.picking_code == 'outgoing' and len(l.move_id.sale_line_id) > 0)
+        purchases_move = moves.filtered(lambda l : l.move_id.picking_code == 'incoming' and len(l.move_id.purchase_line_id) > 0)
+        period_interval = [0, 75, 180, 360]
+        #[0-75]
+        limit_0 = str(date.today() - timedelta(days=0)) + ' 23:59:00'
+        limit_75 = str(date.today() - timedelta(days=75)) + ' 00:00:00'
+        domain_0_75 = [('date', '<=', limit_0), ('date', '>', limit_75)] + domain
+        stock_age_0_75 = sum(purchases_move.search(domain_0_75).mapped('qty_done'))# - sum(sales_move.search(domain_0_75).mapped('qty_done'))
+        #[75-180]
+        limit_180 = str(date.today() - timedelta(days=180)) + ' 00:00:00'
+        domain_75_180 = [('date', '<=', limit_75), ('date', '>', limit_180)] + domain
+        stock_age_75_180 = sum(purchases_move.search(domain_75_180).mapped('qty_done'))# - sum(sales_move.search(domain_75_180).mapped('qty_done'))
+        #[180-360]
+        limit_360 = str(date.today() - timedelta(days=360)) + ' 00:00:00'
+        domain_180_360 = [('date', '<=', limit_180), ('date', '>', limit_360)] + domain
+        stock_age_180_360 = sum(purchases_move.search(domain_180_360).mapped('qty_done'))# - sum(sales_move.search(domain_180_360).mapped('qty_done'))
+        #[360+]
+        limit_360 = str(date.today() - timedelta(days=75)) + ' 00:00:00'
+        domain_360 = [('date', '<=', limit_360)] + domain
+        stock_age_360 = sum(purchases_move.search(domain_360).mapped('qty_done'))# - sum(sales_move.search(domain_360).mapped('qty_done'))
+        res = {
+            'stock_age_0_75':stock_age_0_75,
+            'stock_age_75_180': stock_age_75_180,
+            'stock_age_180_360': stock_age_180_360,
+            'stock_age_360': stock_age_360
+        }
+        return res
+    
     def get_stock_agewise(self, product):
         total_sales = 0.0
-        total_purchase = 0.0
+        total_purchases = 0.0
         period_list = [75, 180, 360]
         today = str(date.today()) + ' 00:00:00'
         periods = [(0, today)]
@@ -168,40 +199,31 @@ class CustomReport(models.AbstractModel):
         for l in range(1, period_length):
             name = periods[l][0]
             end = periods[l][1]
-            start = periods[i-1]
-            domain = [('date', '<', start) and ('date', '>=', end)]
+            start = periods[l-1][1]
+            domain = [('date', '<', start), ('date', '>=', end)]
             total_sales = sum(sales_move.search(domain).mapped('qty_done'))
             total_purchases = sum(purchases_move.search(domain).mapped('qty_done'))
-            stock_age = total_purchases - total_sales
+            stock_age = total_purchases #- total_sales
             stock_values = (name, stock_age)
             res.append(stock_values)
-        #Get the last interval ex. 360
-        return res
-        
+        resultat = res
+        return resultat    
     """
-    def get_stock_age(self, record, product=None, warehouses=None):
-        domain = [('state', '=', 'done')]
-        period_list = [75, 180, 360]
-        stock_obj = self.env['stock.move.line'].search(domain)
-        if not product:
-            product = self._get_products(record)
-        if isinstance(product, list):
-            product_data = tuple(product)
-        else:
-            product_data = tuple(product.ids)
-            
-        if product_data:
-            locations = [record.location_id.id] if record.location_id else self.get_location(record, warehouses)
-            start_date = str(date.today()) if record.is_today_movement else str(record.start_date)
-            end_date = str(date.today()) if record.is_today_movement else str(record.end_date)
-            start_date += ' 00:00:00'
-            end_date += ' 23:59:59'
-            periods = self.get_period_range()
-            for p in periods:
-                period_name = p.get('name')
-                domain = p.get('domain')
-                stock_age = stock_obj.search(domain)
-    """                
+    def _get_partners(self, partner_type):
+        
+        if partner_type = "receivable":
+            quer = self.env['res.partner'].search([('customer', '=', True)])
+        if partner_type = "payable":
+            quer = self.env['res.partner'].search([('supplier', '=', True)])
+        return quer
+    """
+    
+    def _get_debtor_age(self, partner):
+        domain = [('partner_id', '=', partner)]
+        req = self.env['account.move.line'].search(domain)
+        debtor_balance = sum(req.filtered(lambda aml: aml.user_type_id.type == 'receivable').mapped('balance'))
+        creditor_balance = sum(req.filtered(lambda aml: aml.user_type_id.type == 'payable').mapped('balance'))
+    
     
     def get_product_sale_qty(self, record, product=None,warehouses=None):
         if not product:
@@ -309,7 +331,7 @@ class CustomReport(models.AbstractModel):
            'get_location':self.get_location(records),
            #'product_uom': self._get_product_uom,
            'get_product_move': self.get_product_move,
-           'get_stock_agewise': self.get_stock_agewise
+           'get_stock_agewise': self._get_stock_aging
         }
         return res
 

@@ -24,7 +24,7 @@
                             context="{'warehouse_ids':warehouse_ids,'company_id':company_id}"/>
                     </group>
                     <group col="6" string="Aging Report">
-                        <field name="periods_length" class="oe_inline"/>
+                        <field name="period_length" class="oe_inline"/>
                         <field name="debtor_age_wise" class="oe_inline"/>
                         <field name="customer_age_wise" class="oe_inline"/>
                         <field name="stock_age_wise" class="oe_inline"/>
