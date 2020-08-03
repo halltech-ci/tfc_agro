@@ -137,7 +137,7 @@ class CustomReport(models.AbstractModel):
             }
         return product_move
     
-    #period_length in days et period in month
+    #
     def _get_stock_aging(self, product):
         
         domain = [('state', '=', 'done'), ('product_id', '=', product)]
@@ -170,6 +170,8 @@ class CustomReport(models.AbstractModel):
             'stock_age_360': stock_age_360
         }
         return res
+    
+    
     
     def get_stock_agewise(self, product):
         total_sales = 0.0
@@ -208,21 +210,73 @@ class CustomReport(models.AbstractModel):
             res.append(stock_values)
         resultat = res
         return resultat    
-    """
-    def _get_partners(self, partner_type):
-        
-        if partner_type = "receivable":
-            quer = self.env['res.partner'].search([('customer', '=', True)])
-        if partner_type = "payable":
-            quer = self.env['res.partner'].search([('supplier', '=', True)])
-        return quer
-    """
+    
     
     def _get_debtor_age(self, partner):
+        
+        user_type_id = self.env['account.account.type'].search([('type', '=', 'receivable')])
+        #where_params = []
+        #where_clause = 'AND ' + where_clause
+        '''sql = """
+            SELECT sum(aml.balance) AS balance, p.id, p.name AS partner_name 
+            FROM account_move_line aml, res_partner p
+            WHERE aml.invoice_id IS NOT NULL AND aml.partner_id=p.id AND aml.user_type_id = %s """'AND' +where_params+"""
+            GROUP BY p.id
+            """ '''
+        #params = [user_type_id.id] + where_params
+        #self.env.cr.execute(sql, params)
+        #results = self.env.cr.dictfetchall()
+        
         domain = [('partner_id', '=', partner)]
-        req = self.env['account.move.line'].search(domain)
-        debtor_balance = sum(req.filtered(lambda aml: aml.user_type_id.type == 'receivable').mapped('balance'))
-        creditor_balance = sum(req.filtered(lambda aml: aml.user_type_id.type == 'payable').mapped('balance'))
+        domain += [('user_type_id', '=', user_type_id.id)]
+        req = self.env['account.move.line']
+        debtor_balance = req
+        debtor_0_24 = 0.0
+        debtor_24_30 = 0.0
+        debtor_30_45 = 0.0
+        debtor_45_60 = 0.0
+        debtor_60_90 = 0.0
+        debtor_90 = 0.0
+        amount = 0.0
+        #creditor_balance = sum(req.filtered(lambda aml: aml.user_type_id.type == 'payable').mapped('balance'))
+        #period = [0, 24, 30, 45, 60, 90]
+        #0->24
+        limit_0 = str(date.today() - timedelta(days=0))# + ' 23:59:00'
+        limit_24 = str(date.today() - timedelta(days=24))# + ' 00:00:00'
+        domain_0_24 = [('date', '<=', limit_0), ('date', '>', limit_24)] + domain
+        where_param_0_24 = 'aml.date <= '  
+        debtor_0_24 = sum(debtor_balance.search(domain_0_24).mapped('balance'))
+        #24->30
+        limit_30 = str(date.today() - timedelta(days=30))# + ' 00:00:00'
+        domain_24_30 = [('date', '<=', limit_24), ('date', '>', limit_30)] + domain
+        debtor_24_30 = sum(debtor_balance.search(domain_24_30).mapped('balance'))
+        #30->45
+        limit_45 = str(date.today() - timedelta(days=45))# + ' 00:00:00'
+        domain_30_45 = [('date', '<=', limit_30), ('date', '>', limit_45)] + domain
+        debtor_30_45 = sum(debtor_balance.search(domain_30_45).mapped('balance'))
+        #45->60
+        limit_60 = str(date.today() - timedelta(days=60))# + ' 00:00:00'
+        domain_45_60 = [('date', '<=', limit_45), ('date', '>', limit_60)] + domain
+        debtor_45_60 = sum(debtor_balance.search(domain_45_60).mapped('balance'))
+        #60->90
+        limit_90 = str(date.today() - timedelta(days=90))# + ' 00:00:00'
+        domain_60_90 = [('date', '<=', limit_60), ('date', '>', limit_90)] + domain
+        debtor_60_90 = sum(debtor_balance.search(domain_60_90).mapped('balance'))
+        #90->+
+        domain_90 = [('date', '<=', limit_90)] + domain
+        debtor_90 = sum(debtor_balance.search(domain_90).mapped('balance'))
+        amount = debtor_0_24 + debtor_24_30 + debtor_30_45 + debtor_45_60 + debtor_60_90 + debtor_90
+        res = {
+            'amount': amount,
+            'debtor_0_24': debtor_0_24,
+            'debtor_24_30': debtor_24_30,
+            'debtor_30_45': debtor_30_45,
+            'debtor_45_60': debtor_45_60,
+            'debtor_60_90': debtor_60_90,
+            'debtor_90': debtor_90
+        }
+        
+        return res
     
     
     def get_product_sale_qty(self, record, product=None,warehouses=None):
@@ -331,7 +385,8 @@ class CustomReport(models.AbstractModel):
            'get_location':self.get_location(records),
            #'product_uom': self._get_product_uom,
            'get_product_move': self.get_product_move,
-           'get_stock_agewise': self._get_stock_aging
+           'get_stock_agewise': self._get_stock_aging,
+           'debtor_age': self._get_debtor_age
         }
         return res
 
