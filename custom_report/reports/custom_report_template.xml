@@ -245,6 +245,32 @@
                                     </t>
                                 </tbody>
                             </table>
+                            <p>Creditor Anlysis</p>
+                            <table class="table" id="custom">
+                                <thead>
+                                    <tr>
+                                        <th>Company</th>
+                                        <th>Amount</th>
+                                        <th>0-90 Days</th>
+                                        <th>91-180 Days</th>
+                                        <th>181-365 Days</th>
+                                        <th>365 Days+</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-value="request.env['res.partner'].search([('supplier', '=', True)])" t-set="creditors"/>
+                                    <t t-foreach="creditors" t-as="creditor">
+                                        <tr>
+                                            <td><span t-esc="creditor.name"/></td>
+                                            <td><span t-esc="creditor_age(creditor.id).get('amount')"/></td>
+                                            <td><span t-esc="creditor_age(customer_id).get('creditor_0_90')"/></td>
+                                            <td><span t-esc="creditor_age(customer_id).get('creditor_90_180')"/></td>
+                                            <td><span t-esc="creditor_age(customer_id).get('creditor_180_365')"/></td>
+                                            <td><span t-esc="creditor_age(customer_id).get('creditor_365')"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
                         </t>
                     </div>
                    </div><!-- End Page-->

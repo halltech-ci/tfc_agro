@@ -213,7 +213,6 @@ class CustomReport(models.AbstractModel):
     
     
     def _get_debtor_age(self, partner):
-        
         user_type_id = self.env['account.account.type'].search([('type', '=', 'receivable')])
         #where_params = []
         #where_clause = 'AND ' + where_clause
@@ -227,8 +226,8 @@ class CustomReport(models.AbstractModel):
         #self.env.cr.execute(sql, params)
         #results = self.env.cr.dictfetchall()
         
-        domain = [('partner_id', '=', partner)]
-        domain += [('user_type_id', '=', user_type_id.id)]
+        #domain = [('partner_id', '=', partner)]
+        domain = [('user_type_id', '=', user_type_id.id), ('partner_id', '=', partner), ('invoice_id', '!=', False)]
         req = self.env['account.move.line']
         debtor_balance = req
         debtor_0_24 = 0.0
@@ -277,6 +276,63 @@ class CustomReport(models.AbstractModel):
         }
         
         return res
+    
+    #Creditor analysis
+    def _get_creditor_age(self, partner):
+        user_type_id = self.env['account.account.type'].search([('type', '=', 'payable')])
+        #where_params = []
+        #where_clause = 'AND ' + where_clause
+        '''sql = """
+            SELECT sum(aml.balance) AS balance, p.id, p.name AS partner_name 
+            FROM account_move_line aml, res_partner p
+            WHERE aml.invoice_id IS NOT NULL AND aml.partner_id=p.id AND aml.user_type_id = %s """'AND' +where_params+"""
+            GROUP BY p.id
+            """ '''
+        #params = [user_type_id.id] + where_params
+        #self.env.cr.execute(sql, params)
+        #results = self.env.cr.dictfetchall()
+        
+        #domain = [('partner_id', '=', partner)]
+        domain = [('user_type_id', '=', user_type_id.id), ('partner_id', '=', partner), ('invoice_id', '!=', False)]
+        req = self.env['account.move.line']
+        creditor_balance = req
+        creditor_0_90 = 0.0
+        creditor_90_180 = 0.0
+        creditor_180_365 = 0.0
+        creditor_365 = 0.0
+        amount = 0.0
+        #creditor_balance = sum(req.filtered(lambda aml: aml.user_type_id.type == 'payable').mapped('balance'))
+        #period = [0, 24, 30, 45, 60, 90]
+        #0->24
+        limit_0 = str(date.today() - timedelta(days=0))# + ' 23:59:00'
+        limit_90 = str(date.today() - timedelta(days=90))# + ' 00:00:00'
+        domain_0_90= [('date', '<=', limit_0), ('date', '>', limit_90)] + domain
+        creditor_0_90 = sum(creditor_balance.search(domain_0_90).mapped('balance'))
+        #24->30
+        limit_180 = str(date.today() - timedelta(days=180))# + ' 00:00:00'
+        domain_90_180 = [('date', '<=', limit_90), ('date', '>', limit_180)] + domain
+        creditor_90_180 = sum(creditor_balance.search(domain_90_180).mapped('balance'))
+        #30->45
+        limit_365 = str(date.today() - timedelta(days=365))# + ' 00:00:00'
+        domain_180_365 = [('date', '<=', limit_180), ('date', '>', limit_365)] + domain
+        creditor_180_365 = sum(creditor_balance.search(domain_180_365).mapped('balance'))
+        #365->+
+        domain_365 = [('date', '<=', limit_365)] + domain
+        creditor_365 = sum(creditor_balance.search(domain_365).mapped('balance'))
+        amount = creditor_0_90 + creditor_90_180 + creditor_180_365 + creditor_365
+        res = {
+            'amount': amount,
+            'creditor_0_90': creditor_0_90,
+            'creditor_90_180': creditor_90_180,
+            'creditor_180_365': creditor_180_365,
+            'creditor_365': creditor_365,
+        }
+        
+        return res
+
+    
+    
+    
     
     
     def get_product_sale_qty(self, record, product=None,warehouses=None):
@@ -386,7 +442,8 @@ class CustomReport(models.AbstractModel):
            #'product_uom': self._get_product_uom,
            'get_product_move': self.get_product_move,
            'get_stock_agewise': self._get_stock_aging,
-           'debtor_age': self._get_debtor_age
+           'debtor_age': self._get_debtor_age,
+           'creditor_age': self._get_creditor_age
         }
         return res
 
