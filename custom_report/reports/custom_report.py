@@ -13,7 +13,6 @@ class CustomReport(models.AbstractModel):
     _name="report.custom_report.custom_report_template"#Respect naming format report.module_name.report_template_name
     _description="Custom report for TFC AGRO"
     
-    
     def _get_products(self, record):
         product_product_obj = self.env['product.product']
         domain = [('type', '=', 'product')]
