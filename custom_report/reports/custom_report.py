@@ -332,13 +332,28 @@ class CustomReport(models.AbstractModel):
         domain = [('payment_date', '=', start_date), ('partner_type', '=', 'customer')]
         pdc_ids = self.env['account.payment.method'].search([('code', '=', 'pdc')])
         check_on_hand_account = self.env['account.account'].search([('code', '=like', '5130%')], limit=1)
-        check_on_deposit_account = self.env['account.account'].search([('code', '=like', '5140%')], limit=1)
+        check_on_bank_account = self.env['account.account'].search([('code', '=like', '5140%')], limit=1)
         payment = self.env['account.payment']
         
         pdc_domain = [('payment_method_code', '=', 'pdc')] + domain
+        #reconcile payment
         reconcile_domain = [('state', '=', 'reconciled')] + domain
-        res = payment.search(reconcile_domain)
         
+        res = payment.search(reconcile_domain)
+        check_on_bank_domain = [("journal_id.default_debit_account_id", "=", check_on_bank_account.id)] + domain
+        check_on_hand_domain = [("journal_id.default_debit_account_id", "=", check_on_hand_account.id)] + domain
+        pdc_check = payment.search(pdc_domain)
+        check_on_bank = payment.search(check_on_bank_domain)
+        check_on_hand = payment.search(check_on_hand_domain)
+        reconciled_check = payment.search(reconcile_domain)
+        
+        res = {
+            'pdc_check': pdc_check,
+            'check_on_bank': check_on_bank,
+            'check_on_hand': check_on_hand,
+            'reconciled_check': reconciled_check
+        }
+
         return res
     
     
@@ -451,7 +466,7 @@ class CustomReport(models.AbstractModel):
            'get_stock_agewise': self._get_stock_aging,
            'debtor_age': self._get_debtor_age,
            'creditor_age': self._get_creditor_age,
-            'payments': self._get_payment_data,
+            'get_payments': self._get_payment_data,
         }
         return res
 

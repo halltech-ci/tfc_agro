@@ -271,6 +271,30 @@
                                     </t>
                                 </tbody>
                             </table>
+                            
+                            <p>PDC Detail</p>
+                            <table class="table" id="custom">
+                                <thead>
+                                    <tr>
+                                        <th>Customer</th>
+                                        <th>Bank</th>
+                                        <th>Check N°</th>
+                                        <th>Date</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="get_payments(o).get('pdc_check')" t-as="pdc_check">
+                                        <tr>
+                                            <td><span t-esc="pdc_check.partner_id.name"/></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
                         </t>
                     </div>
                    </div><!-- End Page-->
