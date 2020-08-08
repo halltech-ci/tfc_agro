@@ -33,6 +33,9 @@ class CreateCustomReport(models.TransientModel):
     debtor_age_wise = fields.Boolean(string="Debtor Agewise", default=True)
     customer_age_wise = fields.Boolean(string="Customer Agewise", default=True)
     stock_age_wise = fields.Boolean(string="Stock Agewise", default=True)
+    pdc_account = fields.Char(string="PDC Account", default='pdc')
+    check_on_hand_account = fields.Char(string="Check on hand", default='51300000')
+    check_on_bank = fields.Char(string="Check on Bank", default='51400000')
     
     @api.onchange('warehouse_ids')
     def onchange_warehouse_ids(self):

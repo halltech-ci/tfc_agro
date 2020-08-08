@@ -170,8 +170,6 @@ class CustomReport(models.AbstractModel):
         }
         return res
     
-    
-    
     def get_stock_agewise(self, product):
         total_sales = 0.0
         total_purchases = 0.0
@@ -209,7 +207,6 @@ class CustomReport(models.AbstractModel):
             res.append(stock_values)
         resultat = res
         return resultat    
-    
     
     def _get_debtor_age(self, partner):
         user_type_id = self.env['account.account.type'].search([('type', '=', 'receivable')])
@@ -329,9 +326,20 @@ class CustomReport(models.AbstractModel):
         
         return res
 
-    
-    
-    
+    #mis for payment and check
+    def _get_payment_data(self, record):
+        start_date = str(record.start_date)
+        domain = [('payment_date', '=', start_date), ('partner_type', '=', 'customer')]
+        pdc_ids = self.env['account.payment.method'].search([('code', '=', 'pdc')])
+        check_on_hand_account = self.env['account.account'].search([('code', '=like', '5130%')], limit=1)
+        check_on_deposit_account = self.env['account.account'].search([('code', '=like', '5140%')], limit=1)
+        payment = self.env['account.payment']
+        
+        pdc_domain = [('payment_method_code', '=', 'pdc')] + domain
+        reconcile_domain = [('state', '=', 'reconciled')] + domain
+        res = payment.search(reconcile_domain)
+        
+        return res
     
     
     def get_product_sale_qty(self, record, product=None,warehouses=None):
@@ -442,7 +450,8 @@ class CustomReport(models.AbstractModel):
            'get_product_move': self.get_product_move,
            'get_stock_agewise': self._get_stock_aging,
            'debtor_age': self._get_debtor_age,
-           'creditor_age': self._get_creditor_age
+           'creditor_age': self._get_creditor_age,
+            'payments': self._get_payment_data,
         }
         return res
 
