@@ -329,19 +329,22 @@ class CustomReport(models.AbstractModel):
     #mis for payment and check
     def _get_payment_data(self, record):
         start_date = str(record.start_date)
+        pdc_account_id = self.env['res.company'].pdc_check_account
+        check_on_hand_account_id = self.env['res.company'].check_on_hand_journal
+        check_on_bank_account_id = self.env['res.company'].check_on_bank_journal
         domain = [('payment_date', '=', start_date), ('partner_type', '=', 'customer')]
         pdc_ids = self.env['account.payment.method'].search([('code', '=', 'pdc')])
-        check_on_hand_account = self.env['account.account'].search([('code', '=like', '5130%')], limit=1)
-        check_on_bank_account = self.env['account.account'].search([('code', '=like', '5140%')], limit=1)
+        #check_on_hand_account = self.env['account.account'].search([('code', '=like', '5130%')], limit=1)
+        #check_on_bank_account = self.env['account.account'].search([('code', '=like', '5140%')], limit=1)
         payment = self.env['account.payment']
         
-        pdc_domain = [('payment_method_code', '=', 'pdc')] + domain
+        #pdc_domain = [('payment_method_code', '=', 'pdc')] + domain
         #reconcile payment
         reconcile_domain = [('state', '=', 'reconciled')] + domain
-        
+        pdc_domain = [('journal_id.default_debit_account_id', '=', pdc_account_id)] + domain
         res = payment.search(reconcile_domain)
-        check_on_bank_domain = [("journal_id.default_debit_account_id", "=", check_on_bank_account.id)] + domain
-        check_on_hand_domain = [("journal_id.default_debit_account_id", "=", check_on_hand_account.id)] + domain
+        check_on_bank_domain = [("journal_id.default_debit_account_id", "=", check_on_bank_account_id)] + domain
+        check_on_hand_domain = [("journal_id.default_debit_account_id", "=", check_on_hand_account_id)] + domain
         pdc_check = payment.search(pdc_domain)
         check_on_bank = payment.search(check_on_bank_domain)
         check_on_hand = payment.search(check_on_hand_domain)
