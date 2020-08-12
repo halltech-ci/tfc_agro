@@ -13,7 +13,6 @@ class CustomReport(models.AbstractModel):
     _name="report.custom_report.custom_report_template"#Respect naming format report.module_name.report_template_name
     _description="Custom report for TFC AGRO"
     
-    
     def _get_products(self, record):
         product_product_obj = self.env['product.product']
         domain = [('type', '=', 'product')]
@@ -171,8 +170,6 @@ class CustomReport(models.AbstractModel):
         }
         return res
     
-    
-    
     def get_stock_agewise(self, product):
         total_sales = 0.0
         total_purchases = 0.0
@@ -211,9 +208,7 @@ class CustomReport(models.AbstractModel):
         resultat = res
         return resultat    
     
-    
     def _get_debtor_age(self, partner):
-        
         user_type_id = self.env['account.account.type'].search([('type', '=', 'receivable')])
         #where_params = []
         #where_clause = 'AND ' + where_clause
@@ -227,8 +222,8 @@ class CustomReport(models.AbstractModel):
         #self.env.cr.execute(sql, params)
         #results = self.env.cr.dictfetchall()
         
-        domain = [('partner_id', '=', partner)]
-        domain += [('user_type_id', '=', user_type_id.id)]
+        #domain = [('partner_id', '=', partner)]
+        domain = [('user_type_id', '=', user_type_id.id), ('partner_id', '=', partner), ('invoice_id', '!=', False)]
         req = self.env['account.move.line']
         debtor_balance = req
         debtor_0_24 = 0.0
@@ -276,6 +271,93 @@ class CustomReport(models.AbstractModel):
             'debtor_90': debtor_90
         }
         
+        return res
+    
+    #Creditor analysis
+    def _get_creditor_age(self, partner):
+        user_type_id = self.env['account.account.type'].search([('type', '=', 'payable')])
+        #where_params = []
+        #where_clause = 'AND ' + where_clause
+        '''sql = """
+            SELECT sum(aml.balance) AS balance, p.id, p.name AS partner_name 
+            FROM account_move_line aml, res_partner p
+            WHERE aml.invoice_id IS NOT NULL AND aml.partner_id=p.id AND aml.user_type_id = %s """'AND' +where_params+"""
+            GROUP BY p.id
+            """ '''
+        #params = [user_type_id.id] + where_params
+        #self.env.cr.execute(sql, params)
+        #results = self.env.cr.dictfetchall()
+        
+        #domain = [('partner_id', '=', partner)]
+        domain = [('user_type_id', '=', user_type_id.id), ('partner_id', '=', partner), ('invoice_id', '!=', False)]
+        req = self.env['account.move.line']
+        creditor_balance = req
+        creditor_0_90 = 0.0
+        creditor_90_180 = 0.0
+        creditor_180_365 = 0.0
+        creditor_365 = 0.0
+        amount = 0.0
+        #creditor_balance = sum(req.filtered(lambda aml: aml.user_type_id.type == 'payable').mapped('balance'))
+        #period = [0, 24, 30, 45, 60, 90]
+        #0->24
+        limit_0 = str(date.today() - timedelta(days=0))# + ' 23:59:00'
+        limit_90 = str(date.today() - timedelta(days=90))# + ' 00:00:00'
+        domain_0_90= [('date', '<=', limit_0), ('date', '>', limit_90)] + domain
+        creditor_0_90 = sum(creditor_balance.search(domain_0_90).mapped('balance'))
+        #24->30
+        limit_180 = str(date.today() - timedelta(days=180))# + ' 00:00:00'
+        domain_90_180 = [('date', '<=', limit_90), ('date', '>', limit_180)] + domain
+        creditor_90_180 = sum(creditor_balance.search(domain_90_180).mapped('balance'))
+        #30->45
+        limit_365 = str(date.today() - timedelta(days=365))# + ' 00:00:00'
+        domain_180_365 = [('date', '<=', limit_180), ('date', '>', limit_365)] + domain
+        creditor_180_365 = sum(creditor_balance.search(domain_180_365).mapped('balance'))
+        #365->+
+        domain_365 = [('date', '<=', limit_365)] + domain
+        creditor_365 = sum(creditor_balance.search(domain_365).mapped('balance'))
+        amount = creditor_0_90 + creditor_90_180 + creditor_180_365 + creditor_365
+        res = {
+            'amount': amount,
+            'creditor_0_90': creditor_0_90,
+            'creditor_90_180': creditor_90_180,
+            'creditor_180_365': creditor_180_365,
+            'creditor_365': creditor_365,
+        }
+        
+        return res
+
+    #mis for payment and check
+    def _get_payment_data(self, record):
+        start_date = str(record.start_date)
+        company = self.env['res.company']._company_default_get()
+        pdc_account_id = company.pdc_check_account.id
+        check_on_hand_account_id = company.check_on_hand_journal.id
+        check_on_bank_account_id = company.check_on_bank_journal.id
+        domain = [('payment_date', '=', start_date), ('partner_type', '=', 'customer')]
+        pdc_ids = self.env['account.payment.method'].search([('code', '=', 'pdc')])
+        #check_on_hand_account = self.env['account.account'].search([('code', '=like', '5130%')], limit=1)
+        #check_on_bank_account = self.env['account.account'].search([('code', '=like', '5140%')], limit=1)
+        payment = self.env['account.payment']
+        
+        #pdc_domain = [('payment_method_code', '=', 'pdc')] + domain
+        #reconcile payment
+        reconcile_domain = [('state', '=', 'reconciled')] + domain
+        pdc_domain = [('journal_id.default_debit_account_id', '=', pdc_account_id)] + domain
+        res = payment.search(reconcile_domain)
+        check_on_bank_domain = [("journal_id.default_debit_account_id", "=", check_on_bank_account_id)] + domain
+        check_on_hand_domain = [("journal_id.default_debit_account_id", "=", check_on_hand_account_id)] + domain
+        pdc_check = payment.search(pdc_domain)
+        check_on_bank = payment.search(check_on_bank_domain)
+        check_on_hand = payment.search(check_on_hand_domain)
+        reconciled_check = payment.search(reconcile_domain)
+        
+        res = {
+            'pdc_check': pdc_check,
+            'check_on_bank': check_on_bank,
+            'check_on_hand': check_on_hand,
+            'reconciled_check': reconciled_check
+        }
+
         return res
     
     
@@ -386,7 +468,9 @@ class CustomReport(models.AbstractModel):
            #'product_uom': self._get_product_uom,
            'get_product_move': self.get_product_move,
            'get_stock_agewise': self._get_stock_aging,
-           'debtor_age': self._get_debtor_age
+           'debtor_age': self._get_debtor_age,
+           'creditor_age': self._get_creditor_age,
+            'get_payments': self._get_payment_data,
         }
         return res
 

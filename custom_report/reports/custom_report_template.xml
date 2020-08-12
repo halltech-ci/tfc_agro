@@ -24,10 +24,9 @@
                             style="border: 1px solid black"
                         }
                     </style>
-                    <br/>
                     <div class="">
                         <t t-foreach="o.warehouse_ids" t-as="warehouse">
-                            <br/><br/>
+                            <br/>
                             <table class="table" id="custom">
                                 <tbody>
                                     <tr style="border-top:2px;">
@@ -68,7 +67,7 @@
                                         <th>Sales</th>
                                         <th>Transfer</th>
                                         <th>Adjustment</th>
-                                        <th>Conversion</th>
+                                        <!--<th>Conversion</th>-->
                                         <th>Actual Stock</th>
                                     </tr>
                                 </thead>
@@ -78,6 +77,13 @@
                                     <t t-set="sum_product_qty_out" t-value="0.0"/>
                                     <t t-set="sum_product_qty_internal" t-value="0.0"/>
                                     <t t-set="sum_product_qty_adjustment" t-value="0.0"/>
+                                    <t t-set="total_beg" t-value="0.0"/>
+                                    <t t-set="total_rec" t-value="0.0"/>
+                                    <t t-set="total_sale" t-value="0.0"/>
+                                    <t t-set="total_int" t-value="0.0"/>
+                                    <t t-set="total_adjust" t-value="0.0"/>
+                                    <t t-set="total_conv" t-value="0.0"/>
+                                    <t t-set="total_end" t-value="0.0"/>
                                     <t t-foreach="get_products(o)" t-as="product">
                                         <t t-set="ending_qty" t-value="0.00"/>
                                         <t t-value="get_beginning_inventory(o,product,warehouses=warehouse)" t-set="product_beg_qty"/>
@@ -118,13 +124,29 @@
                                                 <span t-esc="product_val['product_qty_adjustment']"/>
                                                 <t t-set="sum_product_qty_adjustment" t-value="sum_product_qty_adjustment + product_val['product_qty_adjustment']"/>
                                             </td>
-                                            <td></td>
+                                            <!--<td></td>-->
                                             <td>
                                                 <span t-esc="product_beg_qty + product_val['product_qty_in'] + product_val['product_qty_out'] + product_val['product_qty_adjustment']"/>
                                             </td>
                                         </tr>
-                                        
+                                        <t t-set="total_beg" t-value="total_beg + product_beg_qty"/>
+                                        <t t-set="total_rec" t-value="total_rec + sum_product_qty_in"/>
+                                        <t t-set="total_sale" t-value="total_sale + abs(product_val['product_qty_out'])"/>
+                                        <t t-set="total_int" t-value="total_int + product_val['product_qty_internal']"/>
+                                        <t t-set="total_adjust" t-value="total_adjust + product_val['product_qty_adjustment']"/>
+                                        <t t-set="total_end" t-value="total_end + ending_qty"/>
                                     </t>
+                                    <tr>
+                                        <td>Total</td>
+                                        <td></td>
+                                        <td><span t-esc="total_beg"/></td>
+                                        <td><span t-esc="total_rec"/></td>
+                                        <td><span t-esc="total_sale"/></td>
+                                        <td><span t-esc="total_int"/></td>
+                                        <td><span t-esc="total_adjust"/></td>
+                                        <!--<td></td>-->
+                                        <td><span t-esc="total_end"/></td>
+                                    </tr>
                                 </tbody>
                             </table>
                             <p>Sales</p>
@@ -143,7 +165,8 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <t t-foreach="get_product_move(o).get('sales_move')" t-as="sales">
+                                    <t t-set="total_amount" t-value="0.0"/>
+                                    <t t-foreach="get_product_move(o).get('sales_move')" t-as="sales"> 
                                         <tr>
                                             <td><span t-esc="sales.move_id.picking_partner_id.name"/></td>
                                             <td><span t-esc="sales.product_id.name"/></td>
@@ -155,7 +178,20 @@
                                             <td><span t-esc="sales.move_id.sale_line_id.price_total"/></td>
                                             <td><span t-esc="sales.move_id.sale_line_id.order_id.name"/></td>
                                         </tr>
+                                        <t t-set="amout" t-value="sales.move_id.sale_line_id.price_total"/>
+                                        <t t-set="total_amount" t-value="total_amount + amount"/>
                                     </t>
+                                    <tr>
+                                        <td>Total</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td><span t-esct="total_amount"/></td>
+                                        <td></td>
+                                    </tr>
                                 </tbody>
                             </table>
                             <p>Purchases</p>
@@ -245,6 +281,135 @@
                                     </t>
                                 </tbody>
                             </table>
+                            <p>Creditor Anlysis</p>
+                            <table class="table" id="custom">
+                                <thead>
+                                    <tr>
+                                        <th>Company</th>
+                                        <th>Amount</th>
+                                        <th>0-90 Days</th>
+                                        <th>91-180 Days</th>
+                                        <th>181-365 Days</th>
+                                        <th>365 Days+</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-value="request.env['res.partner'].search([('supplier', '=', True)])" t-set="creditors"/>
+                                    <t t-foreach="creditors" t-as="creditor">
+                                        <tr>
+                                            <td><span t-esc="creditor.name"/></td>
+                                            <td><span t-esc="creditor_age(creditor.id).get('amount')"/></td>
+                                            <td><span t-esc="creditor_age(customer_id).get('creditor_0_90')"/></td>
+                                            <td><span t-esc="creditor_age(customer_id).get('creditor_90_180')"/></td>
+                                            <td><span t-esc="creditor_age(customer_id).get('creditor_180_365')"/></td>
+                                            <td><span t-esc="creditor_age(customer_id).get('creditor_365')"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                            
+                            <p>PDC Detail</p>
+                            <table class="table" id="custom">
+                                <thead>
+                                    <tr>
+                                        <th>Customer</th>
+                                        <th>Bank</th>
+                                        <th>Check N°</th>
+                                        <th>Date</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="get_payments(o).get('pdc_check')" t-as="pdc_check">
+                                        <tr>
+                                            <td><span t-esc="pdc_check.partner_id.name"/></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                            
+                            <p>Check to be Deposited in Bank</p>
+                            <table class="table" id="custom">
+                                <thead>
+                                    <tr>
+                                        <th>Customer</th>
+                                        <th>Bank</th>
+                                        <th>Check N°</th>
+                                        <th>Date</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="get_payments(o).get('check_on_hand')" t-as="check_on_hand">
+                                        <tr>
+                                            <td><span t-esc="check_on_hand.partner_id.name"/></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td><span t-esc="reconcile.amount"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                            
+                            <p>Check Under Cleanrance</p>
+                            <table class="table" id="custom">
+                                <thead>
+                                    <tr>
+                                        <th>Customer</th>
+                                        <th>Bank Deposited</th>
+                                        <th>Client Bank</th>
+                                        <th>Check N°</th>
+                                        <th>Date</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="get_payments(o).get('check_on_bank')" t-as="check_on_bank">
+                                        <tr>
+                                            <td><span t-esc="check_on_bank.partner_id.name"/></td>
+                                            <td></td>
+                                            <td></td><span t-esc="check_on_bank.partner_bank_account_id.name"/>
+                                            <td></td>
+                                            <td></td>
+                                            <td><span t-esc="check_on_bank.amount"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                            
+                            <p>Funds Received</p>
+                            <table class="table" id="custom">
+                                <thead>
+                                    <tr>
+                                        <th>Customer</th>
+                                        <th>Bank Deposited</th>
+                                        <th>Client Bank</th>
+                                        <th>Check N°</th>
+                                        <th>Date</th>
+                                        <th>Internal Transfer</th>
+                                        <th>Amount Receive</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="get_payments(o).get('reconciled_check')" t-as="reconcile">
+                                        <tr>
+                                            <td><span t-esc="reconcile.partner_id.name"/></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td><span t-esc="reconcile.partner_id.name"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                            
                         </t>
                     </div>
                    </div><!-- End Page-->

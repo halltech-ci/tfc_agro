@@ -40,7 +40,8 @@
         'reports/custom_report_template.xml',
         'reports/sale_custom_report.xml',
         #'reports/stock_custom_report.xml',
-        'views/dashboard.xml'
+        'views/dashboard.xml',
+        'views/res_config_settings_views.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
