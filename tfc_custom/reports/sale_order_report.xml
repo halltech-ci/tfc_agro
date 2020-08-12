@@ -154,8 +154,8 @@
                         </t>
                         <tr></tr>
                         <tr>
-                            <td colspan="2">
-                                <strong>Total invoiced quantity: <span t-field="doc.qty_to_text"/></strong>
+                            <td class='text-right' colspan="2">
+                                <strong>Total</strong>
                             </td>
                             <td class='text-right'><strong><span t-field="doc.sum_qty"/></strong></td>
                             <td></td>
@@ -173,6 +173,13 @@
                     <td><span t-field="doc.amount_to_text"/></td>
                 </tr>
             </div>
+            <table class="table table-sm">
+                <tbody>
+                    <tr>
+                        <strong>Total invoiced quantity: <span t-field="doc.qty_to_text"/></strong>
+                    </tr>
+                </tbody>
+            </table>
             <br></br>
             <table class="table table-sm">
                 <tbody>
