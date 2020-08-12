@@ -13,9 +13,9 @@
                         <field name="company_id" class="oe_inline" options="{'no_create':True,'no_edit':True}" groups="base.group_multi_company"/>
                     </group>
                     <group col="4" states ="choose" string="Date">
-                        <field name="start_date" attrs="{'invisible':[('is_today_movement','=',True)],'required':[('is_today_movement','=',False)]}" />
-                        <field name="end_date" attrs="{'invisible':[('is_today_movement','=',True)],'required':[('is_today_movement','=',False)]}" />
-                        <field name="is_today_movement" attrs="{'invisible':[('with_zero','=',True)]}"/>
+                        <field name="start_date"/>
+                        <field name="end_date"/>
+                        <!--<field name="is_today_movement" attrs="{'invisible':[('with_zero','=',True)]}"/>-->
                     </group>
                     <group col="4" states ="choose" string="Warehouse">
                         <field name="warehouse_ids" widget="many2many_tags"
@@ -23,18 +23,22 @@
                         <field name="location_id" options="{'no_create':True,'no_edit':True}" 
                             context="{'warehouse_ids':warehouse_ids,'company_id':company_id}"/>
                     </group>
+                    <!--
                     <group col="6" string="Aging Report">
                         <field name="period_length" class="oe_inline"/>
                         <field name="debtor_age_wise" class="oe_inline"/>
                         <field name="customer_age_wise" class="oe_inline"/>
                         <field name="stock_age_wise" class="oe_inline"/>
                     </group>
-
+                    -->
+                    <!--
                     <group col="6" states ="choose">
                         <field name="group_by_categ" class="oe_inline"/>
                         <field name="with_zero" attrs="{'invisible':[('is_today_movement','=',True)]}" class="oe_inline"/>
                         <field name="filter_by" class="oe_inline"/>
                     </group>
+                    -->
+                    <!--
                     <notebook attrs="{'invisible':[('filter_by','=',False)]}">
                         <page string="Product/Category" states ="choose">
                             <group>
@@ -47,6 +51,7 @@
                             </group>
                         </page>
                     </notebook>
+                    -->
                      <div states="get">
                             <h2>Report Complete</h2>
                             <p>Here is the Xls File : <field name="data" readonly="1" filename="name"/></p>
