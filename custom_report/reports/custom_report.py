@@ -329,9 +329,10 @@ class CustomReport(models.AbstractModel):
     #mis for payment and check
     def _get_payment_data(self, record):
         start_date = str(record.start_date)
-        pdc_account_id = self.env['res.company'].pdc_check_account
-        check_on_hand_account_id = self.env['res.company'].check_on_hand_journal
-        check_on_bank_account_id = self.env['res.company'].check_on_bank_journal
+        company = self.env['res.company']._company_default_get()
+        pdc_account_id = company.pdc_check_account.id
+        check_on_hand_account_id = company.check_on_hand_journal.id
+        check_on_bank_account_id = company.check_on_bank_journal.id
         domain = [('payment_date', '=', start_date), ('partner_type', '=', 'customer')]
         pdc_ids = self.env['account.payment.method'].search([('code', '=', 'pdc')])
         #check_on_hand_account = self.env['account.account'].search([('code', '=like', '5130%')], limit=1)
