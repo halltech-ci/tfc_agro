@@ -57,7 +57,7 @@
                 <field name="lot_id" domain="[('product_id','=', product_id)]" context="{'default_product_id': product_id}" groups="stock.group_production_lot"/>
           </xpath>
           <xpath expr="//field[@name='order_line']/form/group/group/field[@name='price_unit']" position="after">
-             <field name="lot_id" domain="[('product_id','=', product_id)]" context="{'default_product_id': product_id}" groups="stock.group_production_lot"/>
+             <field name="lot_id" domain="[('product_id','=', product_id)]" context="{'default_product_id': product_id}" groups="stock.group_production_lot" options="{'no_create': True}" required="True"/>
              <field name="lot_quantity"/>
           </xpath>
           <!-- Insert amount conversion in letter-->
