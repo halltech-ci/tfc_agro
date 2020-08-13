@@ -329,7 +329,7 @@ class CustomReport(models.AbstractModel):
     #mis for payment and check
     def _get_payment_data(self, record):
         start_date = str(record.start_date)
-        company = self.env['res.company']._company_default_get()
+        company = record.company_id#self.env['res.company']._company_default_get()
         pdc_account_id = company.pdc_check_account.id
         check_on_hand_account_id = company.check_on_hand_journal.id
         check_on_bank_account_id = company.check_on_bank_journal.id
