@@ -77,22 +77,55 @@
                 </tbody>
             </table>
         </xpath>
+        
+        <xpath expr="//div[hasclass('page')]//table[2]" position="replace">
+            <table class="table table-sm mt48" t-if="o.state!='done'" style="border: 1px solid black">
+                <thead>
+                    <tr>
+                        <th style="border: 1px solid black"><strong>Product</strong></th>
+                        <th style="border: 1px solid black"><strong>Unit</strong></th>
+                        <th style="border: 1px solid black"><strong>Quantity</strong></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-set="lines" t-value="o.move_lines.filtered(lambda x: x.product_uom_qty)"/>
+                    <tr t-foreach="lines" t-as="move">
+                        <td style="border: 1px solid black">
+                            <span t-field="move.product_id"/>
+                            <p t-if="o.picking_type_code == 'outgoing'">
+                                <span t-field="move.product_id.sudo().description_pickingout"/>
+                            </p>
+                            <p t-if="o.picking_type_code == 'incoming'">
+                                <span t-field="move.product_id.sudo().description_pickingin"/>
+                            </p>
+                        </td>
+                        <td style="border: 1px solid black">
+                            <span t-field="move.product_uom"/>
+                        </td>
+                        <td style="border: 1px solid black">
+                            <span t-field="move.product_uom_qty"/>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </xpath>
+        
         <xpath expr="//div[hasclass('page')]//table[3]" position="replace">
-            <table class="table table-sm mt48" t-if="o.move_line_ids and o.state=='done'">
-                        <t t-set="has_serial_number" t-value="o.move_line_ids.mapped('lot_id')" />
-                        <thead>
-                            <tr>
-                                <th><strong>Product</strong></th>
-                                <th class="text-center"><strong>Unit</strong></th>
-                                <th name="lot_serial" t-if="has_serial_number" groups="stock.group_lot_on_delivery_slip">
-                                    Lot/Serial Number
-                                </th>
-                                <th class="text-center"><strong>Quantity</strong></th>
-                            </tr>
-                       </thead>
+            <table class="table table-sm mt48" t-if="o.move_line_ids and o.state=='done'" style="border: 1px solid black">
+                <t t-set="has_serial_number" t-value="o.move_line_ids.mapped('lot_id')" />
+                <thead>
+                    <tr>
+                        <th style="border: 1px solid black"><strong>Product</strong></th>
+                        <th class="text-center" style="border: 1px solid black"><strong>Unit</strong></th>
+                        <th class="text-center" style="border: 1px solid black"><strong>Quantity</strong></th>
+                        <th name="lot_serial" t-if="has_serial_number" groups="stock.group_lot_on_delivery_slip" style="border: 1px solid black">
+                            <strong>Lot/Serial Number</strong>
+                        </th>
+                    </tr>
+                </thead>
                 <tbody>
                     <tr t-foreach="o.move_line_ids" t-as="move_line">
-                        <td>
+                        <td style="border: 1px solid black">
                             <span t-field="move_line.product_id"/>
                             <p t-if="o.picking_type_code == 'outgoing'">
                                 <span t-field="move_line.product_id.sudo().description_pickingout"/>
@@ -101,23 +134,23 @@
                                 <span t-field="move_line.product_id.sudo().description_pickingin"/>
                             </p>
                         </td>
-                        <td class="text-center">
+                        <td class="text-center" style="border: 1px solid black">
                             <span t-field="move_line.product_uom_id"/>
                         </td>
-                        <td class="text-center">
+                        <td class="text-center" style="border: 1px solid black">
                             <span t-field="move_line.qty_done"/>
                         </td>
-                        <td t-if="has_serial_number and move_line.lot_name" groups="stock.group_lot_on_delivery_slip">
+                        <td t-if="has_serial_number and move_line.lot_name" groups="stock.group_lot_on_delivery_slip" style="border: 1px solid black">
                             <span t-field="move_line.lot_name"/>
                         </td>
-                        <td t-elif="has_serial_number" groups="stock.group_lot_on_delivery_slip">
+                        <td t-elif="has_serial_number" groups="stock.group_lot_on_delivery_slip" style="border: 1px solid black">
                             <span t-field="move_line.lot_id.name"/>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </xpath>
-        
+       
         <xpath expr="//div[hasclass('page')]/p" position="before">
             <table class="table table-sm">
                 <thead>
@@ -164,6 +197,8 @@
                     </tr>
                 </tbody>
             </table>
+            <br></br>
+            <p><strong>NB: La signature du chauffeur sur ce bon, confirme la quantité et la qualité des produits mentionnés</strong></p>
         </xpath>
     </template>
   </data>
