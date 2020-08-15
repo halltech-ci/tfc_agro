@@ -105,7 +105,8 @@
                                     <span t-field="line.product_uom" groups="uom.group_uom"/>
                                 </td>
                                 <td class="text-right" style="border: 1px solid black">
-                                    <span t-field="line.product_uom_qty"/>
+                                    <t t-set="product_qty" t-value="int(line.product_uom_qty)"/>
+                                    <span t-esc="product_qty"/>
                                 </td>
                                 <td class="text-right" style="border: 1px solid black">
                                     <span t-field="doc.warehouse_id"/>
@@ -157,7 +158,10 @@
                             <td class='text-right' colspan="2" style="border: 1px solid black">
                                 <strong>Total</strong>
                             </td>
-                            <td class='text-right' style="border: 1px solid black"><strong><span t-field="doc.sum_qty"/></strong></td>
+                            <td class='text-right' style="border: 1px solid black">
+                                <t t-set="total_qty" t-value="int(doc.sum_qty)"/>
+                                <strong><span t-esc="total_qty"/></strong>
+                            </td>
                             <td colspan="2" style="border: 1px solid black"></td>
                         </tr>
                 </tbody>
