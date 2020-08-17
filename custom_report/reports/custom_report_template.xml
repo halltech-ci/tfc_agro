@@ -329,10 +329,10 @@
                                     <t t-foreach="get_payments(o).get('pdc_check')" t-as="pdc_check">
                                         <tr>
                                             <td><span t-esc="pdc_check.partner_id.name"/></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
+                                            <td><span t-esc="pdc_check.partner_bank_account_id.name"/></td>
+                                            <td><span t-esc="pdc_check.communication"/></td>
+                                            <td><span t-esc="pdc_check.payment_date"/></td>
+                                            <td><span t-esc="pdc_check.amount"/></td>
                                         </tr>
                                     </t>
                                 </tbody>
@@ -353,10 +353,10 @@
                                     <t t-foreach="get_payments(o).get('check_on_hand')" t-as="check_on_hand">
                                         <tr>
                                             <td><span t-esc="check_on_hand.partner_id.name"/></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td><span t-esc="reconcile.amount"/></td>
+                                            <td><span t-esc="check_on_hand.partner_bank_account_id.name"/></td>
+                                            <td><span t-esc="check_on_hand.communication"/></td>
+                                            <td><span t-esc="check_on_hand.payment_date"/></td>
+                                            <td><span t-esc="check_on_hand.amount"/></td>
                                         </tr>
                                     </t>
                                 </tbody>
@@ -378,10 +378,10 @@
                                     <t t-foreach="get_payments(o).get('check_on_bank')" t-as="check_on_bank">
                                         <tr>
                                             <td><span t-esc="check_on_bank.partner_id.name"/></td>
-                                            <td></td>
-                                            <td></td><span t-esc="check_on_bank.partner_bank_account_id.name"/>
-                                            <td></td>
-                                            <td></td>
+                                            <td><span t-esc="check_on_bank.journal_id.name"/></td>
+                                            <td><span t-esc="check_on_bank.partner_bank_account_id.name"/></td>
+                                            <td><span t-esc="check_on_bank.communication"/></td>
+                                            <td><span t-esc="check_on_bank.payment_date"/></td>
                                             <td><span t-esc="check_on_bank.amount"/></td>
                                         </tr>
                                     </t>
@@ -405,10 +405,10 @@
                                     <t t-foreach="get_payments(o).get('reconciled_check')" t-as="reconcile">
                                         <tr>
                                             <td><span t-esc="reconcile.partner_id.name"/></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
+                                            <td><span t-esc="reconcile.journal_id.name"/></td>
+                                            <td><span t-esc="reconcile.partner_bank_account_id.name"/></td>
+                                            <td><span t-esc="reconcile.communication"/></td>
+                                            <td><span t-esc="reconcile.payment_date"/></td>
                                             <td></td>
                                             <td><span t-esc="reconcile.partner_id.name"/></td>
                                         </tr>
