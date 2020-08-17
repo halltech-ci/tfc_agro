@@ -34,6 +34,7 @@
             </field>
         </record>
       
+      <!--
       <record id='chart_of_accounts' model='ir.ui.view'>
         <field name="model">account.account</field>
         <field name="inherit_id" ref="account.view_account_form"/>
@@ -46,6 +47,6 @@
           </data>
         </field>
 		</record>
-      
+       -->
   </data>
 </odoo>

@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_hta_sale_reports_hta_sale_reports,hta_sale_reports.hta_sale_reports,model_hta_sale_reports_hta_sale_reports,,1,0,0,0
