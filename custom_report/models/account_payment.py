@@ -19,8 +19,8 @@ class AccountPayment(models.Model):
 
     bank_reference = fields.Char(copy=False)
     cheque_reference = fields.Char(copy=False)
-    effective_date = fields.Date('Effective Date', help='Effective dateC', copy=False, default=False)
-    payment_note = fields.Selection([('pdc', 'Post Dated Check'), ('security', 'Security')], default='')
+    effective_date = fields.Date('Effective Date', help='Effective date', copy=False, default=False)
+   
     
 class AccountRegisterPayments(models.TransientModel):
     _inherit = "account.register.payments"
@@ -28,4 +28,4 @@ class AccountRegisterPayments(models.TransientModel):
     bank_reference = fields.Char(copy=False)
     cheque_reference = fields.Char(copy=False)
     effective_date = fields.Date('Effective Date', help='Effective date', copy=False, default=False)
-    payment_note = fields.Selection([('pdc', 'Post Dated Check'), ('security', 'Security'), ('deposited', 'To Be Deposited')], default='')
+    
