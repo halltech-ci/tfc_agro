@@ -30,12 +30,12 @@ class CreateCustomReport(models.TransientModel):
     partner_type = fields.Selection([('customer', 'Customer'), ('suplier', 'Vendor')], string='Purchase/Sale')
     period_length = fields.Integer(string="Periods Length")
     period_wide = fields.Integer(string = "Period_wide", default=6)
-    debtor_age_wise = fields.Boolean(string="Debtor Agewise", default=True)
-    customer_age_wise = fields.Boolean(string="Customer Agewise", default=True)
-    stock_age_wise = fields.Boolean(string="Stock Agewise", default=True)
-    pdc_account = fields.Char(string="PDC Account", default='pdc')
-    check_on_hand_account = fields.Char(string="Check on hand", default='51300000')
-    check_on_bank = fields.Char(string="Check on Bank", default='51400000')
+    debtor_agewise = fields.Boolean(string="Show Debtor Agewise", default=True)
+    customer_agewise = fields.Boolean(string="Show Customer Agewise", default=True)
+    stock_agewise = fields.Boolean(string="Show Stock Agewise", default=True)
+    stock_position = fields.Boolean(string="Show Stock Position", default=True)
+    sales_report = fields.Boolean(string="Show Sales", default=True)
+    purchases_report = fields.Boolean(string="Show Purchases", default=True)
     
     @api.onchange('warehouse_ids')
     def onchange_warehouse_ids(self):

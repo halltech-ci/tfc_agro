@@ -56,264 +56,279 @@
                                     </tr>
                                 </tbody>
                             </table>
-                            <p>Stock Postion</p>
-                            <table class="table table-condensed" id="custom">
-                                <thead>
-                                    <tr>
-                                        <th>Product</th>
-                                        <th>Unit</th>
-                                        <th>Initial Stock</th>
-                                        <th>Received</th>
-                                        <th>Sales</th>
-                                        <th>Transfer</th>
-                                        <th>Adjustment</th>
-                                        <!--<th>Conversion</th>-->
-                                        <th>Actual Stock</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="invoice_tbody">
-                                    <t t-set="sum_begning" t-value="0.0"/>
-                                    <t t-set="sum_product_qty_in" t-value="0.0"/>
-                                    <t t-set="sum_product_qty_out" t-value="0.0"/>
-                                    <t t-set="sum_product_qty_internal" t-value="0.0"/>
-                                    <t t-set="sum_product_qty_adjustment" t-value="0.0"/>
-                                    <t t-set="total_beg" t-value="0.0"/>
-                                    <t t-set="total_rec" t-value="0.0"/>
-                                    <t t-set="total_sale" t-value="0.0"/>
-                                    <t t-set="total_int" t-value="0.0"/>
-                                    <t t-set="total_adjust" t-value="0.0"/>
-                                    <t t-set="total_conv" t-value="0.0"/>
-                                    <t t-set="total_end" t-value="0.0"/>
-                                    <t t-foreach="get_products(o)" t-as="product">
-                                        <t t-set="ending_qty" t-value="0.00"/>
-                                        <t t-value="get_beginning_inventory(o,product,warehouses=warehouse)" t-set="product_beg_qty"/>
-                                        <t t-value="get_product_sale_qty(o,product,warehouses=warehouse)" t-set="product_val"/>
-                                        <t t-set="ending_qty" t-value="product_beg_qty + product_val['product_qty_in'] + product_val['product_qty_out'] + product_val['product_qty_internal']
-                                            + product_val['product_qty_adjustment']"
-                                        />
-                                        <t t-set="today_movment_qty" t-value="product_val['product_qty_in'] + product_val['product_qty_out'] + product_val['product_qty_internal'] + 
-                                                product_val['product_qty_adjustment']"/>
+                            
+                            <t t-if="stock_position">
+                                <p>Stock Postion</p>
+                                <table class="table table-condensed" id="custom">
+                                    <thead>
                                         <tr>
-                                            <td><span t-esc="product.name_get()[0][1]"/></td>
-                                            <!-- Product unit of mesure-->
-                                            <td>
-                                                <span t-esc="product.uom_id.name"/>
-                                            </td>
-                                            <!-- Initial stock-->
-                                            <td>
-                                                <span t-esc="product_beg_qty"/>
-                                                <t t-set="sum_begning" t-value="sum_begning + product_beg_qty"/>
-                                            </td>
-                                            <!--Received -->
-                                            <td>
-                                                <span t-esc="product_val['product_qty_in']"/>
-                                                <t t-set="sum_product_qty_in" t-value="sum_product_qty_in + product_val['product_qty_in']"/>
-                                            </td>
-                                            <!-- Sale qty-->
-                                            <td>
-                                                <span t-esc="abs(product_val['product_qty_out'])"/>
-                                                <t t-set="sum_product_qty_out" t-value="sum_product_qty_out + product_val['product_qty_out']"/>
-                                            </td>
-                                            <!-- Internal transfert-->
-                                            <td>
-                                                <span t-esc="product_val['product_qty_internal']"/>
-                                                <t t-set="sum_product_qty_internal" t-value="sum_product_qty_internal + product_val['product_qty_internal']"/>
-                                            </td>
-                                            <!--Stock adjustment-->
-                                            <td>
-                                                <span t-esc="product_val['product_qty_adjustment']"/>
-                                                <t t-set="sum_product_qty_adjustment" t-value="sum_product_qty_adjustment + product_val['product_qty_adjustment']"/>
-                                            </td>
+                                            <th>Product</th>
+                                            <th>Unit</th>
+                                            <th>Initial Stock</th>
+                                            <th>Received</th>
+                                            <th>Sales</th>
+                                            <th>Transfer</th>
+                                            <th>Adjustment</th>
+                                            <!--<th>Conversion</th>-->
+                                            <th>Actual Stock</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="invoice_tbody">
+                                        <t t-set="sum_begning" t-value="0.0"/>
+                                        <t t-set="sum_product_qty_in" t-value="0.0"/>
+                                        <t t-set="sum_product_qty_out" t-value="0.0"/>
+                                        <t t-set="sum_product_qty_internal" t-value="0.0"/>
+                                        <t t-set="sum_product_qty_adjustment" t-value="0.0"/>
+                                        <t t-set="total_beg" t-value="0.0"/>
+                                        <t t-set="total_rec" t-value="0.0"/>
+                                        <t t-set="total_sale" t-value="0.0"/>
+                                        <t t-set="total_int" t-value="0.0"/>
+                                        <t t-set="total_adjust" t-value="0.0"/>
+                                        <t t-set="total_conv" t-value="0.0"/>
+                                        <t t-set="total_end" t-value="0.0"/>
+                                        <t t-foreach="get_products(o)" t-as="product">
+                                            <t t-set="ending_qty" t-value="0.00"/>
+                                            <t t-value="get_beginning_inventory(o,product,warehouses=warehouse)" t-set="product_beg_qty"/>
+                                            <t t-value="get_product_sale_qty(o,product,warehouses=warehouse)" t-set="product_val"/>
+                                            <t t-set="ending_qty" t-value="product_beg_qty + product_val['product_qty_in'] + product_val['product_qty_out'] + product_val['product_qty_internal']
+                                                + product_val['product_qty_adjustment']"
+                                            />
+                                            <t t-set="today_movment_qty" t-value="product_val['product_qty_in'] + product_val['product_qty_out'] + product_val['product_qty_internal'] + 
+                                                    product_val['product_qty_adjustment']"/>
+                                            <tr>
+                                                <td><span t-esc="product.name_get()[0][1]"/></td>
+                                                <!-- Product unit of mesure-->
+                                                <td>
+                                                    <span t-esc="product.uom_id.name"/>
+                                                </td>
+                                                <!-- Initial stock-->
+                                                <td>
+                                                    <span t-esc="product_beg_qty"/>
+                                                    <t t-set="sum_begning" t-value="sum_begning + product_beg_qty"/>
+                                                </td>
+                                                <!--Received -->
+                                                <td>
+                                                    <span t-esc="product_val['product_qty_in']"/>
+                                                    <t t-set="sum_product_qty_in" t-value="sum_product_qty_in + product_val['product_qty_in']"/>
+                                                </td>
+                                                <!-- Sale qty-->
+                                                <td>
+                                                    <span t-esc="abs(product_val['product_qty_out'])"/>
+                                                    <t t-set="sum_product_qty_out" t-value="sum_product_qty_out + product_val['product_qty_out']"/>
+                                                </td>
+                                                <!-- Internal transfert-->
+                                                <td>
+                                                    <span t-esc="product_val['product_qty_internal']"/>
+                                                    <t t-set="sum_product_qty_internal" t-value="sum_product_qty_internal + product_val['product_qty_internal']"/>
+                                                </td>
+                                                <!--Stock adjustment-->
+                                                <td>
+                                                    <span t-esc="product_val['product_qty_adjustment']"/>
+                                                    <t t-set="sum_product_qty_adjustment" t-value="sum_product_qty_adjustment + product_val['product_qty_adjustment']"/>
+                                                </td>
+                                                <!--<td></td>-->
+                                                <td>
+                                                    <span t-esc="product_beg_qty + product_val['product_qty_in'] + product_val['product_qty_out'] + product_val['product_qty_adjustment']"/>
+                                                </td>
+                                            </tr>
+                                            <t t-set="total_beg" t-value="total_beg + product_beg_qty"/>
+                                            <t t-set="total_rec" t-value="total_rec + sum_product_qty_in"/>
+                                            <t t-set="total_sale" t-value="total_sale + abs(product_val['product_qty_out'])"/>
+                                            <t t-set="total_int" t-value="total_int + product_val['product_qty_internal']"/>
+                                            <t t-set="total_adjust" t-value="total_adjust + product_val['product_qty_adjustment']"/>
+                                            <t t-set="total_end" t-value="total_end + ending_qty"/>
+                                        </t>
+                                        <tr>
+                                            <td>Total</td>
+                                            <td></td>
+                                            <td><span t-esc="total_beg"/></td>
+                                            <td><span t-esc="total_rec"/></td>
+                                            <td><span t-esc="total_sale"/></td>
+                                            <td><span t-esc="total_int"/></td>
+                                            <td><span t-esc="total_adjust"/></td>
                                             <!--<td></td>-->
-                                            <td>
-                                                <span t-esc="product_beg_qty + product_val['product_qty_in'] + product_val['product_qty_out'] + product_val['product_qty_adjustment']"/>
-                                            </td>
+                                            <td><span t-esc="total_end"/></td>
                                         </tr>
-                                        <t t-set="total_beg" t-value="total_beg + product_beg_qty"/>
-                                        <t t-set="total_rec" t-value="total_rec + sum_product_qty_in"/>
-                                        <t t-set="total_sale" t-value="total_sale + abs(product_val['product_qty_out'])"/>
-                                        <t t-set="total_int" t-value="total_int + product_val['product_qty_internal']"/>
-                                        <t t-set="total_adjust" t-value="total_adjust + product_val['product_qty_adjustment']"/>
-                                        <t t-set="total_end" t-value="total_end + ending_qty"/>
-                                    </t>
-                                    <tr>
-                                        <td>Total</td>
-                                        <td></td>
-                                        <td><span t-esc="total_beg"/></td>
-                                        <td><span t-esc="total_rec"/></td>
-                                        <td><span t-esc="total_sale"/></td>
-                                        <td><span t-esc="total_int"/></td>
-                                        <td><span t-esc="total_adjust"/></td>
-                                        <!--<td></td>-->
-                                        <td><span t-esc="total_end"/></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <p>Sales</p>
-                            <table class="table" id="custom">
-                                <thead>
-                                    <tr>
-                                        <th>Customer</th>
-                                        <th>Product</th>
-                                        <th>Unit</th>
-                                        <th>Vessel</th>
-                                        <th>Terms</th>
-                                        <th>Sold Qty</th>
-                                        <th>Price</th>
-                                        <th>Amount</th>
-                                        <th>ADL/BOV</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <t t-set="total_amount" t-value="0.0"/>
-                                    <t t-foreach="get_product_move(o).get('sales_move')" t-as="sales"> 
-                                        <tr>
-                                            <td><span t-esc="sales.move_id.picking_partner_id.name"/></td>
-                                            <td><span t-esc="sales.product_id.name"/></td>
-                                            <td><span t-esc="sales.move_id.product_uom.name"/></td>
-                                            <td><span t-esc="sales.lot_id.name"/></td>
-                                            <td><span t-esc="sales.move_id.sale_line_id.order_id.payment_term_id"/></td>
-                                            <td><span t-esc="sales.qty_done"/></td>
-                                            <td><span t-esc="sales.move_id.sale_line_id.price_unit"/></td>
-                                            <td><span t-esc="sales.move_id.sale_line_id.price_total"/></td>
-                                            <td><span t-esc="sales.move_id.sale_line_id.order_id.name"/></td>
-                                        </tr>
-                                        <t t-set="amount" t-value="sales.move_id.sale_line_id.price_total"/>
-                                        <t t-set="total_amount" t-value="total_amount + amount"/>
-                                    </t>
-                                    <tr>
-                                        <td>Total</td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td><span t-esct="total_amount"/></td>
-                                        <td></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <p>Purchases</p>
-                            <table class="table" id="custom">
-                                <thead>
-                                    <tr>
-                                        <th>Buyer</th>
-                                        <th>Product</th>
-                                        <th>Unit</th>
-                                        <th>Vessel</th>
-                                        <th>Puchase Qty</th>
-                                        <th>Price</th>
-                                        <th>Amount</th>
-                                        <th>Purchase Ref.</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <t t-foreach="get_product_move(o).get('purchase_move')" t-as="purchases">
-                                        <tr>
-                                            <td><span t-esc="purchases.move_id.picking_partner_id.name"/></td>
-                                            <td><span t-esc="purchases.product_id.name"/></td>
-                                            <td><span t-esc="purchases.move_id.product_uom.name"/></td>
-                                            <td><span t-esc="purchases.lot_id.name"/></td>
-                                            <td><span t-esc="purchases.qty_done"/></td>
-                                            <td><span t-esc="purchases.move_id.purchase_line_id.price_unit"/></td>
-                                            <td><span t-esc="purchases.move_id.purchase_line_id.price_total"/></td>
-                                            <td><span t-esc="purchases.move_id.purchase_line_id.order_id.name"/></td>
-                                        </tr>
-                                    </t>
-                                </tbody>
-                            </table>
+                                    </tbody>
+                                </table>
+                            </t>
                             
-                            <p>Stock Age</p>
-                            <table class="table" id="custom">
-                                <thead>
-                                    <tr>
-                                        <th>Product</th>
-                                        <th>Unit</th>
-                                        <th>0-75 Days</th>
-                                        <th>75-180 Days</th>
-                                        <th>181-360 Days</th>
-                                        <th>360 Days+</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <t t-foreach="get_products(o)" t-as="product">
-                                        <t t-value="get_stock_agewise(product.id)" t-set="stock_age"/>
+                            <t t-if="o.sales_report">
+                                <p>Sales</p>
+                                <table class="table" id="custom">
+                                    <thead>
                                         <tr>
-                                            <td><span t-esc="product.name"/></td>
-                                            <td><span t-esc="product.uom_name"/></td>
-                                            <td><span t-esc="stock_age.get('stock_age_0_75')"/></td>
-                                            <td><span t-esc="stock_age.get('stock_age_75_180')"/></td>
-                                            <td><span t-esc="stock_age.get('stock_age_180_360')"/></td>
-                                            <td><span t-esc="stock_age.get('stock_age_360')"/></td>
+                                            <th>Customer</th>
+                                            <th>Product</th>
+                                            <th>Unit</th>
+                                            <th>Vessel</th>
+                                            <th>Terms</th>
+                                            <th>Sold Qty</th>
+                                            <th>Price</th>
+                                            <th>Amount</th>
+                                            <th>ADL/BOV</th>
                                         </tr>
-                                    </t>
-                                </tbody>
-                            </table>
-                            <p>Debtor Agewise Analysis</p>
-                            <table class="table" id="custom">
-                                <thead>
-                                    <tr>
-                                        <th>Customer Name</th>
-                                        <th>Amount</th>
-                                        <th>0-24 Days</th>
-                                        <th>24-30 Days</th>
-                                        <th>30-45 Days</th>
-                                        <th>45-60 Days+</th>
-                                        <th>60-90 Days+</th>
-                                        <th>90 Days+</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <t t-value="request.env['res.partner'].search([('customer', '=', True)])" t-set="customers"/>
-                                    <t t-foreach="customers" t-as="customer">
-                                        <t t-value="customer.id" t-set="customer_id"/>
+                                    </thead>
+                                    <tbody>
+                                        <t t-set="total_amount" t-value="0.0"/>
+                                        <t t-foreach="get_product_move(o).get('sales_move')" t-as="sales"> 
+                                            <tr>
+                                                <td><span t-esc="sales.move_id.picking_partner_id.name"/></td>
+                                                <td><span t-esc="sales.product_id.name"/></td>
+                                                <td><span t-esc="sales.move_id.product_uom.name"/></td>
+                                                <td><span t-esc="sales.lot_id.name"/></td>
+                                                <td><span t-esc="sales.move_id.sale_line_id.order_id.payment_term_id"/></td>
+                                                <td><span t-esc="sales.qty_done"/></td>
+                                                <td><span t-esc="sales.move_id.sale_line_id.price_unit"/></td>
+                                                <td><span t-esc="sales.move_id.sale_line_id.price_total"/></td>
+                                                <td><span t-esc="sales.move_id.sale_line_id.order_id.name"/></td>
+                                            </tr>
+                                            <t t-set="amount" t-value="sales.move_id.sale_line_id.price_total"/>
+                                            <t t-set="total_amount" t-value="total_amount + amount"/>
+                                        </t>
                                         <tr>
-                                            <t t-set="amount" t-value="debtor_age(customer_id).get('amount')"/>
-                                            <t t-if="amount != 0">
-                                                <td><span t-esc="customer.name"/></td>
-                                                <td><span t-esc="debtor_age(customer_id).get('amount')"/></td>
-                                                <td><span t-esc="debtor_age(customer_id).get('debtor_0_24')"/></td>
-                                                <td><span t-esc="debtor_age(customer_id).get('debtor_24_30')"/></td>
-                                                <td><span t-esc="debtor_age(customer_id).get('debtor_30_45')"/></td>
-                                                <td><span t-esc="debtor_age(customer_id).get('debtor_45_60')"/></td>
-                                                <td><span t-esc="debtor_age(customer_id).get('debtor_60_90')"/></td>
-                                                <td><span t-esc="debtor_age(customer_id).get('debtor_90')"/></td>
-                                            </t>
+                                            <td>Total</td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td><span t-esct="total_amount"/></td>
+                                            <td></td>
                                         </tr>
-                                    </t>
-                                </tbody>
-                            </table>
-                            <p>Creditor Anlysis</p>
-                            <table class="table" id="custom">
-                                <thead>
-                                    <tr>
-                                        <th>Company</th>
-                                        <th>Amount</th>
-                                        <th>0-90 Days</th>
-                                        <th>91-180 Days</th>
-                                        <th>181-365 Days</th>
-                                        <th>365 Days+</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <t t-value="request.env['res.partner'].search([('supplier', '=', True)])" t-set="creditors"/>
-                                    <t t-foreach="creditors" t-as="creditor">
-                                        <tr>
-                                            <t t-set="amount" t-value="creditor_age(creditor.id).get('amount')"/>
-                                            <t t-if="amount != 0">
-                                                <td><span t-esc="creditor.name"/></td>
-                                                <td><span t-esc="creditor_age(creditor.id).get('amount')"/></td>
-                                                <td><span t-esc="creditor_age(customer_id).get('creditor_0_90')"/></td>
-                                                <td><span t-esc="creditor_age(customer_id).get('creditor_90_180')"/></td>
-                                                <td><span t-esc="creditor_age(customer_id).get('creditor_180_365')"/></td>
-                                                <td><span t-esc="creditor_age(customer_id).get('creditor_365')"/></td>
-                                            </t>
-                                        </tr>
-                                    </t>
-                                </tbody>
-                            </table>
+                                    </tbody>
+                                </table>
+                            </t>
                             
+                            <t t-if="o.purchases_report">
+                                <p>Purchases</p>
+                                <table class="table" id="custom">
+                                    <thead>
+                                        <tr>
+                                            <th>Buyer</th>
+                                            <th>Product</th>
+                                            <th>Unit</th>
+                                            <th>Vessel</th>
+                                            <th>Puchase Qty</th>
+                                            <th>Price</th>
+                                            <th>Amount</th>
+                                            <th>Purchase Ref.</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="get_product_move(o).get('purchase_move')" t-as="purchases">
+                                            <tr>
+                                                <td><span t-esc="purchases.move_id.picking_partner_id.name"/></td>
+                                                <td><span t-esc="purchases.product_id.name"/></td>
+                                                <td><span t-esc="purchases.move_id.product_uom.name"/></td>
+                                                <td><span t-esc="purchases.lot_id.name"/></td>
+                                                <td><span t-esc="purchases.qty_done"/></td>
+                                                <td><span t-esc="purchases.move_id.purchase_line_id.price_unit"/></td>
+                                                <td><span t-esc="purchases.move_id.purchase_line_id.price_total"/></td>
+                                                <td><span t-esc="purchases.move_id.purchase_line_id.order_id.name"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </t>
+                            <t t-if="o.stock_agewise">
+                                <p>Stock Age</p>
+                                <table class="table" id="custom">
+                                    <thead>
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>Unit</th>
+                                            <th>0-75 Days</th>
+                                            <th>75-180 Days</th>
+                                            <th>181-360 Days</th>
+                                            <th>360 Days+</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="get_products(o)" t-as="product">
+                                            <t t-value="get_stock_agewise(product.id)" t-set="stock_age"/>
+                                            <tr>
+                                                <td><span t-esc="product.name"/></td>
+                                                <td><span t-esc="product.uom_name"/></td>
+                                                <td><span t-esc="stock_age.get('stock_age_0_75')"/></td>
+                                                <td><span t-esc="stock_age.get('stock_age_75_180')"/></td>
+                                                <td><span t-esc="stock_age.get('stock_age_180_360')"/></td>
+                                                <td><span t-esc="stock_age.get('stock_age_360')"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </t>
+                            
+                            <t t-if="o.debtor_agewise">
+                                <p>Debtor Agewise Analysis</p>
+                                <table class="table" id="custom">
+                                    <thead>
+                                        <tr>
+                                            <th>Customer Name</th>
+                                            <th>Amount</th>
+                                            <th>0-24 Days</th>
+                                            <th>24-30 Days</th>
+                                            <th>30-45 Days</th>
+                                            <th>45-60 Days+</th>
+                                            <th>60-90 Days+</th>
+                                            <th>90 Days+</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-value="request.env['res.partner'].search([('customer', '=', True)])" t-set="customers"/>
+                                        <t t-foreach="customers" t-as="customer">
+                                            <t t-value="customer.id" t-set="customer_id"/>
+                                            <tr>
+                                                <t t-set="amount" t-value="debtor_age(customer_id).get('amount')"/>
+                                                <t t-if="amount != 0">
+                                                    <td><span t-esc="customer.name"/></td>
+                                                    <td><span t-esc="debtor_age(customer_id).get('amount')"/></td>
+                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_0_24')"/></td>
+                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_24_30')"/></td>
+                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_30_45')"/></td>
+                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_45_60')"/></td>
+                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_60_90')"/></td>
+                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_90')"/></td>
+                                                </t>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </t>
+                            
+                            <t t-if="o.customer_agewise">
+                                <p>Creditor Anlysis</p>
+                                <table class="table" id="custom">
+                                    <thead>
+                                        <tr>
+                                            <th>Company</th>
+                                            <th>Amount</th>
+                                            <th>0-90 Days</th>
+                                            <th>91-180 Days</th>
+                                            <th>181-365 Days</th>
+                                            <th>365 Days+</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-value="request.env['res.partner'].search([('supplier', '=', True)])" t-set="creditors"/>
+                                        <t t-foreach="creditors" t-as="creditor">
+                                            <tr>
+                                                <t t-set="amount" t-value="creditor_age(creditor.id).get('amount')"/>
+                                                <t t-if="amount != 0">
+                                                    <td><span t-esc="creditor.name"/></td>
+                                                    <td><span t-esc="creditor_age(creditor.id).get('amount')"/></td>
+                                                    <td><span t-esc="creditor_age(customer_id).get('creditor_0_90')"/></td>
+                                                    <td><span t-esc="creditor_age(customer_id).get('creditor_90_180')"/></td>
+                                                    <td><span t-esc="creditor_age(customer_id).get('creditor_180_365')"/></td>
+                                                    <td><span t-esc="creditor_age(customer_id).get('creditor_365')"/></td>
+                                                </t>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </t>
                             <p>PDC Detail</p>
                             <table class="table" id="custom">
                                 <thead>
