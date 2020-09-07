@@ -57,7 +57,7 @@
                                 </tbody>
                             </table>
                             
-                            <t t-if="stock_position">
+                            <t t-if="o.stock_position">
                                 <p>Stock Postion</p>
                                 <table class="table table-condensed" id="custom">
                                     <thead>
