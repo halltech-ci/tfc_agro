@@ -46,6 +46,7 @@
         'views/account_invoice_views.xml',
         'views/purchase_order_views.xml',
         'views/res_partner_views.xml',
+        'views/stock_production_views.xml'
         #'wizards/create_custom_report.xml',
         #'reports/custom_report.xml',
     ],
