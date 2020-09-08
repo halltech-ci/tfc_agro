@@ -57,7 +57,7 @@
                                 </tbody>
                             </table>
                             
-                            <t t-if="stock_position">
+                            <t t-if="o.stock_position">
                                 <p>Stock Postion</p>
                                 <table class="table table-condensed" id="custom">
                                     <thead>
@@ -274,6 +274,8 @@
                                             <th>45-60 Days+</th>
                                             <th>60-90 Days+</th>
                                             <th>90 Days+</th>
+                                            <th>Credit limit</th>
+                                            <th>Salesperson</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -291,6 +293,15 @@
                                                     <td><span t-esc="debtor_age(customer_id).get('debtor_45_60')"/></td>
                                                     <td><span t-esc="debtor_age(customer_id).get('debtor_60_90')"/></td>
                                                     <td><span t-esc="debtor_age(customer_id).get('debtor_90')"/></td>
+                                                    <td><span t-esc="customer.credit_limit"/></td>
+                                                    <td>
+                                                        <t t-if="customer.user_id">
+                                                            <span t-esc="customer.user_id"/>
+                                                        </t>
+                                                        <t t-if="not customer.user_id">
+                                                            <span></span>
+                                                        </t>
+                                                    </td>
                                                 </t>
                                             </tr>
                                         </t>

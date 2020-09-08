@@ -115,6 +115,7 @@ class CustomReport(models.AbstractModel):
 
         res = self._cr.dictfetchall()
         return res[0].get('qty', 0.00) if res else 0.00
+    
 
     def get_product_move(self, record):
         domain = [('state', '=', 'done')]
