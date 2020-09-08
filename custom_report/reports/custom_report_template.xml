@@ -135,7 +135,7 @@
                                                 </td>
                                                 <td>
                                                     <t t-set="actual_stock" t-value="product_beg_qty + product_val['product_qty_in'] + product_val['product_qty_out'] + product_val['product_qty_adjustment']"/>
-                                                    <span t-esc="actual_stock*product.uom_id.factor"/>
+                                                    <span t-esc="actual_stock*product.uom_id.factor_inv"/>
                                                 </td>
                                             </tr>
                                             <t t-set="total_beg" t-value="total_beg + product_beg_qty"/>
@@ -144,7 +144,7 @@
                                             <t t-set="total_int" t-value="total_int + product_val['product_qty_internal']"/>
                                             <t t-set="total_adjust" t-value="total_adjust + product_val['product_qty_adjustment']"/>
                                             <t t-set="total_end" t-value="total_end + ending_qty"/>
-                                            <t t-set="total_uom_qty" t-value="total_uom_qty + actual_stock*product.uom_id.factor"/>
+                                            <t t-set="total_uom_qty" t-value="total_uom_qty + actual_stock*product.uom_id.factor_inv"/>
                                         </t>
                                         <tr>
                                             <td>Total</td>
