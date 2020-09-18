@@ -106,36 +106,36 @@
                                                 </td>
                                                 <!-- Initial stock-->
                                                 <td>
-                                                    <span t-esc="product_beg_qty"/>
+                                                    <span t-esc="product_beg_qty" t-options="{'widget':'float', 'precision':2}"/>
                                                     <t t-set="sum_begning" t-value="sum_begning + product_beg_qty"/>
                                                 </td>
                                                 <!--Received -->
                                                 <td>
-                                                    <span t-esc="product_val['product_qty_in']"/>
+                                                    <span t-esc="product_val['product_qty_in']" t-options="{'widget':'float', 'precision':2}"/>
                                                     <t t-set="sum_product_qty_in" t-value="sum_product_qty_in + product_val['product_qty_in']"/>
                                                 </td>
                                                 <!-- Sale qty-->
                                                 <td>
-                                                    <span t-esc="abs(product_val['product_qty_out'])"/>
+                                                    <span t-esc="abs(product_val['product_qty_out'])" t-esc-options="{'widget':'float', 'precision':2}"/>
                                                     <t t-set="sum_product_qty_out" t-value="sum_product_qty_out + product_val['product_qty_out']"/>
                                                 </td>
                                                 <!-- Internal transfert-->
                                                 <td>
-                                                    <span t-esc="product_val['product_qty_internal']"/>
+                                                    <span t-esc="product_val['product_qty_internal']" t-options="{'widget':'float', 'precision':2}"/>
                                                     <t t-set="sum_product_qty_internal" t-value="sum_product_qty_internal + product_val['product_qty_internal']"/>
                                                 </td>
                                                 <!--Stock adjustment-->
                                                 <td>
-                                                    <span t-esc="product_val['product_qty_adjustment']"/>
+                                                    <span t-esc="product_val['product_qty_adjustment']" t-options="{'widget':'float', 'precision':2}"/>
                                                     <t t-set="sum_product_qty_adjustment" t-value="sum_product_qty_adjustment + product_val['product_qty_adjustment']"/>
                                                 </td>
                                                 <!--<td></td>-->
                                                 <td>
-                                                    <span t-esc="product_beg_qty + product_val['product_qty_in'] + product_val['product_qty_out'] + product_val['product_qty_adjustment']"/>
+                                                    <span t-esc="product_beg_qty + product_val['product_qty_in'] + product_val['product_qty_out'] + product_val['product_qty_adjustment']" t-options="{'widget':'float', 'precision':2}"/>
                                                 </td>
                                                 <td>
                                                     <t t-set="actual_stock" t-value="product_beg_qty + product_val['product_qty_in'] + product_val['product_qty_out'] + product_val['product_qty_adjustment']"/>
-                                                    <span t-esc="actual_stock*product.uom_id.factor"/>
+                                                    <span t-esc="actual_stock*product.uom_id.factor_inv" t-options="{'widget':'float', 'precision':2}"/>
                                                 </td>
                                             </tr>
                                             <t t-set="total_beg" t-value="total_beg + product_beg_qty"/>
@@ -144,19 +144,19 @@
                                             <t t-set="total_int" t-value="total_int + product_val['product_qty_internal']"/>
                                             <t t-set="total_adjust" t-value="total_adjust + product_val['product_qty_adjustment']"/>
                                             <t t-set="total_end" t-value="total_end + ending_qty"/>
-                                            <t t-set="total_uom_qty" t-value="total_uom_qty + actual_stock*product.uom_id.factor"/>
+                                            <t t-set="total_uom_qty" t-value="total_uom_qty + actual_stock*product.uom_id.factor_inv"/>
                                         </t>
                                         <tr>
                                             <td>Total</td>
                                             <td></td>
-                                            <td><span t-esc="total_beg"/></td>
-                                            <td><span t-esc="total_rec"/></td>
-                                            <td><span t-esc="total_sale"/></td>
-                                            <td><span t-esc="total_int"/></td>
-                                            <td><span t-esc="total_adjust"/></td>
+                                            <td><span t-esc="total_beg" t-options="{'widget':'float', 'precision':2}"/></td>
+                                            <td><span t-esc="total_rec" t-options="{'widget':'float', 'precision':2}"/></td>
+                                            <td><span t-esc="total_sale" t-options="{'widget':'float', 'precision':2}"/></td>
+                                            <td><span t-esc="total_int" t-options="{'widget':'float', 'precision':2}"/></td>
+                                            <td><span t-esc="total_adjust" t-options="{'widget':'float', 'precision':2}"/></td>
                                             <!--<td></td>-->
-                                            <td><span t-esc="total_end"/></td>
-                                            <td><span t-esc="total_uom_qty"/></td>
+                                            <td><span t-esc="total_end" t-options="{'widget':'float', 'precision':2}"/></td>
+                                            <td><span t-esc="total_uom_qty" t-options="{'widget':'float', 'precision':2}"/></td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -186,14 +186,21 @@
                                                 <td><span t-esc="sales.product_id.name"/></td>
                                                 <td><span t-esc="sales.move_id.product_uom.name"/></td>
                                                 <td><span t-esc="sales.lot_id.name"/></td>
-                                                <td><span t-esc="sales.move_id.sale_line_id.order_id.payment_term_id"/></td>
-                                                <td><span t-esc="sales.qty_done"/></td>
-                                                <td><span t-esc="sales.move_id.sale_line_id.price_unit"/></td>
-                                                <td><span t-esc="sales.move_id.sale_line_id.price_total"/></td>
+                                                <td>
+                                                    <t t-if="sales.move_id.sale_line_id.order_id.payment_term_id">
+                                                        <span t-esc="sales.move_id.sale_line_id.order_id.payment_term_id"/>
+                                                    </t>
+                                                    <t t-if="not sales.move_id.sale_line_id.order_id.payment_term_id">
+                                                        <span></span>
+                                                    </t>
+                                                </td>
+                                                <td><span t-esc="sales.qty_done" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                <td><span t-esc="sales.move_id.sale_line_id.price_unit" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                <td><span t-esc="sales.move_id.sale_line_id.price_total" t-options="{'widget':'float', 'precision':2}"/></td>
                                                 <td><span t-esc="sales.move_id.sale_line_id.order_id.name"/></td>
                                             </tr>
                                             <t t-set="amount" t-value="sales.move_id.sale_line_id.price_total"/>
-                                            <t t-set="total_amount" t-value="total_amount + amount"/>
+                                            <t t-set="total_amount" t-value="total_amount + amount" t-options="{'widget':'float', 'precision':2}"/>
                                         </t>
                                         <tr>
                                             <td>Total</td>
@@ -203,7 +210,7 @@
                                             <td></td>
                                             <td></td>
                                             <td></td>
-                                            <td><span t-esct="total_amount"/></td>
+                                            <td><span t-esct="total_amount" t-options="{'widget':'float', 'precision':2}"/></td>
                                             <td></td>
                                         </tr>
                                     </tbody>
@@ -232,9 +239,9 @@
                                                 <td><span t-esc="purchases.product_id.name"/></td>
                                                 <td><span t-esc="purchases.move_id.product_uom.name"/></td>
                                                 <td><span t-esc="purchases.lot_id.name"/></td>
-                                                <td><span t-esc="purchases.qty_done"/></td>
-                                                <td><span t-esc="purchases.move_id.purchase_line_id.price_unit"/></td>
-                                                <td><span t-esc="purchases.move_id.purchase_line_id.price_total"/></td>
+                                                <td><span t-esc="purchases.qty_done" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                <td><span t-esc="purchases.move_id.purchase_line_id.price_unit" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                <td><span t-esc="purchases.move_id.purchase_line_id.price_total" t-options="{'widget':'float', 'precision':2}"/></td>
                                                 <td><span t-esc="purchases.move_id.purchase_line_id.order_id.name"/></td>
                                             </tr>
                                         </t>
@@ -260,10 +267,10 @@
                                             <tr>
                                                 <td><span t-esc="product.name"/></td>
                                                 <td><span t-esc="product.uom_name"/></td>
-                                                <td><span t-esc="stock_age.get('stock_age_0_75')"/></td>
-                                                <td><span t-esc="stock_age.get('stock_age_75_180')"/></td>
-                                                <td><span t-esc="stock_age.get('stock_age_180_360')"/></td>
-                                                <td><span t-esc="stock_age.get('stock_age_360')"/></td>
+                                                <td><span t-esc="stock_age.get('stock_age_0_75')" t-esc-options="{'widget':'float', 'precision':2}"/></td>
+                                                <td><span t-esc="stock_age.get('stock_age_75_180')" t-esc-options="{'widget':'float', 'precision':2}"/></td>
+                                                <td><span t-esc="stock_age.get('stock_age_180_360')" t-esc-options="{'widget':'float', 'precision':2}"/></td>
+                                                <td><span t-esc="stock_age.get('stock_age_360')" t-esc-options="{'widget':'float', 'precision':2}"/></td>
                                             </tr>
                                         </t>
                                     </tbody>
@@ -295,13 +302,13 @@
                                                 <t t-set="amount" t-value="debtor_age(customer_id).get('amount')"/>
                                                 <t t-if="amount != 0">
                                                     <td><span t-esc="customer.name"/></td>
-                                                    <td><span t-esc="debtor_age(customer_id).get('amount')"/></td>
-                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_0_24')"/></td>
-                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_24_30')"/></td>
-                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_30_45')"/></td>
-                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_45_60')"/></td>
-                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_60_90')"/></td>
-                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_90')"/></td>
+                                                    <td><span t-esc="debtor_age(customer_id).get('amount')" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_0_24')" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_24_30')" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_30_45')" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_45_60')" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_60_90')" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_90')" t-options="{'widget':'float', 'precision':2}"/></td>
                                                     <td><span t-esc="customer.credit_limit"/></td>
                                                     <td>
                                                         <t t-if="customer.user_id">
@@ -338,11 +345,11 @@
                                                 <t t-set="amount" t-value="creditor_age(creditor.id).get('amount')"/>
                                                 <t t-if="amount != 0">
                                                     <td><span t-esc="creditor.name"/></td>
-                                                    <td><span t-esc="creditor_age(creditor.id).get('amount')"/></td>
-                                                    <td><span t-esc="creditor_age(customer_id).get('creditor_0_90')"/></td>
-                                                    <td><span t-esc="creditor_age(customer_id).get('creditor_90_180')"/></td>
-                                                    <td><span t-esc="creditor_age(customer_id).get('creditor_180_365')"/></td>
-                                                    <td><span t-esc="creditor_age(customer_id).get('creditor_365')"/></td>
+                                                    <td><span t-esc="creditor_age(creditor.id).get('amount')" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                    <td><span t-esc="creditor_age(customer_id).get('creditor_0_90')" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                    <td><span t-esc="creditor_age(customer_id).get('creditor_90_180')" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                    <td><span t-esc="creditor_age(customer_id).get('creditor_180_365')" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                    <td><span t-esc="creditor_age(customer_id).get('creditor_365')" t-options="{'widget':'float', 'precision':2}"/></td>
                                                 </t>
                                             </tr>
                                         </t>
@@ -367,7 +374,7 @@
                                             <td><span t-esc="pdc_check.bank_reference"/></td>
                                             <td><span t-esc="pdc_check.cheque_reference"/></td>
                                             <td><span t-esc="pdc_check.payment_date"/></td>
-                                            <td><span t-esc="pdc_check.amount"/></td>
+                                            <td><span t-esc="pdc_check.amount" t-options="{'widget':'float', 'precision':2}"/></td>
                                         </tr>
                                     </t>
                                 </tbody>
@@ -391,7 +398,7 @@
                                             <td><span t-esc="check_on_hand.bank_reference"/></td>
                                             <td><span t-esc="check_on_hand.cheque_reference"/></td>
                                             <td><span t-esc="check_on_hand.payment_date"/></td>
-                                            <td><span t-esc="check_on_hand.amount"/></td>
+                                            <td><span t-esc="check_on_hand.amount" t-options="{'widget':'float', 'precision':0}"/></td>
                                         </tr>
                                     </t>
                                 </tbody>
@@ -417,7 +424,7 @@
                                             <td><span t-esc="check_on_bank.bank_reference"/></td>
                                             <td><span t-esc="check_on_bank.cheque_reference"/></td>
                                             <td><span t-esc="check_on_bank.payment_date"/></td>
-                                            <td><span t-esc="check_on_bank.amount"/></td>
+                                            <td><span t-esc="check_on_bank.amount" t-options="{'widget':'float', 'precision':0}"/></td>
                                         </tr>
                                     </t>
                                 </tbody>
