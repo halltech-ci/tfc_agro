@@ -462,6 +462,7 @@ class CustomReport(models.AbstractModel):
            'doc_ids': docids,
            'docs': records,
            'data': data,
+           'lang': "fr_FR",
            'get_beginning_inventory': self._get_beginning_inventory,
            'get_products':self._get_products,
            'get_product_sale_qty':self.get_product_sale_qty,
@@ -471,7 +472,7 @@ class CustomReport(models.AbstractModel):
            'get_stock_agewise': self._get_stock_aging,
            'debtor_age': self._get_debtor_age,
            'creditor_age': self._get_creditor_age,
-            'get_payments': self._get_payment_data,
+           'get_payments': self._get_payment_data,
         }
         return res
 
