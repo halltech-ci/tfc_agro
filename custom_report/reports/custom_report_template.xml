@@ -312,7 +312,7 @@
                                                     <td><span t-esc="customer.credit_limit"/></td>
                                                     <td>
                                                         <t t-if="customer.user_id">
-                                                            <span t-esc="customer.user_id"/>
+                                                            <span t-esc="customer.user_id.name"/>
                                                         </t>
                                                         <t t-if="not customer.user_id">
                                                             <span></span>
