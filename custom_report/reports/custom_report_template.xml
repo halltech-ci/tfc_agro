@@ -267,10 +267,10 @@
                                             <tr>
                                                 <td><span t-esc="product.name"/></td>
                                                 <td><span t-esc="product.uom_name"/></td>
-                                                <td><span t-esc="stock_age.get('stock_age_0_75')" t-esc-options="{'widget':'float', 'precision':2}"/></td>
-                                                <td><span t-esc="stock_age.get('stock_age_75_180')" t-esc-options="{'widget':'float', 'precision':2}"/></td>
-                                                <td><span t-esc="stock_age.get('stock_age_180_360')" t-esc-options="{'widget':'float', 'precision':2}"/></td>
-                                                <td><span t-esc="stock_age.get('stock_age_360')" t-esc-options="{'widget':'float', 'precision':2}"/></td>
+                                                <td><span t-esc="stock_age.get('stock_age_0_75')" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                <td><span t-esc="stock_age.get('stock_age_75_180')" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                <td><span t-esc="stock_age.get('stock_age_180_360')" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                <td><span t-esc="stock_age.get('stock_age_360')" t-options="{'widget':'float', 'precision':2}"/></td>
                                             </tr>
                                         </t>
                                     </tbody>
@@ -312,7 +312,7 @@
                                                     <td><span t-esc="customer.credit_limit"/></td>
                                                     <td>
                                                         <t t-if="customer.user_id">
-                                                            <span t-esc="customer.user_id"/>
+                                                            <span t-esc="customer.user_id.name"/>
                                                         </t>
                                                         <t t-if="not customer.user_id">
                                                             <span></span>
