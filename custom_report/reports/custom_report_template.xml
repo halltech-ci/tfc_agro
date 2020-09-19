@@ -309,7 +309,7 @@
                                                     <td><span t-esc="debtor_age(customer_id).get('debtor_45_60')" t-options="{'widget':'float', 'precision':2}"/></td>
                                                     <td><span t-esc="debtor_age(customer_id).get('debtor_60_90')" t-options="{'widget':'float', 'precision':2}"/></td>
                                                     <td><span t-esc="debtor_age(customer_id).get('debtor_90')" t-options="{'widget':'float', 'precision':2}"/></td>
-                                                    <td><span t-esc="customer.credit_limit"/></td>
+                                                    <td><span t-esc="customer.credit_limit" t-options="{'widget':'float', 'precision':2}"/></td>
                                                     <td>
                                                         <t t-if="customer.user_id">
                                                             <span t-esc="customer.user_id.name"/>
