@@ -50,13 +50,13 @@ class SaleCustomReports(models.AbstractModel):
         #self.env['account.payment'].with_context(strict_range=True).search(domain)
         for line in results:
             
-            partner_name = self.env['res.partner'].browse(line.get('partner_id')[0]).name
-            columns = [partner_name, line.get('credit_limit'), line.get('journal_id'), line.get('journal_id')]
+            partner_name = self.env['res.partner'].browse(line.get('partner_id')).name
+            columns = [line.get('credit_limit'), line.get('journal_id'), line.get('journal_id')]
             lines.append({
                 'id': line.get('partner_id'),
                 'name': partner_name,
                 'level': 2,
-                'unfoldable': True,
+                'unfoldable': False,
                 'unfolded': line_id == line.get('partner_id') and True or False,
                 'columns':[{'name': v} for v in columns],
             })
