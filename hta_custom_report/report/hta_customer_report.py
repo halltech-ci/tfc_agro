@@ -19,7 +19,7 @@ class SaleCustomReports(models.AbstractModel):
     
     def _get_columns_name(self, options):
         columns = [
-            {},
+            {'name': _('Customer')},
             {'name': _('Credit Limit'), 'class': 'number'},
             {'name': _('Check On Hand'), 'class': 'number'},
             {'name': _('Check On Bank'), 'class': 'number'},
