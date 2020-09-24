@@ -9,3 +9,10 @@ class CustomPartnerLedger(models.AbstractModel):
     _description = "Custom partner ledger"
     
     
+    
+    
+    @api.model
+    def _get_report_values(self, docids, data=None):
+        report = self.env['ir.actions.report']._get_report_from_name('hta_partner_ledger.custom_partner_ledger_template')
+    
+    

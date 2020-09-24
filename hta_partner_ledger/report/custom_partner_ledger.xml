@@ -21,8 +21,8 @@
             model="custom.partner.ledger"
             string="Custom Partner Ledger"
             report_type="qweb-html"
-            name="custom_partner_ledger.custom_partner_ledger_template"
-            file="custom_partner_ledger.custom_partner_ledger_template"
+            name="hta_partner_ledger.custom_partner_ledger_template"
+            file="hta_partner_ledger.custom_partner_ledger_template"
             paperformat="paperformat_custom_partner_ledger"
             menu="False"
     />
