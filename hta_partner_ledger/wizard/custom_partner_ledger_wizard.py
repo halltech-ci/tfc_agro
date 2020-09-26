@@ -13,7 +13,6 @@ class CustomPartnerLedger(models.TransientModel):
                  ('all', 'All')
                 ]
     
-    
     account_type = fields.Selection(ACC_TYPES, string="Account Type")
     partner_ids = fields.Many2many('res.partner', 'partner_custom_ledger_rel', string="Partner")
     start_date = fields.Date(string="From Date", default=fields.Date.today())
