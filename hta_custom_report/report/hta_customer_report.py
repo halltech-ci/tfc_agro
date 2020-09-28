@@ -51,7 +51,7 @@ class SaleCustomReports(models.AbstractModel):
         for line in results:
             
             partner_name = self.env['res.partner'].browse(line.get('partner_id')).name
-            columns = [line.get('credit_limit'), line.get('journal_id'), line.get('journal_id')]
+            columns = [line.get('credit_limit'), line.get('amount'), line.get('journal_id')]
             lines.append({
                 'id': line.get('partner_id'),
                 'name': partner_name,

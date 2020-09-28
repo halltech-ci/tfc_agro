@@ -29,6 +29,9 @@
         # 'security/ir.model.access.csv',
         'views/views.xml',
         'views/templates.xml',
+        'report/custom_partner_ledger_template.xml',
+        'report/custom_partner_ledger.xml',
+        'wizard/custom_partner_ledger_wizard.xml'
     ],
     # only loaded in demonstration mode
     'demo': [

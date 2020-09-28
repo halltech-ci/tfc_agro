@@ -1,0 +1,36 @@
+<odoo>
+  <data>
+      <!-- Define custom report wizard form view-->
+      <record model="ir.ui.view" id="custom_partner_ledger">
+        <field name="name">Custom Partner Ledger</field>
+        <field name="model">custom.partner.ledger</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Partnet Ledger">
+                <group col="4" string="Filter option">
+                    <field name="start_date"/>
+                    <field name="end_date"/>
+                    <field name="partner_ids" widget="many2many_tags" options="{'no_create':True,'no_edit':True}"/>
+                    <field name="account_type"/>
+                </group>
+                <footer>
+                    <button name="generate_pdf_report" string="Print PDF" type="object" class="oe_highlight"/>
+                    <button string="Cancel" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <!-- Define action to show custom report form view-->  
+    <record id="action_partner_ledger_wizard" model="ir.actions.act_window">
+        <field name="name">Custom Partner Ledger</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">custom.partner.ledger</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="custom_partner_ledger"/>
+        <field name="target">new</field>
+    </record>
+    <!-- Display custom report form in menu-->
+    <menuitem id="custom_partner_ledger_report" name="Custom Partner Ledger" parent="account.menu_finance_reports" groups="account.group_account_manager" sequence="1"
+    action="action_partner_ledger_wizard"/>
+  </data>
+</odoo>
