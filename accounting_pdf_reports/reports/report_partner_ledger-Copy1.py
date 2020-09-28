@@ -83,7 +83,6 @@ class ReportPartnerLedger(models.AbstractModel):
         obj_partner = self.env['res.partner']
         query_get_data = self.env['account.move.line'].with_context(data['form'].get('used_context', {}))._query_get()
         data['computed']['move_state'] = ['draft', 'posted']
-        
         if data['form'].get('target_move', 'all') == 'posted':
             data['computed']['move_state'] = ['posted']
         result_selection = data['form'].get('result_selection', 'customer')
