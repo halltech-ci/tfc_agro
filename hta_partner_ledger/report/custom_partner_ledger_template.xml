@@ -18,9 +18,9 @@
                                         <th>JRNL</th>
                                         <th>Account</th>
                                         <th>Ref</th>
-                                        <th>Debit</th>
-                                        <th>Credit</th>
-                                        <th>Balance</th>
+                                        <th class="text-right">Debit</th>
+                                        <th class="text-right">Credit</th>
+                                        <th class="text-right">Balance</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -36,7 +36,7 @@
                                         <t t-foreach="moves" t-as="move">
                                             <t t-set="lines" t-value="move.line_ids"/>
                                             <tr>
-                                                <td><span t-esc="move.date"/></td>
+                                                <td class="text-center"><span t-esc="move.date"/></td>
                                                 <td><span t-esc="move.journal_id.name"/></td>
                                                 <td><span/></td>
                                                 <td><span t-esc="move.ref"/></td>
@@ -48,15 +48,27 @@
                                                     <td><span>Unit Price</span></td>
                                                     <td><span>Price Total</span></td>
                                                 </tr>-->
-                                                <tr>
-                                                    <td><span t-esc="line.product_id.name"/></td>
-                                                    <td>
-                                                        <span t-esc="line.quantity"/>
-                                                        <span t-esc="line.product_uom_id.name"/>
-                                                    </td>
-                                                    <td></td>
-                                                    <td></td>
-                                                </tr>
+                                                <t t-if="line.product_id">
+                                                    <tr>
+                                                        <td class="text-right"><span t-esc="line.product_id.name"/></td>
+                                                        <td class="text-right">
+                                                            <span t-esc="line.quantity" t-options="{'widget':'float', 'precision':2}"/>
+                                                            <span t-esc="line.product_id.uom_id.name"/>
+                                                        </td>
+                                                        <td></td>
+                                                        <td class="text-right">
+                                                            <t t-if="move.dummy_account_id.internal_type == 'receivable'">
+                                                                <span t-esc="line.credit" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                                            </t>
+                                                        </td>
+                                                        <td class="text-right">
+                                                            <t t-if="move.dummy_account_id.internal_type == 'payable'">
+                                                                <span t-esc="line.debit" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                                            </t>
+                                                        </td>
+                                                        <td></td>
+                                                    </tr>
+                                                </t>
                                             </t>
                                         </t>
                                     </t>

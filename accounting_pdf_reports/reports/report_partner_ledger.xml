@@ -15,9 +15,11 @@
                                 <strong>Company:</strong>
                                 <p t-esc="res_company.name"/>
                             </div>
+                        </div>
+                        <div class="row">
                             <div class="col-3">
-                                <t t-if="data['form']['date_from']"><strong>Date from :</strong> <span t-esc="data['form']['date_from']"/><br/></t>
-                                <t t-if="data['form']['date_to']"><strong>Date to :</strong> <span t-esc="data['form']['date_to']"/></t>
+                                <t t-if="data['form']['date_from']"><strong>Date from :</strong><span t-esc="data['form']['date_from']"/></t>
+                                <t t-if="data['form']['date_to']"><strong><span> Date to :</span></strong> <span t-esc="data['form']['date_to']"/></t>
                             </div>
                             <div class="col-3">
                                 <strong>Target Moves:</strong>
