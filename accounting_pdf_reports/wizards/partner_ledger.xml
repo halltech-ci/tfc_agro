@@ -7,15 +7,27 @@
         <field name="inherit_id" ref="account.account_common_report_view"/>
         <field name="arch" type="xml">
         <data>
-        <xpath expr="//field[@name='target_move']" position="after">
-                <field name="result_selection"/>
-                <field name="partner_ids" widget="many2many_tags" options="{'no_create':True,'no_edit':True}"/>
+        <xpath expr="//group[1]" position="replace">
+            <group>
+                <field name="target_move" widget="radio"/>
+            </group>
+        </xpath>
+        <xpath expr="//group[1]" position="after">
+            <group col="4">
                 <field name="account_type"/>
+                <field name="partner_ids" widget="many2many_tags" options="{'no_create':True,'no_edit':True}"/>
+            </group>
+        </xpath>
+        <xpath expr="//group[2]" position="after">
+            <group col="4">
                 <field name="amount_currency" groups="base.group_multi_currency"/>
-                <newline/>
                 <field name="reconciled"/>
-                <newline/>
-            </xpath>
+            </group>
+            <group col="4">
+                <field name="date_from"/>
+                <field name="date_to"/>
+            </group>
+        </xpath>
         </data>
         </field>
     </record>

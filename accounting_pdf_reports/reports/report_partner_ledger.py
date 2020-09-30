@@ -72,6 +72,10 @@ class ReportPartnerLedger(models.AbstractModel):
         if contemp is not None:
             result = contemp[0] or 0.0
         return result
+    
+    def _get_partners(self, data):
+        partner_ids = data['form']['partner']
+        return partner_ids
 
     @api.model
     def _get_report_values(self, docids, data=None):
@@ -81,15 +85,16 @@ class ReportPartnerLedger(models.AbstractModel):
         data['computed'] = {}
 
         obj_partner = self.env['res.partner']
+        partner_obj_ids = self._get_partners(data)
         query_get_data = self.env['account.move.line'].with_context(data['form'].get('used_context', {}))._query_get()
         data['computed']['move_state'] = ['draft', 'posted']
-        
+        partner = data.get('partner') 
         if data['form'].get('target_move', 'all') == 'posted':
             data['computed']['move_state'] = ['posted']
-        result_selection = data['form'].get('result_selection', 'customer')
-        if result_selection == 'supplier':
+        account_type = data['form'].get('account_type', 'customer')
+        if account_type == 'supplier':
             data['computed']['ACCOUNT_TYPE'] = ['payable']
-        elif result_selection == 'customer':
+        elif account_type == 'customer':
             data['computed']['ACCOUNT_TYPE'] = ['receivable']
         else:
             data['computed']['ACCOUNT_TYPE'] = ['payable', 'receivable']
@@ -113,7 +118,10 @@ class ReportPartnerLedger(models.AbstractModel):
                 AND NOT account.deprecated
                 AND """ + query_get_data[1] + reconcile_clause
         self.env.cr.execute(query, tuple(params))
-        partner_ids = [res['partner_id'] for res in self.env.cr.dictfetchall()]
+        if len(partner_obj_ids) > 0 :
+            partner_ids = partner_obj_ids
+        else:
+            partner_ids = [res['partner_id'] for res in self.env.cr.dictfetchall()]
         partners = obj_partner.browse(partner_ids)
         partners = sorted(partners, key=lambda x: (x.ref or '', x.name or ''))
 

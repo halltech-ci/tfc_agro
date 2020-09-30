@@ -8,24 +8,21 @@
             <t t-foreach="docs" t-as="o">
                 <t t-call="web.internal_layout">
                     <div class="page">
-                        <h2>Partner Ledger</h2>
-
-                        <div class="row">
-                            <div class="col-3">
-                                <strong>Company:</strong>
-                                <p t-esc="res_company.name"/>
-                            </div>
-                            <div class="col-3">
-                                <t t-if="data['form']['date_from']"><strong>Date from :</strong> <span t-esc="data['form']['date_from']"/><br/></t>
-                                <t t-if="data['form']['date_to']"><strong>Date to :</strong> <span t-esc="data['form']['date_to']"/></t>
-                            </div>
-                            <div class="col-3">
-                                <strong>Target Moves:</strong>
-                                <p t-if="data['form']['target_move'] == 'all'">All Entries</p>
-                                <p t-if="data['form']['target_move'] == 'posted'">All Posted Entries</p>
-                            </div>
-                        </div>
-
+                        <h2>Partner Ledger</h2> 
+                        <h4><strong>Company:
+                            <span t-esc="res_company.name"/></strong>
+                        </h4>
+                            <table class="table table-reports">
+                                <thead>
+                                    <tr>
+                                        <td><t t-if="data['form']['date_from']"><strong>Date from :</strong> <span t-esc="data['form']['date_from']"/><br/></t></td>
+                                        <td><t t-if="data['form']['date_to']"><strong>Date to :</strong> <span t-esc="data['form']['date_to']"/></t></td>
+                                        <td><strong>Target Moves:</strong>
+                                            <span t-if="data['form']['target_move'] == 'all'">All Entries</span>
+                                            <span t-if="data['form']['target_move'] == 'posted'">All Posted Entries</span></td>
+                                    </tr>
+                                </thead>
+                            </table>
                         <table class="table table-sm table-reports">
                             <thead>
                                 <tr>
