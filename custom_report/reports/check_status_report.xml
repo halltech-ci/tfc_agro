@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+    <record model="report.paperformat" id="paperformat_check_report">
+        <field name="name">paperformat.custom.report</field>
+        <field name="default" eval="True"/>
+        <field name="format">A4</field>
+        <field name="page_width">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">30</field>
+        <field name="margin_right">5</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">5</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">20</field>
+        <field name="dpi">90</field>
+    </record>
+    
+    <report id="action_custom_report"
+            model="check.status.wizard"
+            string="Check Reports"
+            report_type="qweb-html"
+            name="custom_report.report_check_template"
+            file="custom_report.report_check_template"
+            paperformat="paperformat_check_report"
+            menu="False"
+    />
+  </data>
+</odoo>
