@@ -187,8 +187,8 @@
                                                 <td><span t-esc="sales.move_id.product_uom.name"/></td>
                                                 <td><span t-esc="sales.lot_id.name"/></td>
                                                 <td>
-                                                    <t t-if="sales.move_id.sale_line_id.order_id.payment_term_id.name">
-                                                        <span t-esc="sales.move_id.sale_line_id.order_id.payment_term_id"/>
+                                                    <t t-if="sales.move_id.sale_line_id.order_id.payment_term_id">
+                                                        <span t-esc="sales.move_id.sale_line_id.order_id.payment_term_id.name"/>
                                                     </t>
                                                     <t t-if="not sales.move_id.sale_line_id.order_id.payment_term_id">
                                                         <span></span>

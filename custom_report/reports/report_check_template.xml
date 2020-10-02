@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+    <template id="report_check_template">
+        <t t-call="web.html_container">
+            <t t-set="data_report_margin_top" t-value="12"/>
+            <t t-set="data_report_header_spacing" t-value="9"/>
+            <t t-set="data_report_dpi" t-value="90"/>
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.internal_layout">
+                  <div class="page">
+                      <h4>Check Status Reports</h4>
+                      <div class="row">
+                        <strong>Company:</strong>
+                        <span t-esc="res_company.name"/>
+                      </div>
+                      <table class="table table-sm table-reports">
+                            <tbody>
+                                <tr>
+                                    <td><strong>From :</strong><span t-esc="data['form']['date_from']"/></td>
+                                    <td><strong>To :</strong><span t-esc="data['form']['date_to']"/></td>
+                                </tr>
+                            </tbody>
+                      </table>
+                      <table class="table table-sm table-reports">
+                          <thead>
+                            <tr>
+                                <th colspan="2">Date</th>
+                                <th colspan="2">Communication</th>
+                                <th>Debit</th>
+                                <th>Credit</th>
+                                <th>Balance</th>
+                                <th>Credit Limit</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              <t t-foreach="get_lines(data)" t-as="lines">
+                                  <t t-set="partner" t-value="lines.get('partner')"/>
+                                  <t t-set="deposits" t-value="lines.get('deposit')"/>
+                                  <t t-set="check" t-value="lines.get('check')"/>
+                                  <t t-set="check_move" t-value="lines.get('check_move')"/>
+                                  <tr>
+                                      <td><strong>- <span t-esc="partner.name"/></strong></td>
+                                      <td colspan="2"></td>
+                                      <td></td>
+                                      <td>SumDebit</td>
+                                      <td>Sum_Credit</td>
+                                      <td>Sum_Balance</td>
+                                      <td>Limit_credit</td>
+                                  </tr>
+                                  <tr>
+                                      <t t-set="amount" t-value="0.0"/>
+                                      <t t-foreach="deposits" t-as="deposit">
+                                          <t t-set="dep_lines" t-value="deposit.line_ids"/>
+                                          <tr>
+                                              <td class="text-left"><span t-esc="deposit.name"/></td>
+                                              <td><span t-esc="deposit.name"/></td>
+                                              <td><span t-esc="deposit.total_amount"/></td>
+                                          </tr>
+                                          <tr>
+                                              <td><span t-esc="dep"/></td>
+                                          </tr>
+                                      </t>
+                                  </tr>
+                              </t>
+                          </tbody>
+                      </table>
+                   </div><!-- End Page-->
+                </t>
+            </t>
+        </t>
+    </template>
+    </data>
+</odoo>
