@@ -15,10 +15,18 @@ class CheckStatusWizard(models.TransientModel):
             
     #Get data from the form
     @api.multi
-    def _print_report(self, data):
-        data = self.pre_print_report(data)
-        partners = [p.id for p in self.partner_ids]
-        data['form'].update({'company':self.company_id.id, "date_from": self.date_from, "date_to": self.date_to, 'partner': partners})
-        return self.env.ref('custom_report.action_report_check_status').report_action(self, data=data)
+    def print_report(self, data):
+        self.check_date_range()
+        #data = self.pre_print_report(data)
+        datas = {'form':
+                {
+                    'company_id': self.company_id.id,
+                    'partners': [y.id for y in self.partner_ids],
+                    'date_from': self.date_from,
+                    'date_to': self.date_to,
+                    'id': self.id,
+                },
+            }
+        return self.env.ref('custom_report.action_check_status_report').report_action(self, data=datas)
     
     

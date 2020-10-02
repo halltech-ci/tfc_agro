@@ -17,7 +17,7 @@
         <field name="dpi">90</field>
     </record>
     
-    <report id="action_custom_report"
+    <report id="action_check_status_report"
             model="check.status.wizard"
             string="Check Reports"
             report_type="qweb-html"
