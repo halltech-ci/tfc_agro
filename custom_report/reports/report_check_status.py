@@ -13,7 +13,7 @@ class ReportCheckStatus(models.AbstractModel):
     _name="report.custom_report.report_check_template"#Respect naming format report.module_name.report_template_name
     _description="Check status report for TFC AGRO"
     
-    
+    """
     def _get_lines(self, data):
         company_id = data['form']['company_id']
         date_from = data['form']['date_from']
@@ -36,18 +36,26 @@ class ReportCheckStatus(models.AbstractModel):
         deposit_obj = self.env['account.check.deposit'].search(deposit_domain)
         check_obj = self.env['account.payment'].search(check_domain)
         check_move = self.env["account.move.line"].search(move_domain)
-        for partner in partners_obj:
-            partner_domain = [('journal_id.default_credit_account_id', '=', check_id.id)]
-            check = check_obj.filtered(lambda l:l.partner_id == partner)
-            deposit = deposit_obj.filtered(lambda d:d.move_id.partner_id == partner)
-            aml = {
-                'partner': partner,
-                'deposit': deposit,
-                'check': check,
-                'check_move': check_move
-            }
-            lines.append(aml)
-        return lines
+        deposits_ids = [x.move_id for x in deposit_odj]
+        checks_ids= [y.move_id for y in check_move if y not in deposits_ids]
+    """    
+    def _get_check_status(self, data):
+        date_from = data['form']['date_from']
+        date_to = data['form']['date_to']
+        company_id = data['form']['company_id']
+        company = self.env['res.company'].browse(company_id)
+        check_account = company.check_on_hand_journal
+        domain = [('date', '>=', start_date), ('date', '<=', end_date)]
+        deposit_domain = [('check_deposit_id', '!=', False)] + domain
+        check_domain = [('check_deposit_id', '=', False), ('account_id', '=', check_account.id)] + domain
+        move_line = self.env['account.move.line']
+        deposits = move_line.search(deposit_domain)
+        checks = move_line.search(check_domain)
+        res = {
+            "check": checks,
+            'deposit': deposits
+        }
+        return res
     
     @api.model
     def _get_report_values(self, docids, data=None):
@@ -64,7 +72,7 @@ class ReportCheckStatus(models.AbstractModel):
            'docs': records,
            'data': data,
            'lang': "fr_FR",
-           'get_lines': self._get_lines
+           'get_check': self._get_check_status
         }
         return res
         

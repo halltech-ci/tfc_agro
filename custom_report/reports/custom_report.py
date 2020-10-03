@@ -327,6 +327,28 @@ class CustomReport(models.AbstractModel):
         
         return res
 
+    def _get_check_status(self, record):
+        start_date = str(record.start_date)
+        end_date = str(record.end_date)
+        company = record.company_id
+        check_account = company.check_on_hand_journal
+        
+        domain = [('date', '>=', start_date), ('date', '<=', end_date)]
+        deposit_domain = [('check_deposit_id', '!=', False)] + domain
+        move_domain = [('account_id', '=', check_account.id)] + domain
+        check_domain = [('check_deposit_id', '=', False), ('account_id', '=', check_account.id)] + domain
+        move_line = self.env['account.move.line'].search(domain)
+        partners = move_line.search(move_domain).mapped('partner_id')
+        deposits = move_line.search(deposit_domain)
+        checks = move_line.search(check_domain)
+        res = {
+            'partner': partners,
+            "check": checks,
+            'deposit': deposits
+        }
+        return res
+    
+    
     #mis for payment and check
     def _get_payment_data(self, record):
         start_date = str(record.start_date)
@@ -473,6 +495,7 @@ class CustomReport(models.AbstractModel):
            'debtor_age': self._get_debtor_age,
            'creditor_age': self._get_creditor_age,
            'get_payments': self._get_payment_data,
+           'get_checks': self._get_check_status
         }
         return res
 

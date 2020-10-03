@@ -357,49 +357,7 @@
                                 </table>
                             </t>
                             
-                            <p>Check Status Report</p>
-                            <table class="table" id="custom">
-                                <thead>
-                                    <tr>
-                                        <th>Partner</th>
-                                        <th>Date</th>
-                                        <th>Communication</th>
-                                        <th>Credit limit</th>
-                                        <th>Ammount</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <t t-set="lines" t-value="get_checks(o)"/>
-                                    <t t-set="partners" t-value="lines.get('partner')"/>
-                                    <t t-set="check_lines" t-value="lines.get('check')"/>
-                                    <t t-set="deposit_lines" t-value="lines.get('deposit')"/>
-                                    <t t-foreach="partners" t-as="partner">
-                                        <t t-set="check" t-value="check_lines.filtered(lambda c:c.partner_id == partner.id)"/>
-                                        <t t-set="deposit" t-value="deposit_lines.filtered(lambda d:d.partner_id == partner.id)"/>
-                                        <tr>
-                                            <td><strong>- <span t-esc="partner.name"/></strong></td>
-                                        </tr>
-                                        <t t-foreach="check_lines" t-as="check">
-                                            <tr><td><span t-esc="check.account_id.name"/></td></tr>
-                                            <tr>
-                                                <td><span t-esc="check.date"/></td>
-                                                <td><span t-esc="check.name"/></td>
-                                                <td><span t-esc="check.ref"/></td>
-                                            </tr>
-                                        </t>
-                                        <t t-foreach="deposit_lines" t-as="deposit">
-                                            <tr><td><span t-esc="deposit.account_id.name"/></td></tr>
-                                            <tr>
-                                                <td><span t-esc="deposit.check_deposit_id.deposit_date"/></td>
-                                                <td><span t-esc="deposit.name"/></td>
-                                                <td><span t-esc="deposit.ref"/></td>
-                                            </tr>
-                                        </t>
-                                    </t>
-                                </tbody>
-                            </table>
-                            
-                            <p>Check On Hand</p>
+                            <p>Check to be Deposited in Bank</p>
                             <table class="table" id="custom">
                                 <thead>
                                     <tr>
@@ -423,7 +381,7 @@
                                 </tbody>
                             </table>
                             
-                            <p>Check On Bank</p>
+                            <p>Check Under Cleanrance</p>
                             <table class="table" id="custom">
                                 <thead>
                                     <tr>
