@@ -374,25 +374,29 @@
                                     <t t-set="check_lines" t-value="lines.get('check')"/>
                                     <t t-set="deposit_lines" t-value="lines.get('deposit')"/>
                                     <t t-foreach="partners" t-as="partner">
-                                        <t t-set="check" t-value="check_lines.filtered(lambda c:c.partner_id == partner.id)"/>
-                                        <t t-set="deposit" t-value="deposit_lines.filtered(lambda d:d.partner_id == partner.id)"/>
+                                        <t t-set="checks" t-value="check_lines.filtered(lambda c:c.partner_id.id == partner.id)"/>
+                                        <t t-set="deposits" t-value="deposit_lines.filtered(lambda d:d.partner_id.id == partner.id)"/>
                                         <tr>
                                             <td><strong>- <span t-esc="partner.name"/></strong></td>
                                         </tr>
-                                        <t t-foreach="check_lines" t-as="check">
-                                            <tr><td><span t-esc="check.account_id.name"/></td></tr>
+                                        <t t-foreach="checks" t-as="check">
+                                            <tr><td><span>Check On Hand</span></td></tr>
+                                            <tr><td><span t-esc="check.name"/></td></tr>
                                             <tr>
                                                 <td><span t-esc="check.date"/></td>
                                                 <td><span t-esc="check.name"/></td>
                                                 <td><span t-esc="check.ref"/></td>
+                                                <td><span t-esc="check.debit"/></td>
                                             </tr>
                                         </t>
-                                        <t t-foreach="deposit_lines" t-as="deposit">
-                                            <tr><td><span t-esc="deposit.account_id.name"/></td></tr>
+                                        <t t-foreach="deposits" t-as="deposit">
+                                            <tr><td><span>Check deposit</span></td></tr>
+                                            <tr><td><span t-esc="deposit.check_deposit_id.name"/></td></tr>
                                             <tr>
                                                 <td><span t-esc="deposit.check_deposit_id.deposit_date"/></td>
                                                 <td><span t-esc="deposit.name"/></td>
                                                 <td><span t-esc="deposit.ref"/></td>
+                                                <td><span t-esc="deposit.debit"/></td>
                                             </tr>
                                         </t>
                                     </t>
@@ -464,7 +468,7 @@
                                 </thead>
                                 <tbody>
                                     <t t-foreach="get_payments(o).get('reconciled_check')" t-as="reconcile">
-                                        <t t-set="transter" t-value="reconcile.filter(lambda r:r.payment_type =='transfer')"/>
+                                        <t t-set="transter" t-value="reconcile.filtered(lambda r:r.payment_type =='transfer')"/>
                                         <tr>
                                             <td><span t-esc="reconcile.partner_id.name"/></td>
                                             <td><span t-esc="reconcile.journal_id.name"/></td>

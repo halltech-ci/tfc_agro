@@ -332,15 +332,19 @@ class CustomReport(models.AbstractModel):
         end_date = str(record.end_date)
         company = record.company_id
         check_account = company.check_on_hand_journal
-        
+        check_deposit_account = company.check_on_bank_journal
+        deposit_account_code = self.env['account.account'].search([('id', '=', check_deposit_account.id)]).code
         domain = [('date', '>=', start_date), ('date', '<=', end_date)]
         deposit_domain = [('check_deposit_id', '!=', False)] + domain
         move_domain = [('account_id', '=', check_account.id)] + domain
-        check_domain = [('check_deposit_id', '=', False), ('account_id', '=', check_account.id)] + domain
+        check_domain = [('check_deposit_id', '=', False), ('account_id', '=', check_account.id), ('counterpart', '!=', deposit_account_code)] + domain
         move_line = self.env['account.move.line'].search(domain)
         partners = move_line.search(move_domain).mapped('partner_id')
+        check_obj = move_line.search(check_domain)
         deposits = move_line.search(deposit_domain)
-        checks = move_line.search(check_domain)
+        deposit_move_ids = [x.move_id for x in deposits]
+        check_ids = [y.id for y in check_obj if y.move_id not in deposit_move_ids]
+        checks = move_line.browse(check_ids)
         res = {
             'partner': partners,
             "check": checks,
