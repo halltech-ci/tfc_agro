@@ -6,7 +6,8 @@ from odoo.exceptions import UserError
 
 
 class ReportPartnerLedger(models.AbstractModel):
-    _name = 'report.accounting_pdf_reports.report_partnerledger'
+    _name = 'report.custom_report.report_partner_ledger_template'
+    _description = "hta custom partner ledger"
 
     def _lines(self, data, partner):
         full_account = []
@@ -15,7 +16,7 @@ class ReportPartnerLedger(models.AbstractModel):
         reconcile_clause = "" if data['form']['reconciled'] else ' AND "account_move_line".full_reconcile_id IS NULL '
         params = [partner.id, tuple(data['computed']['move_state']), tuple(data['computed']['account_ids'])] + query_get_data[2]
         query = """
-            SELECT "account_move_line".id, "account_move_line".date, j.code, acc.code as a_code, acc.name as a_name, "account_move_line".ref, m.name as move_name, "account_move_line".name, "account_move_line".debit, "account_move_line".credit, "account_move_line".amount_currency,"account_move_line".currency_id, c.symbol AS currency_code
+            SELECT "account_move_line".id as line_id, "account_move_line".date, j.code, acc.code as a_code, acc.name as a_name, "account_move_line".ref, m.name as move_name, "account_move_line".name, "account_move_line".debit, "account_move_line".credit, "account_move_line".amount_currency,"account_move_line".currency_id, c.symbol AS currency_code
             FROM """ + query_get_data[0] + """
             LEFT JOIN account_journal j ON ("account_move_line".journal_id = j.id)
             LEFT JOIN account_account acc ON ("account_move_line".account_id = acc.id)
@@ -33,6 +34,7 @@ class ReportPartnerLedger(models.AbstractModel):
         lang_id = lang._lang_get(lang_code)
         date_format = lang_id.date_format
         for r in res:
+            r['line_id'] = r['line_id']
             r['date'] = r['date']
             r['displayed_name'] = '-'.join(
                 r[field_name] for field_name in ('move_name', 'ref', 'name')
@@ -42,7 +44,13 @@ class ReportPartnerLedger(models.AbstractModel):
             r['progress'] = sum
             r['currency_id'] = currency.browse(r.get('currency_id'))
             full_account.append(r)
-        return full_account
+        return full_account# = ['line_id', 'date', 'display_name', 'progess', 'currency_id']
+    
+    def _get_line_detail(self, line_id):
+        lines = self.env['account.move.line'].search([('id', '=', line_id)]).move_id#.line_ids
+        #move_line = move.search([(line)])
+        return lines
+        
 
     def _sum_partner(self, data, partner, field):
         if field not in ['debit', 'credit', 'debit - credit']:
@@ -65,6 +73,10 @@ class ReportPartnerLedger(models.AbstractModel):
         if contemp is not None:
             result = contemp[0] or 0.0
         return result
+    
+    def _get_partners(self, data):
+        partner_ids = data['form']['partner']
+        return partner_ids
 
     @api.model
     def _get_report_values(self, docids, data=None):
@@ -74,14 +86,16 @@ class ReportPartnerLedger(models.AbstractModel):
         data['computed'] = {}
 
         obj_partner = self.env['res.partner']
+        partner_obj_ids = self._get_partners(data)
         query_get_data = self.env['account.move.line'].with_context(data['form'].get('used_context', {}))._query_get()
         data['computed']['move_state'] = ['draft', 'posted']
+        partner = data.get('partner') 
         if data['form'].get('target_move', 'all') == 'posted':
             data['computed']['move_state'] = ['posted']
-        result_selection = data['form'].get('result_selection', 'customer')
-        if result_selection == 'supplier':
+        account_type = data['form'].get('account_type', 'customer')
+        if account_type == 'supplier':
             data['computed']['ACCOUNT_TYPE'] = ['payable']
-        elif result_selection == 'customer':
+        elif account_type == 'customer':
             data['computed']['ACCOUNT_TYPE'] = ['receivable']
         else:
             data['computed']['ACCOUNT_TYPE'] = ['payable', 'receivable']
@@ -105,7 +119,10 @@ class ReportPartnerLedger(models.AbstractModel):
                 AND NOT account.deprecated
                 AND """ + query_get_data[1] + reconcile_clause
         self.env.cr.execute(query, tuple(params))
-        partner_ids = [res['partner_id'] for res in self.env.cr.dictfetchall()]
+        if len(partner_obj_ids) > 0 :
+            partner_ids = partner_obj_ids
+        else:
+            partner_ids = [res['partner_id'] for res in self.env.cr.dictfetchall()]
         partners = obj_partner.browse(partner_ids)
         partners = sorted(partners, key=lambda x: (x.ref or '', x.name or ''))
 
@@ -117,4 +134,5 @@ class ReportPartnerLedger(models.AbstractModel):
             'time': time,
             'lines': self._lines,
             'sum_partner': self._sum_partner,
+            'get_line_detail': self._get_line_detail
         }
