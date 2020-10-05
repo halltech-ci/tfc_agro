@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="account_report_partner_ledger_view" model="ir.ui.view">
+        <field name="name">Partner Ledger</field>
+        <field name="model">account.report.partner.ledger</field>
+        <field name="inherit_id" ref="account.account_common_report_view"/>
+        <field name="arch" type="xml">
+        <data>
+        <xpath expr="//group[1]" position="replace">
+            <group>
+                <field name="target_move" widget="radio"/>
+            </group>
+        </xpath>
+        <xpath expr="//group[1]" position="after">
+            <group col="4">
+                <field name="account_type"/>
+                <field name="partner_ids" widget="many2many_tags" options="{'no_create':True,'no_edit':True}"/>
+            </group>
+        </xpath>
+        <xpath expr="//group[2]" position="after">
+            <group col="4">
+                <field name="amount_currency" groups="base.group_multi_currency"/>
+                <field name="reconciled"/>
+            </group>
+            <group col="4">
+                <field name="date_from"/>
+                <field name="date_to"/>
+            </group>
+        </xpath>
+        </data>
+        </field>
+    </record>
+
+    <record id="action_account_partner_ledger_menu" model="ir.actions.act_window">
+        <field name="name">Partner Ledger</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">account.report.partner.ledger</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="account_report_partner_ledger_view"/>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="account.model_account_account" />
+        <field name="binding_type">report</field>
+    </record>
+
+    <menuitem
+        id="menu_partner_ledger"
+        name="Custom Partner Ledger"
+        sequence="2"
+        parent="custom_report.custom_report_custom_root"
+        action="action_account_partner_ledger_menu"
+        groups="account.group_account_user"
+       />
+
+</odoo>
