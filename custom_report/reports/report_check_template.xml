@@ -3,11 +3,12 @@
   <data>
     <template id="report_check_template">
         <t t-call="web.html_container">
-            <t t-set="data_report_margin_top" t-value="12"/>
-            <t t-set="data_report_header_spacing" t-value="9"/>
-            <t t-set="data_report_dpi" t-value="90"/>
-            <t t-foreach="docs" t-as="o">
-                <t t-call="web.internal_layout">
+            <t t-call="web.internal_layout">
+                <t t-set="data_report_margin_top" t-value="12"/>
+                <t t-set="data_report_header_spacing" t-value="9"/>
+                <t t-set="data_report_dpi" t-value="80"/>
+                <t t-foreach="docs" t-as="o">
+
                   <div class="page">
                       <h4>Check Status Reports</h4>
                       <div class="row">
@@ -25,42 +26,57 @@
                       <table class="table table-sm table-reports">
                           <thead>
                             <tr>
-                                <th colspan="2">Date</th>
+                                <th></th>
+                                <th>Date</th>
                                 <th colspan="2">Communication</th>
-                                <th>Debit</th>
-                                <th>Credit</th>
-                                <th>Balance</th>
                                 <th>Credit Limit</th>
+                                <th>Total Check</th>
+                                <th>Total Deposit</th>
                               </tr>
                           </thead>
                           <tbody>
-                              <t t-foreach="get_lines(data)" t-as="lines">
-                                  <t t-set="partner" t-value="lines.get('partner')"/>
-                                  <t t-set="deposits" t-value="lines.get('deposit')"/>
-                                  <t t-set="check" t-value="lines.get('check')"/>
-                                  <t t-set="check_move" t-value="lines.get('check_move')"/>
+                              <t t-set="partners" t-value="payments(data).get('partners')"/>
+                              <t t-set="payments" t-value="payments(data).get('payments')"/>
+                              <t t-set="deposit_ids" t-value="[]"/>
+                              <t t-set="check_ids" t-value="[]"/>
+                              <t t-foreach="partners" t-as="partner">
+                                  <t t-set="lines" t-value="payments.filtered(lambda p:p.partner_id.id == partner.id)"/>
+                                  <t t-foreach="lines" t-as="line">
+                                      <t t-if="line.move_line_ids.filtered(lambda x: x.check_deposit_id)">
+                                          <t t-set="deposits" t-value="deposit_ids.append(line)"/>
+                                      </t>
+                                      <t t-if="not line.move_line_ids.filtered(lambda x: x.check_deposit_id)">
+                                            <t t-set="checks" t-value="check_ids.append(line)"/>
+                                      </t>
+                                  </t>
                                   <tr>
-                                      <td><strong>- <span t-esc="partner.name"/></strong></td>
-                                      <td colspan="2"></td>
+                                      <td colspan="3"><strong>- <span t-esc="partner.name"/></strong></td>
                                       <td></td>
-                                      <td>SumDebit</td>
-                                      <td>Sum_Credit</td>
-                                      <td>Sum_Balance</td>
-                                      <td>Limit_credit</td>
+                                      <td><strong><span t-esc="partner.credit_limit"/></strong></td>
+                                      <td>Total Deposit</td>
+                                      <td><span t-esc="partner.credit_limit"/></td>
+                                  </tr>
+                                  <t t-set="check_amount" t-value="0.0"/>
+                                  <t t-set="deposit_amount" t-value="0.0"/>
+                                  <tr>
+                                      <td colspan="7">
+                                          <span t-esc="check_ids[0].journal_id.default_credit_account_id.display_name"/>
+                                      </td>
+                                  </tr>
+                                  <tr t-foreach="check_ids" t-as="check">
+                                    <tr>
+                                        <t t-set="c_amount" t-value="check_amount + check.amount"/>
+                                        <td><span t-esc="check.name"/></td>
+                                        <td><span t-esc="check.payment_date"/></td>
+                                        <td><span t-esc="check.communication"/></td>
+                                    </tr>
                                   </tr>
                                   <tr>
-                                      <t t-set="amount" t-value="0.0"/>
-                                      <t t-foreach="deposits" t-as="deposit">
-                                          <t t-set="dep_lines" t-value="deposit.line_ids"/>
-                                          <tr>
-                                              <td class="text-left"><span t-esc="deposit.name"/></td>
-                                              <td><span t-esc="deposit.name"/></td>
-                                              <td><span t-esc="deposit.total_amount"/></td>
-                                          </tr>
-                                          <tr>
-                                              <td><span t-esc="dep"/></td>
-                                          </tr>
-                                      </t>
+                                      <td colspan="4"><span t-esc="c_amount"/></td>
+                                  </tr>
+                                  <tr t-foreach="deposit_ids" t-as="deposit">
+                                      <t t-set="dep_amount" t-value="deposit_amount + deposit.amount"/>
+                                          <td><span t-esc="deposit.name"/></td>
                                   </tr>
                               </t>
                           </tbody>

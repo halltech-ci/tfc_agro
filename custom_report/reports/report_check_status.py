@@ -13,49 +13,32 @@ class ReportCheckStatus(models.AbstractModel):
     _name="report.custom_report.report_check_template"#Respect naming format report.module_name.report_template_name
     _description="Check status report for TFC AGRO"
     
-    """
-    def _get_lines(self, data):
-        company_id = data['form']['company_id']
-        date_from = data['form']['date_from']
-        date_to = data['form']['date_to']
-        partners = data['form']['partners']
-        lines = []
-        partners_obj = self.env['res.partner'].search([])
-        #start_from += ' 00:00:00'
-        #end_to += ' 23:59:59'
-        company_obj = self.env['res.company']
-        domain = [('payment_date', '>=', date_from), ('payment_date', '<=', date_to)]
-        dom = [('date', '>=', date_from), ('date', '<=', date_to)]
-        if len(partners) > 0:
-            partner_obj = self.env['res.partner'].browse(partners)
-        partners = sorted(partners_obj, key=lambda x: (x.ref or '', x.name or ''))
-        check_id = company_obj.browse(company_id).check_on_hand_journal#check_deposit_transfer_account_id
-        deposit_domain = [('deposit_date', '>=', date_from), ('deposit_date', '<=', date_to)]
-        move_domain = [('account_id', '=', check_id.id)] + dom
-        check_domain = [('journal_id.default_credit_account_id', '=', check_id.id)] + domain
-        deposit_obj = self.env['account.check.deposit'].search(deposit_domain)
-        check_obj = self.env['account.payment'].search(check_domain)
-        check_move = self.env["account.move.line"].search(move_domain)
-        deposits_ids = [x.move_id for x in deposit_odj]
-        checks_ids= [y.move_id for y in check_move if y not in deposits_ids]
-    """    
+      
     def _get_check_status(self, data):
-        date_from = data['form']['date_from']
-        date_to = data['form']['date_to']
+        date_from = fields.Date.to_date(data['form']['date_from'])
+        date_to = fields.Date.to_date(data['form']['date_to'])
         company_id = data['form']['company_id']
         company = self.env['res.company'].browse(company_id)
         check_account = company.check_on_hand_journal
-        domain = [('date', '>=', start_date), ('date', '<=', end_date)]
+        domain = [('date', '>=', date_from), ('date', '<=', date_to)]
         deposit_domain = [('check_deposit_id', '!=', False)] + domain
+        payment_domain = [('payment_date', '>=', date_from), ('payment_date', '<=', date_to), ('journal_id.default_debit_account_id', '=', check_account.id)]
         check_domain = [('check_deposit_id', '=', False), ('account_id', '=', check_account.id)] + domain
-        move_line = self.env['account.move.line']
-        deposits = move_line.search(deposit_domain)
-        checks = move_line.search(check_domain)
+        payments = self.env['account.payment'].search(payment_domain)
+        partners = self._get_partners(data)
         res = {
-            "check": checks,
-            'deposit': deposits
+            'partners': partners,
+            'payments': payments
         }
         return res
+    
+    def _get_partners(self, data):
+        partner_obj = self.env['res.partner']
+        partners = partner_obj.search([('customer', '=', True)])
+        partner_ids = data['form']['partners']
+        if len(partner_ids) > 0:
+            partners = partner_obj.browse(partner_ids)
+        return partners
     
     @api.model
     def _get_report_values(self, docids, data=None):
@@ -72,7 +55,7 @@ class ReportCheckStatus(models.AbstractModel):
            'docs': records,
            'data': data,
            'lang': "fr_FR",
-           'get_check': self._get_check_status
+           'payments': self._get_check_status
         }
         return res
         
