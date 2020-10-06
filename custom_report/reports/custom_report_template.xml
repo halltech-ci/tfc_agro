@@ -372,11 +372,11 @@
                               <tbody>
                                   <t t-value="request.env['res.partner'].search([('supplier', '=', True)])" t-set="partners"/>
                                   <t t-set="payments" t-value="get_checks(o)"/>
-                                  <t t-set="deposit_ids" t-value="[]"/>
-                                  <t t-set="check_ids" t-value="[]"/>
-                                  <t t-set="sum_check" t-value="0.0"/>
-                                  <t t-set="sum_deposit" t-value="0.0"/>
                                   <t t-foreach="partners" t-as="partner">
+                                      <t t-set="deposit_ids" t-value="[]"/>
+                                      <t t-set="check_ids" t-value="[]"/>
+                                      <t t-set="sum_check" t-value="0.0"/>
+                                      <t t-set="sum_deposit" t-value="0.0"/>
                                       <t t-set="lines" t-value="payments.filtered(lambda p:p.partner_id.id == partner.id)"/>
                                       <t t-foreach="lines" t-as="line">
                                           <t t-if="line.move_line_ids.filtered(lambda x: x.check_deposit_id)">

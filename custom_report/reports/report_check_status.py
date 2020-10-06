@@ -13,7 +13,7 @@ class ReportCheckStatus(models.AbstractModel):
     _name="report.custom_report.report_check_template"#Respect naming format report.module_name.report_template_name
     _description="Check status report for TFC AGRO"
       
-    def _get_check_status(self, data):
+    def _get_check_status(self, data, partner):
         date_from = fields.Date.to_date(data['form']['date_from'])
         date_to = fields.Date.to_date(data['form']['date_to'])
         company_id = data['form']['company_id']
@@ -21,12 +21,10 @@ class ReportCheckStatus(models.AbstractModel):
         check_account = company.check_on_hand_journal
         domain = [('date', '>=', date_from), ('date', '<=', date_to)]
         deposit_domain = [('check_deposit_id', '!=', False)] + domain
-        payment_domain = [('payment_date', '>=', date_from), ('payment_date', '<=', date_to), ('journal_id.default_debit_account_id', '=', check_account.id)]
+        payment_domain = [('payment_date', '>=', date_from), ('payment_date', '<=', date_to), ('journal_id.default_debit_account_id', '=', check_account.id), ('partner_id', '=', partner.id)]
         check_domain = [('check_deposit_id', '=', False), ('account_id', '=', check_account.id)] + domain
         payments = self.env['account.payment'].search(payment_domain)
-        partners = self._get_partners(data)
         res = {
-            'partners': partners,
             'payments': payments
         }
         return res
@@ -61,7 +59,8 @@ class ReportCheckStatus(models.AbstractModel):
            'docs': records,
            'data': data,
            'lang': "fr_FR",
-           'payments': self._get_check_status
+           'payments': self._get_check_status,
+           'partners': self._get_partners
         }
         return res
         

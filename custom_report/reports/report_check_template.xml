@@ -37,14 +37,12 @@
                               </tr>
                           </thead>
                           <tbody>
-                              <t t-set="partners" t-value="payments(data).get('partners')"/>
-                              <t t-set="payments" t-value="payments(data).get('payments')"/>
-                              <t t-set="deposit_ids" t-value="[]"/>
-                              <t t-set="check_ids" t-value="[]"/>
-                              <t t-set="sum_check" t-value="0.0"/>
-                              <t t-set="sum_deposit" t-value="0.0"/>
-                              <t t-foreach="partners" t-as="partner">
-                                  <t t-set="lines" t-value="payments.filtered(lambda p:p.partner_id.id == partner.id)"/>
+                              <t t-foreach="partners(data)" t-as="partner">
+                                  <t t-set="deposit_ids" t-value="[]"/>
+                                  <t t-set="check_ids" t-value="[]"/>
+                                  <t t-set="sum_check" t-value="0.0"/>
+                                  <t t-set="sum_deposit" t-value="0.0"/>
+                                  <t t-set="lines" t-value="payments(data, partner).get('payments')"/>
                                   <t t-foreach="lines" t-as="line">
                                       <t t-if="line.move_line_ids.filtered(lambda x: x.check_deposit_id)">
                                           <t t-set="deposits" t-value="deposit_ids.append(line)"/>
@@ -65,14 +63,11 @@
                                       <td><strong><span t-esc="sum_check"/></strong></td>
                                       <td><strong><span t-esc="sum_deposit"/></strong></td>
                                   </tr>
-                                  <t t-set="check_amount" t-value="0.0"/>
-                                  <t t-set="deposit_amount" t-value="0.0"/>
                                   <tr>
                                       <td colspan="7"><span><strong><t t-esc="res_company.check_on_hand_journal.display_name"/></strong></span></td>
                                   </tr>
-                                  <tr t-foreach="check_ids" t-as="check">
+                                  <t t-foreach="check_ids" t-as="check">
                                     <tr>
-                                        <t t-set="c_amount" t-value="check_amount + check.amount"/>
                                         <td><span t-esc="check.name"/></td>
                                         <td><span t-esc="check.payment_date"/></td>
                                         <td colspan="2"><span t-esc="check.communication"/></td>
@@ -80,16 +75,15 @@
                                         <td><span t-esc="check.amount"/></td>
                                         <td></td>
                                     </tr>
-                                  </tr>
+                                  </t>
                                   <tr>
                                       <td colspan="7"><span><strong><t t-esc="res_company.check_on_bank_journal.display_name"/></strong></span></td>
                                   </tr>
-                                  <tr t-foreach="deposit_ids" t-as="deposit">
+                                  <t t-foreach="deposit_ids" t-as="deposit">
                                       <t t-set="depos" t-value="deposit.move_line_ids.filtered(lambda x: x.check_deposit_id).check_deposit_id"/>
                                       <t t-set="deposit_date" t-value="depos.deposit_date"/>
                                       <t t-set="deposit_name" t-value="depos.move_id.name"/>
                                       <tr>
-                                          <t t-set="dep_amount" t-value="deposit_amount + deposit.amount"/>
                                           <td><span t-esc="deposit_name"/></td>
                                           <td><span t-esc="deposit_date"/></td>
                                           <td colspan="2"><span t-esc="deposit.communication"/></td>
@@ -97,7 +91,7 @@
                                           <td></td>
                                           <td><span t-esc="deposit.amount"/></td>
                                       </tr>
-                                  </tr>
+                                  </t>
                               </t>
                           </tbody>
                       </table>
