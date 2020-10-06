@@ -12,7 +12,6 @@ import re
 class ReportCheckStatus(models.AbstractModel):
     _name="report.custom_report.report_check_template"#Respect naming format report.module_name.report_template_name
     _description="Check status report for TFC AGRO"
-    
       
     def _get_check_status(self, data):
         date_from = fields.Date.to_date(data['form']['date_from'])
@@ -31,6 +30,13 @@ class ReportCheckStatus(models.AbstractModel):
             'payments': payments
         }
         return res
+    
+    def _sum_payment_line(self, line_ids):
+        sum = 0.0
+        for line in line_ids:
+            sum += line.amount 
+        req = self.env['account.payment'].search([('id', '=', payment.id)])
+        deposit = self.env['account.check.deposit']
     
     def _get_partners(self, data):
         partner_obj = self.env['res.partner']
