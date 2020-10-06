@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 {
-    'name': "custom_report",
+    'name': "hta_partner_ledger",
 
     'summary': """
         Short (1 phrase/line) summary of the module's purpose, used as
@@ -20,34 +20,15 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base',
-                'account_accountant',
-                'account',
-                'sale',
-                'board',
-                'stock',
-               ],
+    'depends': [
+        'account_reports',
+    ],
 
     # always loaded
     'data': [
         # 'security/ir.model.access.csv',
         'views/views.xml',
         'views/templates.xml',
-        #'views/account_payment_views.xml',
-        #'views/res_partner_views.xml',
-        'wizards/create_custom_report.xml',
-        'wizards/partner_ledger_wizard.xml',
-        'reports/custom_report.xml',
-        'reports/custom_report_template.xml',
-        'reports/report_partner_ledger_template.xml',
-        'reports/sale_custom_report.xml',
-        'reports/partner_ledger.xml',
-        'reports/check_status_report.xml',
-        'reports/report_check_template.xml',
-        'wizards/check_status.xml',
-        #'reports/stock_custom_report.xml',
-        'views/dashboard.xml',
-        'views/res_config_settings_views.xml',
     ],
     # only loaded in demonstration mode
     'demo': [

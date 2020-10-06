@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+    <template id="custom_partner_ledger_template">
+        <t t-call="web.html_container">
+            <t t-set="data_report_margin_top" t-value="12"/>
+            <t t-set="data_report_header_spacing" t-value="9"/>
+            <t t-set="data_report_dpi" t-value="110"/>
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.internal_layout">
+                    <div class="page">
+                        <h2>Custom Partner Ledger</h2>
+                        <div class="">
+                            <table class="table table-sm table-reports">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>JRNL</th>
+                                        <th>Account</th>
+                                        <th>Ref</th>
+                                        <th class="text-right">Debit</th>
+                                        <th class="text-right">Credit</th>
+                                        <th class="text-right">Balance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="get_partner_move(o.partner_ids)" t-as="result">
+                                        <t t-set='partner' t-value="result[0]"/>
+                                        <t t-set="moves" t-value="result[1]"/>
+                                        <tr>
+                                            <td colspan="4">- <strong><span t-esc="partner[0].name"/></strong></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                        <t t-foreach="moves" t-as="move">
+                                            <t t-set="lines" t-value="move.line_ids"/>
+                                            <tr>
+                                                <td class="text-center"><span t-esc="move.date"/></td>
+                                                <td><span t-esc="move.journal_id.name"/></td>
+                                                <td><span/></td>
+                                                <td><span t-esc="move.ref"/></td>
+                                            </tr>
+                                            <t t-foreach="lines" t-as="line">
+                                                <!--<tr>
+                                                    <td><span>Product</span></td>
+                                                    <td><span>Quantity</span></td>
+                                                    <td><span>Unit Price</span></td>
+                                                    <td><span>Price Total</span></td>
+                                                </tr>-->
+                                                <t t-if="line.product_id">
+                                                    <tr>
+                                                        <td class="text-right"><span t-esc="line.product_id.name"/></td>
+                                                        <td class="text-right">
+                                                            <span t-esc="line.quantity" t-options="{'widget':'float', 'precision':2}"/>
+                                                            <span t-esc="line.product_id.uom_id.name"/>
+                                                        </td>
+                                                        <td></td>
+                                                        <td class="text-right">
+                                                            <t t-if="move.dummy_account_id.internal_type == 'receivable'">
+                                                                <span t-esc="line.credit" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                                            </t>
+                                                        </td>
+                                                        <td class="text-right">
+                                                            <t t-if="move.dummy_account_id.internal_type == 'payable'">
+                                                                <span t-esc="line.debit" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                                            </t>
+                                                        </td>
+                                                        <td></td>
+                                                    </tr>
+                                                </t>
+                                            </t>
+                                        </t>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+    </data>
+</odoo>
+

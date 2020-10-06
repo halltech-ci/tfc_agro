@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <report
+            id="action_custom_partner_ledger"
+            model="account.report.partner.ledger"
+            string="Partner Ledger"
+            report_type="qweb-html"
+            name="custom_report.report_partner_ledger_template"
+            file="custom_report.report_partner_ledger_template"
+            />
+    </data>
+</odoo>

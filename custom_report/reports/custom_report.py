@@ -115,6 +115,7 @@ class CustomReport(models.AbstractModel):
 
         res = self._cr.dictfetchall()
         return res[0].get('qty', 0.00) if res else 0.00
+    
 
     def get_product_move(self, record):
         domain = [('state', '=', 'done')]
@@ -326,6 +327,22 @@ class CustomReport(models.AbstractModel):
         
         return res
 
+    def _get_check_status(self, record):
+        start_date = fields.Date.to_date(str(record.start_date))
+        end_date = fields.Date.to_date(str(record.end_date))
+        company = record.company_id
+       # company = self.env['res.company'].browse(company_id)
+        check_account = company.check_on_hand_journal
+        domain = [('date', '>=', start_date), ('date', '<=', end_date)]
+        deposit_domain = [('check_deposit_id', '!=', False)] + domain
+        payment_domain = [('payment_date', '>=', start_date), ('payment_date', '<=', end_date), ('journal_id.default_debit_account_id', '=', check_account.id)]
+        check_domain = [('check_deposit_id', '=', False), ('account_id', '=', check_account.id)] + domain
+        payments = self.env['account.payment'].search(payment_domain)
+       # partners = self._get_partners(data)
+        res = payments
+        
+        return res
+    
     #mis for payment and check
     def _get_payment_data(self, record):
         start_date = str(record.start_date)
@@ -461,6 +478,7 @@ class CustomReport(models.AbstractModel):
            'doc_ids': docids,
            'docs': records,
            'data': data,
+           'lang': "fr_FR",
            'get_beginning_inventory': self._get_beginning_inventory,
            'get_products':self._get_products,
            'get_product_sale_qty':self.get_product_sale_qty,
@@ -470,7 +488,8 @@ class CustomReport(models.AbstractModel):
            'get_stock_agewise': self._get_stock_aging,
            'debtor_age': self._get_debtor_age,
            'creditor_age': self._get_creditor_age,
-            'get_payments': self._get_payment_data,
+           'get_payments': self._get_payment_data,
+           'get_checks': self._get_check_status
         }
         return res
 

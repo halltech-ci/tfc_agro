@@ -57,7 +57,7 @@
                                 </tbody>
                             </table>
                             
-                            <t t-if="stock_position">
+                            <t t-if="o.stock_position">
                                 <p>Stock Postion</p>
                                 <table class="table table-condensed" id="custom">
                                     <thead>
@@ -71,6 +71,7 @@
                                             <th>Adjustment</th>
                                             <!--<th>Conversion</th>-->
                                             <th>Actual Stock</th>
+                                            <th>Total Qty Unit</th>
                                         </tr>
                                     </thead>
                                     <tbody class="invoice_tbody">
@@ -86,6 +87,7 @@
                                         <t t-set="total_adjust" t-value="0.0"/>
                                         <t t-set="total_conv" t-value="0.0"/>
                                         <t t-set="total_end" t-value="0.0"/>
+                                        <t t-set="total_uom_qty" t-value="0.0"/>
                                         <t t-foreach="get_products(o)" t-as="product">
                                             <t t-set="ending_qty" t-value="0.00"/>
                                             <t t-value="get_beginning_inventory(o,product,warehouses=warehouse)" t-set="product_beg_qty"/>
@@ -95,6 +97,7 @@
                                             />
                                             <t t-set="today_movment_qty" t-value="product_val['product_qty_in'] + product_val['product_qty_out'] + product_val['product_qty_internal'] + 
                                                     product_val['product_qty_adjustment']"/>
+                                            
                                             <tr>
                                                 <td><span t-esc="product.name_get()[0][1]"/></td>
                                                 <!-- Product unit of mesure-->
@@ -103,32 +106,36 @@
                                                 </td>
                                                 <!-- Initial stock-->
                                                 <td>
-                                                    <span t-esc="product_beg_qty"/>
+                                                    <span t-esc="product_beg_qty" t-options="{'widget':'float', 'precision':2}"/>
                                                     <t t-set="sum_begning" t-value="sum_begning + product_beg_qty"/>
                                                 </td>
                                                 <!--Received -->
                                                 <td>
-                                                    <span t-esc="product_val['product_qty_in']"/>
+                                                    <span t-esc="product_val['product_qty_in']" t-options="{'widget':'float', 'precision':2}"/>
                                                     <t t-set="sum_product_qty_in" t-value="sum_product_qty_in + product_val['product_qty_in']"/>
                                                 </td>
                                                 <!-- Sale qty-->
                                                 <td>
-                                                    <span t-esc="abs(product_val['product_qty_out'])"/>
+                                                    <span t-esc="abs(product_val['product_qty_out'])" t-esc-options="{'widget':'float', 'precision':2}"/>
                                                     <t t-set="sum_product_qty_out" t-value="sum_product_qty_out + product_val['product_qty_out']"/>
                                                 </td>
                                                 <!-- Internal transfert-->
                                                 <td>
-                                                    <span t-esc="product_val['product_qty_internal']"/>
+                                                    <span t-esc="product_val['product_qty_internal']" t-options="{'widget':'float', 'precision':2}"/>
                                                     <t t-set="sum_product_qty_internal" t-value="sum_product_qty_internal + product_val['product_qty_internal']"/>
                                                 </td>
                                                 <!--Stock adjustment-->
                                                 <td>
-                                                    <span t-esc="product_val['product_qty_adjustment']"/>
+                                                    <span t-esc="product_val['product_qty_adjustment']" t-options="{'widget':'float', 'precision':2}"/>
                                                     <t t-set="sum_product_qty_adjustment" t-value="sum_product_qty_adjustment + product_val['product_qty_adjustment']"/>
                                                 </td>
                                                 <!--<td></td>-->
                                                 <td>
-                                                    <span t-esc="product_beg_qty + product_val['product_qty_in'] + product_val['product_qty_out'] + product_val['product_qty_adjustment']"/>
+                                                    <span t-esc="product_beg_qty + product_val['product_qty_in'] + product_val['product_qty_out'] + product_val['product_qty_adjustment']" t-options="{'widget':'float', 'precision':2}"/>
+                                                </td>
+                                                <td>
+                                                    <t t-set="actual_stock" t-value="product_beg_qty + product_val['product_qty_in'] + product_val['product_qty_out'] + product_val['product_qty_adjustment']"/>
+                                                    <span t-esc="actual_stock*product.uom_id.factor_inv" t-options="{'widget':'float', 'precision':2}"/>
                                                 </td>
                                             </tr>
                                             <t t-set="total_beg" t-value="total_beg + product_beg_qty"/>
@@ -137,17 +144,19 @@
                                             <t t-set="total_int" t-value="total_int + product_val['product_qty_internal']"/>
                                             <t t-set="total_adjust" t-value="total_adjust + product_val['product_qty_adjustment']"/>
                                             <t t-set="total_end" t-value="total_end + ending_qty"/>
+                                            <t t-set="total_uom_qty" t-value="total_uom_qty + actual_stock*product.uom_id.factor_inv"/>
                                         </t>
                                         <tr>
                                             <td>Total</td>
                                             <td></td>
-                                            <td><span t-esc="total_beg"/></td>
-                                            <td><span t-esc="total_rec"/></td>
-                                            <td><span t-esc="total_sale"/></td>
-                                            <td><span t-esc="total_int"/></td>
-                                            <td><span t-esc="total_adjust"/></td>
+                                            <td><span t-esc="total_beg" t-options="{'widget':'float', 'precision':2}"/></td>
+                                            <td><span t-esc="total_rec" t-options="{'widget':'float', 'precision':2}"/></td>
+                                            <td><span t-esc="total_sale" t-options="{'widget':'float', 'precision':2}"/></td>
+                                            <td><span t-esc="total_int" t-options="{'widget':'float', 'precision':2}"/></td>
+                                            <td><span t-esc="total_adjust" t-options="{'widget':'float', 'precision':2}"/></td>
                                             <!--<td></td>-->
-                                            <td><span t-esc="total_end"/></td>
+                                            <td><span t-esc="total_end" t-options="{'widget':'float', 'precision':2}"/></td>
+                                            <td><span t-esc="total_uom_qty" t-options="{'widget':'float', 'precision':2}"/></td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -177,14 +186,21 @@
                                                 <td><span t-esc="sales.product_id.name"/></td>
                                                 <td><span t-esc="sales.move_id.product_uom.name"/></td>
                                                 <td><span t-esc="sales.lot_id.name"/></td>
-                                                <td><span t-esc="sales.move_id.sale_line_id.order_id.payment_term_id"/></td>
-                                                <td><span t-esc="sales.qty_done"/></td>
-                                                <td><span t-esc="sales.move_id.sale_line_id.price_unit"/></td>
-                                                <td><span t-esc="sales.move_id.sale_line_id.price_total"/></td>
+                                                <td>
+                                                    <t t-if="sales.move_id.sale_line_id.order_id.payment_term_id">
+                                                        <span t-esc="sales.move_id.sale_line_id.order_id.payment_term_id.name"/>
+                                                    </t>
+                                                    <t t-if="not sales.move_id.sale_line_id.order_id.payment_term_id">
+                                                        <span></span>
+                                                    </t>
+                                                </td>
+                                                <td><span t-esc="sales.qty_done" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                <td><span t-esc="sales.move_id.sale_line_id.price_unit" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                <td><span t-esc="sales.move_id.sale_line_id.price_total" t-options="{'widget':'float', 'precision':2}"/></td>
                                                 <td><span t-esc="sales.move_id.sale_line_id.order_id.name"/></td>
                                             </tr>
                                             <t t-set="amount" t-value="sales.move_id.sale_line_id.price_total"/>
-                                            <t t-set="total_amount" t-value="total_amount + amount"/>
+                                            <t t-set="total_amount" t-value="total_amount + amount" t-options="{'widget':'float', 'precision':2}"/>
                                         </t>
                                         <tr>
                                             <td>Total</td>
@@ -194,7 +210,7 @@
                                             <td></td>
                                             <td></td>
                                             <td></td>
-                                            <td><span t-esct="total_amount"/></td>
+                                            <td><span t-esc="total_amount" t-options="{'widget':'float', 'precision':2}"/></td>
                                             <td></td>
                                         </tr>
                                     </tbody>
@@ -223,9 +239,9 @@
                                                 <td><span t-esc="purchases.product_id.name"/></td>
                                                 <td><span t-esc="purchases.move_id.product_uom.name"/></td>
                                                 <td><span t-esc="purchases.lot_id.name"/></td>
-                                                <td><span t-esc="purchases.qty_done"/></td>
-                                                <td><span t-esc="purchases.move_id.purchase_line_id.price_unit"/></td>
-                                                <td><span t-esc="purchases.move_id.purchase_line_id.price_total"/></td>
+                                                <td><span t-esc="purchases.qty_done" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                <td><span t-esc="purchases.move_id.purchase_line_id.price_unit" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                <td><span t-esc="purchases.move_id.purchase_line_id.price_total" t-options="{'widget':'float', 'precision':2}"/></td>
                                                 <td><span t-esc="purchases.move_id.purchase_line_id.order_id.name"/></td>
                                             </tr>
                                         </t>
@@ -251,10 +267,10 @@
                                             <tr>
                                                 <td><span t-esc="product.name"/></td>
                                                 <td><span t-esc="product.uom_name"/></td>
-                                                <td><span t-esc="stock_age.get('stock_age_0_75')"/></td>
-                                                <td><span t-esc="stock_age.get('stock_age_75_180')"/></td>
-                                                <td><span t-esc="stock_age.get('stock_age_180_360')"/></td>
-                                                <td><span t-esc="stock_age.get('stock_age_360')"/></td>
+                                                <td><span t-esc="stock_age.get('stock_age_0_75')" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                <td><span t-esc="stock_age.get('stock_age_75_180')" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                <td><span t-esc="stock_age.get('stock_age_180_360')" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                <td><span t-esc="stock_age.get('stock_age_360')" t-options="{'widget':'float', 'precision':2}"/></td>
                                             </tr>
                                         </t>
                                     </tbody>
@@ -274,6 +290,8 @@
                                             <th>45-60 Days+</th>
                                             <th>60-90 Days+</th>
                                             <th>90 Days+</th>
+                                            <th>Credit limit</th>
+                                            <th>Salesperson</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -284,13 +302,22 @@
                                                 <t t-set="amount" t-value="debtor_age(customer_id).get('amount')"/>
                                                 <t t-if="amount != 0">
                                                     <td><span t-esc="customer.name"/></td>
-                                                    <td><span t-esc="debtor_age(customer_id).get('amount')"/></td>
-                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_0_24')"/></td>
-                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_24_30')"/></td>
-                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_30_45')"/></td>
-                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_45_60')"/></td>
-                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_60_90')"/></td>
-                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_90')"/></td>
+                                                    <td><span t-esc="debtor_age(customer_id).get('amount')" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_0_24')" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_24_30')" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_30_45')" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_45_60')" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_60_90')" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                    <td><span t-esc="debtor_age(customer_id).get('debtor_90')" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                    <td><span t-esc="customer.credit_limit" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                    <td>
+                                                        <t t-if="customer.user_id">
+                                                            <span t-esc="customer.user_id.name"/>
+                                                        </t>
+                                                        <t t-if="not customer.user_id">
+                                                            <span></span>
+                                                        </t>
+                                                    </td>
                                                 </t>
                                             </tr>
                                         </t>
@@ -318,91 +345,95 @@
                                                 <t t-set="amount" t-value="creditor_age(creditor.id).get('amount')"/>
                                                 <t t-if="amount != 0">
                                                     <td><span t-esc="creditor.name"/></td>
-                                                    <td><span t-esc="creditor_age(creditor.id).get('amount')"/></td>
-                                                    <td><span t-esc="creditor_age(customer_id).get('creditor_0_90')"/></td>
-                                                    <td><span t-esc="creditor_age(customer_id).get('creditor_90_180')"/></td>
-                                                    <td><span t-esc="creditor_age(customer_id).get('creditor_180_365')"/></td>
-                                                    <td><span t-esc="creditor_age(customer_id).get('creditor_365')"/></td>
+                                                    <td><span t-esc="creditor_age(creditor.id).get('amount')" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                    <td><span t-esc="creditor_age(customer_id).get('creditor_0_90')" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                    <td><span t-esc="creditor_age(customer_id).get('creditor_90_180')" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                    <td><span t-esc="creditor_age(customer_id).get('creditor_180_365')" t-options="{'widget':'float', 'precision':2}"/></td>
+                                                    <td><span t-esc="creditor_age(customer_id).get('creditor_365')" t-options="{'widget':'float', 'precision':2}"/></td>
                                                 </t>
                                             </tr>
                                         </t>
                                     </tbody>
                                 </table>
                             </t>
-                            <p>PDC Detail</p>
-                            <table class="table" id="custom">
-                                <thead>
-                                    <tr>
-                                        <th>Customer</th>
-                                        <th>Partner Bank</th>
-                                        <th>Check N°</th>
-                                        <th>Date</th>
-                                        <th>Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <t t-foreach="get_payments(o).get('pdc_check')" t-as="pdc_check">
-                                        <tr>
-                                            <td><span t-esc="pdc_check.partner_id.name"/></td>
-                                            <td><span t-esc="pdc_check.bank_reference"/></td>
-                                            <td><span t-esc="pdc_check.cheque_reference"/></td>
-                                            <td><span t-esc="pdc_check.payment_date"/></td>
-                                            <td><span t-esc="pdc_check.amount"/></td>
-                                        </tr>
-                                    </t>
-                                </tbody>
-                            </table>
                             
-                            <p>Check to be Deposited in Bank</p>
+                            <p>Check Status Report</p>
                             <table class="table" id="custom">
-                                <thead>
-                                    <tr>
-                                        <th>Customer</th>
-                                        <th>Partner Bank</th>
-                                        <th>Check N°</th>
-                                        <th>Date</th>
-                                        <th>Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <t t-foreach="get_payments(o).get('check_on_hand')" t-as="check_on_hand">
+                              <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Date</th>
+                                    <th colspan="2">Communication</th>
+                                    <th>Credit Limit</th>
+                                    <th>Total Check</th>
+                                    <th>Total Deposit</th>
+                                  </tr>
+                              </thead>
+                              <tbody>
+                                  <t t-value="request.env['res.partner'].search([('supplier', '=', True)])" t-set="partners"/>
+                                  <t t-set="payments" t-value="get_checks(o)"/>
+                                  <t t-foreach="partners" t-as="partner">
+                                      <t t-set="deposit_ids" t-value="[]"/>
+                                      <t t-set="check_ids" t-value="[]"/>
+                                      <t t-set="sum_check" t-value="0.0"/>
+                                      <t t-set="sum_deposit" t-value="0.0"/>
+                                      <t t-set="lines" t-value="payments.filtered(lambda p:p.partner_id.id == partner.id)"/>
+                                      <t t-foreach="lines" t-as="line">
+                                          <t t-if="line.move_line_ids.filtered(lambda x: x.check_deposit_id)">
+                                              <t t-set="deposits" t-value="deposit_ids.append(line)"/>
+                                          </t>
+                                          <t t-if="not line.move_line_ids.filtered(lambda x: x.check_deposit_id)">
+                                                <t t-set="checks" t-value="check_ids.append(line)"/>
+                                          </t>
+                                      </t>
+                                      <t t-foreach="check_ids" t-as="c">
+                                          <t t-set="sum_check" t-value="sum_check + c.amount"/>
+                                      </t>
+                                      <t t-foreach="deposit_ids" t-as="depo">
+                                          <t t-set="sum_deposit" t-value="sum_deposit + depo.amount"/>
+                                      </t>
+                                      <tr>
+                                          <td colspan="4"><strong>- <span t-esc="partner.name"/></strong></td>
+                                          <td><strong><span t-esc="partner.credit_limit"/></strong></td>
+                                          <td><strong><span t-esc="sum_check"/></strong></td>
+                                          <td><strong><span t-esc="sum_deposit"/></strong></td>
+                                      </tr>
+                                      <t t-set="check_amount" t-value="0.0"/>
+                                      <t t-set="deposit_amount" t-value="0.0"/>
+                                      <tr>
+                                          <td colspan="7"><span><strong><t t-esc="res_company.check_on_hand_journal.display_name"/></strong></span></td>
+                                      </tr>
+                                      <tr t-foreach="check_ids" t-as="check">
                                         <tr>
-                                            <td><span t-esc="check_on_hand.partner_id.name"/></td>
-                                            <td><span t-esc="check_on_hand.bank_reference"/></td>
-                                            <td><span t-esc="check_on_hand.cheque_reference"/></td>
-                                            <td><span t-esc="check_on_hand.payment_date"/></td>
-                                            <td><span t-esc="check_on_hand.amount"/></td>
+                                            <t t-set="c_amount" t-value="check_amount + check.amount"/>
+                                            <td><span t-esc="check.name"/></td>
+                                            <td><span t-esc="check.payment_date"/></td>
+                                            <td colspan="2"><span t-esc="check.communication"/></td>
+                                            <td></td>
+                                            <td><span t-esc="check.amount"/></td>
+                                            <td></td>
                                         </tr>
-                                    </t>
-                                </tbody>
-                            </table>
-                            
-                            <p>Check Under Cleanrance</p>
-                            <table class="table" id="custom">
-                                <thead>
-                                    <tr>
-                                        <th>Customer</th>
-                                        <th>Bank Deposited</th>
-                                        <th>Partner Bank</th>
-                                        <th>Check N°</th>
-                                        <th>Date</th>
-                                        <th>Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <t t-foreach="get_payments(o).get('check_on_bank')" t-as="check_on_bank">
-                                        <tr>
-                                            <td><span t-esc="check_on_bank.partner_id.name"/></td>
-                                            <td><span t-esc="check_on_bank.journal_id.name"/></td>
-                                            <td><span t-esc="check_on_bank.bank_reference"/></td>
-                                            <td><span t-esc="check_on_bank.cheque_reference"/></td>
-                                            <td><span t-esc="check_on_bank.payment_date"/></td>
-                                            <td><span t-esc="check_on_bank.amount"/></td>
-                                        </tr>
-                                    </t>
-                                </tbody>
-                            </table>
-                            
+                                      </tr>
+                                      <tr>
+                                          <td colspan="7"><span><strong><t t-esc="res_company.check_on_bank_journal.display_name"/></strong></span></td>
+                                      </tr>
+                                      <tr t-foreach="deposit_ids" t-as="deposit">
+                                          <t t-set="depos" t-value="deposit.move_line_ids.filtered(lambda x: x.check_deposit_id).check_deposit_id"/>
+                                          <t t-set="deposit_date" t-value="depos.deposit_date"/>
+                                          <t t-set="deposit_name" t-value="depos.move_id.name"/>
+                                          <tr>
+                                              <t t-set="dep_amount" t-value="deposit_amount + deposit.amount"/>
+                                              <td><span t-esc="deposit_name"/></td>
+                                              <td><span t-esc="deposit_date"/></td>
+                                              <td colspan="2"><span t-esc="deposit.communication"/></td>
+                                              <td></td>
+                                              <td></td>
+                                              <td><span t-esc="deposit.amount"/></td>
+                                          </tr>
+                                      </tr>
+                                  </t>
+                              </tbody>
+                          </table>                            
                             <p>Funds Received</p>
                             <table class="table" id="custom">
                                 <thead>
@@ -418,7 +449,7 @@
                                 </thead>
                                 <tbody>
                                     <t t-foreach="get_payments(o).get('reconciled_check')" t-as="reconcile">
-                                        <t t-set="transter" t-value="reconcile.filter(lambda r:r.payment_type =='transfer')"/>
+                                        <t t-set="transter" t-value="reconcile.filtered(lambda r:r.payment_type =='transfer')"/>
                                         <tr>
                                             <td><span t-esc="reconcile.partner_id.name"/></td>
                                             <td><span t-esc="reconcile.journal_id.name"/></td>

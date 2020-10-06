@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+    <template id="report_check_template">
+        <t t-call="web.html_container">
+            <t t-call="web.internal_layout">
+                <t t-set="data_report_margin_top" t-value="12"/>
+                <t t-set="data_report_header_spacing" t-value="9"/>
+                <t t-set="data_report_dpi" t-value="110"/>
+                <t t-foreach="docs" t-as="o">
+
+                  <div class="page">
+                      <div class="row">
+                          <h4>Check Status Reports</h4>
+                      </div>
+                      <div class="row">
+                        <strong>Company:</strong>
+                        <span t-esc="res_company.name"/>
+                      </div>
+                      <table class="table table-sm table-reports">
+                            <tbody>
+                                <tr>
+                                    <td><strong>From :</strong><span t-esc="data['form']['date_from']"/></td>
+                                    <td><strong>To :</strong><span t-esc="data['form']['date_to']"/></td>
+                                </tr>
+                            </tbody>
+                      </table>
+                      <table class="table table-sm table-reports">
+                          <thead>
+                            <tr>
+                                <th></th>
+                                <th>Date</th>
+                                <th colspan="2">Communication</th>
+                                <th>Credit Limit</th>
+                                <th>Total Check</th>
+                                <th>Total Deposit</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              <t t-foreach="partners(data)" t-as="partner">
+                                  <t t-set="deposit_ids" t-value="[]"/>
+                                  <t t-set="check_ids" t-value="[]"/>
+                                  <t t-set="sum_check" t-value="0.0"/>
+                                  <t t-set="sum_deposit" t-value="0.0"/>
+                                  <t t-set="lines" t-value="payments(data, partner).get('payments')"/>
+                                  <t t-foreach="lines" t-as="line">
+                                      <t t-if="line.move_line_ids.filtered(lambda x: x.check_deposit_id)">
+                                          <t t-set="deposits" t-value="deposit_ids.append(line)"/>
+                                      </t>
+                                      <t t-if="not line.move_line_ids.filtered(lambda x: x.check_deposit_id)">
+                                            <t t-set="checks" t-value="check_ids.append(line)"/>
+                                      </t>
+                                  </t>
+                                  <t t-foreach="check_ids" t-as="c">
+                                      <t t-set="sum_check" t-value="sum_check + c.amount"/>
+                                  </t>
+                                  <t t-foreach="deposit_ids" t-as="depo">
+                                      <t t-set="sum_deposit" t-value="sum_deposit + depo.amount"/>
+                                  </t>
+                                  <tr>
+                                      <td colspan="4"><strong>- <span t-esc="partner.name"/></strong></td>
+                                      <td><strong><span t-esc="partner.credit_limit"/></strong></td>
+                                      <td><strong><span t-esc="sum_check"/></strong></td>
+                                      <td><strong><span t-esc="sum_deposit"/></strong></td>
+                                  </tr>
+                                  <tr>
+                                      <td colspan="7"><span><strong><t t-esc="res_company.check_on_hand_journal.display_name"/></strong></span></td>
+                                  </tr>
+                                  <t t-foreach="check_ids" t-as="check">
+                                    <tr>
+                                        <td><span t-esc="check.name"/></td>
+                                        <td><span t-esc="check.payment_date"/></td>
+                                        <td colspan="2"><span t-esc="check.communication"/></td>
+                                        <td></td>
+                                        <td><span t-esc="check.amount"/></td>
+                                        <td></td>
+                                    </tr>
+                                  </t>
+                                  <tr>
+                                      <td colspan="7"><span><strong><t t-esc="res_company.check_on_bank_journal.display_name"/></strong></span></td>
+                                  </tr>
+                                  <t t-foreach="deposit_ids" t-as="deposit">
+                                      <t t-set="depos" t-value="deposit.move_line_ids.filtered(lambda x: x.check_deposit_id).check_deposit_id"/>
+                                      <t t-set="deposit_date" t-value="depos.deposit_date"/>
+                                      <t t-set="deposit_name" t-value="depos.move_id.name"/>
+                                      <tr>
+                                          <td><span t-esc="deposit_name"/></td>
+                                          <td><span t-esc="deposit_date"/></td>
+                                          <td colspan="2"><span t-esc="deposit.communication"/></td>
+                                          <td></td>
+                                          <td></td>
+                                          <td><span t-esc="deposit.amount"/></td>
+                                      </tr>
+                                  </t>
+                              </t>
+                          </tbody>
+                      </table>
+                   </div><!-- End Page-->
+                </t>
+            </t>
+        </t>
+    </template>
+    </data>
+</odoo>

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 {
-    'name': "hta_custom_report",
+    'name': "hta_partner_ledger",
 
     'summary': """
         Short (1 phrase/line) summary of the module's purpose, used as
@@ -20,16 +20,18 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base',
-               'account_reports'],
+    'depends': [
+        'account_reports',
+    ],
 
     # always loaded
     'data': [
         # 'security/ir.model.access.csv',
         'views/views.xml',
         'views/templates.xml',
-        'report/hta_customer_report_views.xml',
-        'report/hta_partner_ledger_views.xml'
+        'report/custom_partner_ledger_template.xml',
+        'report/custom_partner_ledger.xml',
+        'wizard/custom_partner_ledger_wizard.xml'
     ],
     # only loaded in demonstration mode
     'demo': [

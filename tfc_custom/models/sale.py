@@ -47,7 +47,7 @@ class SaleOrder(models.Model):
     driver_contacts=fields.Char(string="Driver Contact")
     customer_order_ref=fields.Char(string="Customer Order Ref")
     sale_approver=fields.Many2one('res.users', string="Approver")
-    over_credit = fields.Boolean(string="Over Credit", store=True, readonly=True, compute=compute_over_credit)
+    over_credit = fields.Boolean(string="Over Credit", store=True, readonly=True, compute='compute_over_credit')
     sum_qty = fields.Float(string="Total Qty", compute='_compute_total_qty')            
     qty_to_text = fields.Char(string="Qty In Words", compute='_compute_num_to_words')
     amount_to_text = fields.Char(string="Amount In Words:", compute='_compute_amount_in_word')
