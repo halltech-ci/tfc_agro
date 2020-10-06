@@ -2,11 +2,11 @@
 <odoo>
     <template id="report_partner_ledger_template">
         <t t-call="web.html_container">
-            <t t-call="web.internal_layout">
             <t t-set="data_report_margin_top" t-value="12"/>
             <t t-set="data_report_header_spacing" t-value="9"/>
             <t t-set="data_report_dpi" t-value="110"/>
             <t t-foreach="docs" t-as="o">
+                <t t-call="web.internal_layout">
                     <div class="page">
                         <h2>Partner Ledger</h2>
 
@@ -16,17 +16,25 @@
                                 <p t-esc="res_company.name"/>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-3">
-                                <t t-if="data['form']['date_from']"><strong>Date from :</strong><span t-esc="data['form']['date_from']"/></t>
-                                <t t-if="data['form']['date_to']"><strong><span> Date to :</span></strong> <span t-esc="data['form']['date_to']"/></t>
-                            </div>
-                            <div class="col-3">
-                                <strong>Target Moves:</strong>
-                                <p t-if="data['form']['target_move'] == 'all'">All Entries</p>
-                                <p t-if="data['form']['target_move'] == 'posted'">All Posted Entries</p>
-                            </div>
-                        </div>
+                        <table class="table table-sm table-reports">
+                            <tbody>
+                                <td class="text-left"><strong>Date from :</strong>
+                                    <t t-if="data['form']['date_from']">
+                                        <span t-esc="data['form']['date_from']"/>
+                                    </t>
+                                </td>
+                                <td class="text-center"><strong><span> Date to :</span></strong>
+                                    <t t-if="data['form']['date_to']">
+                                        <span t-esc="data['form']['date_to']"/>
+                                    </t>
+                                </td>
+                                <td class="text-right">
+                                    <strong>Target Moves:</strong>
+                                    <span t-if="data['form']['target_move'] == 'all'">All Entries</span>
+                                    <span t-if="data['form']['target_move'] == 'posted'">All Posted Entries</span>
+                                </td>
+                            </tbody>
+                        </table>
 
                         <table class="table table-sm table-reports">
                             <thead>
@@ -57,7 +65,7 @@
                                         <strong t-esc="sum_partner(data, o, 'debit - credit')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                     </td>
                                 </tr>
-                                <t t-foreach="lines(data, o)" t-as="line">
+                                <tr t-foreach="lines(data, o)" t-as="line">
                                     <t t-set="move" t-value="get_line_detail(line['line_id'])"/>
                                     <tr>
                                         <td class="text-center">
@@ -111,7 +119,7 @@
                                             </tr>
                                         </t>
                                     </t>
-                                </t>
+                                </tr>
                             </tbody>
                         </table>
                     </div>

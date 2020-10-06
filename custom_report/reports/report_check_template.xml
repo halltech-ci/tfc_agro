@@ -3,13 +3,16 @@
   <data>
     <template id="report_check_template">
         <t t-call="web.html_container">
-            <t t-set="data_report_margin_top" t-value="12"/>
-            <t t-set="data_report_header_spacing" t-value="9"/>
-            <t t-set="data_report_dpi" t-value="90"/>
-            <t t-foreach="docs" t-as="o">
-                <t t-call="web.internal_layout">
+            <t t-call="web.internal_layout">
+                <t t-set="data_report_margin_top" t-value="12"/>
+                <t t-set="data_report_header_spacing" t-value="9"/>
+                <t t-set="data_report_dpi" t-value="110"/>
+                <t t-foreach="docs" t-as="o">
+
                   <div class="page">
-                      <h4>Check Status Reports</h4>
+                      <div class="row">
+                          <h4>Check Status Reports</h4>
+                      </div>
                       <div class="row">
                         <strong>Company:</strong>
                         <span t-esc="res_company.name"/>
@@ -25,43 +28,70 @@
                       <table class="table table-sm table-reports">
                           <thead>
                             <tr>
-                                <th colspan="2">Date</th>
+                                <th></th>
+                                <th>Date</th>
                                 <th colspan="2">Communication</th>
-                                <th>Debit</th>
-                                <th>Credit</th>
-                                <th>Balance</th>
                                 <th>Credit Limit</th>
+                                <th>Total Check</th>
+                                <th>Total Deposit</th>
                               </tr>
                           </thead>
                           <tbody>
-                              <t t-foreach="get_lines(data)" t-as="lines">
-                                  <t t-set="partner" t-value="lines.get('partner')"/>
-                                  <t t-set="deposits" t-value="lines.get('deposit')"/>
-                                  <t t-set="check" t-value="lines.get('check')"/>
-                                  <t t-set="check_move" t-value="lines.get('check_move')"/>
-                                  <tr>
-                                      <td><strong>- <span t-esc="partner.name"/></strong></td>
-                                      <td colspan="2"></td>
-                                      <td></td>
-                                      <td>SumDebit</td>
-                                      <td>Sum_Credit</td>
-                                      <td>Sum_Balance</td>
-                                      <td>Limit_credit</td>
-                                  </tr>
-                                  <tr>
-                                      <t t-set="amount" t-value="0.0"/>
-                                      <t t-foreach="deposits" t-as="deposit">
-                                          <t t-set="dep_lines" t-value="deposit.line_ids"/>
-                                          <tr>
-                                              <td class="text-left"><span t-esc="deposit.name"/></td>
-                                              <td><span t-esc="deposit.name"/></td>
-                                              <td><span t-esc="deposit.total_amount"/></td>
-                                          </tr>
-                                          <tr>
-                                              <td><span t-esc="dep"/></td>
-                                          </tr>
+                              <t t-foreach="partners(data)" t-as="partner">
+                                  <t t-set="deposit_ids" t-value="[]"/>
+                                  <t t-set="check_ids" t-value="[]"/>
+                                  <t t-set="sum_check" t-value="0.0"/>
+                                  <t t-set="sum_deposit" t-value="0.0"/>
+                                  <t t-set="lines" t-value="payments(data, partner).get('payments')"/>
+                                  <t t-foreach="lines" t-as="line">
+                                      <t t-if="line.move_line_ids.filtered(lambda x: x.check_deposit_id)">
+                                          <t t-set="deposits" t-value="deposit_ids.append(line)"/>
                                       </t>
+                                      <t t-if="not line.move_line_ids.filtered(lambda x: x.check_deposit_id)">
+                                            <t t-set="checks" t-value="check_ids.append(line)"/>
+                                      </t>
+                                  </t>
+                                  <t t-foreach="check_ids" t-as="c">
+                                      <t t-set="sum_check" t-value="sum_check + c.amount"/>
+                                  </t>
+                                  <t t-foreach="deposit_ids" t-as="depo">
+                                      <t t-set="sum_deposit" t-value="sum_deposit + depo.amount"/>
+                                  </t>
+                                  <tr>
+                                      <td colspan="4"><strong>- <span t-esc="partner.name"/></strong></td>
+                                      <td><strong><span t-esc="partner.credit_limit"/></strong></td>
+                                      <td><strong><span t-esc="sum_check"/></strong></td>
+                                      <td><strong><span t-esc="sum_deposit"/></strong></td>
                                   </tr>
+                                  <tr>
+                                      <td colspan="7"><span><strong><t t-esc="res_company.check_on_hand_journal.display_name"/></strong></span></td>
+                                  </tr>
+                                  <t t-foreach="check_ids" t-as="check">
+                                    <tr>
+                                        <td><span t-esc="check.name"/></td>
+                                        <td><span t-esc="check.payment_date"/></td>
+                                        <td colspan="2"><span t-esc="check.communication"/></td>
+                                        <td></td>
+                                        <td><span t-esc="check.amount"/></td>
+                                        <td></td>
+                                    </tr>
+                                  </t>
+                                  <tr>
+                                      <td colspan="7"><span><strong><t t-esc="res_company.check_on_bank_journal.display_name"/></strong></span></td>
+                                  </tr>
+                                  <t t-foreach="deposit_ids" t-as="deposit">
+                                      <t t-set="depos" t-value="deposit.move_line_ids.filtered(lambda x: x.check_deposit_id).check_deposit_id"/>
+                                      <t t-set="deposit_date" t-value="depos.deposit_date"/>
+                                      <t t-set="deposit_name" t-value="depos.move_id.name"/>
+                                      <tr>
+                                          <td><span t-esc="deposit_name"/></td>
+                                          <td><span t-esc="deposit_date"/></td>
+                                          <td colspan="2"><span t-esc="deposit.communication"/></td>
+                                          <td></td>
+                                          <td></td>
+                                          <td><span t-esc="deposit.amount"/></td>
+                                      </tr>
+                                  </t>
                               </t>
                           </tbody>
                       </table>
